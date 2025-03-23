@@ -1,0 +1,6 @@
+[submodule "cmake/blt"]
+	path = cmake/blt
+	url = git@github.com:LLNL/blt.git
+[submodule "src/Shiva"]
+	path = src/Shiva
+	url = git@github.com:GEOS-DEV/Shiva.git
