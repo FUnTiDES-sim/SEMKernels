@@ -8,12 +8,6 @@ using namespace shiva::functions;
 using namespace shiva::geometry;
 using namespace shiva::discretizations::finiteElementMethod;
 
-// void test_calculateB()
-// {
-
-// }
-
-
 TEST( testIntegrals, test_computeStiffnessTerm )
 {
   using TransformType =

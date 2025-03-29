@@ -2,16 +2,16 @@
 
 #include "common/macros.hpp"
 
-#include <functions/bases/LagrangeBasis.hpp>
-#include <functions/quadrature/Quadrature.hpp>
-#include <functions/spacing/Spacing.hpp>
-#include <geometry/shapes/NCube.hpp>
-#include <geometry/shapes/InterpolatedShape.hpp>
-#include <geometry/mapping/LinearTransform.hpp>
-#include <common/ShivaMacros.hpp>
-#include <common/pmpl.hpp>
-#include <common/types.hpp>
-#include <discretizations/finiteElementMethod/parentElements/ParentElement.hpp>
+#include "functions/bases/LagrangeBasis.hpp"
+#include "functions/quadrature/Quadrature.hpp"
+#include "functions/spacing/Spacing.hpp"
+#include "geometry/shapes/NCube.hpp"
+#include "geometry/shapes/InterpolatedShape.hpp"
+#include "geometry/mapping/LinearTransform.hpp"
+#include "common/ShivaMacros.hpp"
+#include "common/pmpl.hpp"
+#include "common/types.hpp"
+#include "discretizations/finiteElementMethod/parentElements/ParentElement.hpp"
 
 using namespace shiva;
 using namespace shiva::functions;
@@ -62,20 +62,11 @@ public:
   static constexpr inline
   SEMKERNELS_HOST_DEVICE 
   int linearIndex( const int r,
-                                    const int i,
-                                    const int j,
-                                    const int k ) 
+                   const int i,
+                   const int j,
+                   const int k ) 
   {
-           return i + (r+1) * j + (r+1)*(r+1) * k;
-  }
-
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  double determinant( double const (&m)[9])
-  {
-     return abs(m[0]*(m[4]*m[8]-m[7]*m[5])
-               -m[1]*(m[3]*m[8]-m[6]*m[5])
-               +m[2]*(m[3]*m[7]-m[6]*m[4]));
+    return i + (r+1) * j + (r+1)*(r+1) * k;
   }
 
 
