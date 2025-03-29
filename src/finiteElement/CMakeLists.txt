@@ -10,6 +10,10 @@ set( finiteElement_headers
 set( finiteElement_sources
      )
 
+set( finiteElement_dependencies
+     shiva
+     )
+
 if( ENABLE_HIP )
     list( APPEND finiteElement_dependencies blt::hip camp )
 endif()

@@ -1,82 +1,51 @@
 
-
+#include "../SEMQkGLIntegralsShiva.hpp"
 
 #include <gtest/gtest.h>
 
+using namespace shiva;
+using namespace shiva::functions;
+using namespace shiva::geometry;
+using namespace shiva::discretizations::finiteElementMethod;
+
+// void test_calculateB()
+// {
+
+// }
 
 
-
-
-
-
-void testParenthesesOperatorCT()
+TEST( testIntegrals, test_computeStiffnessTerm )
 {
-  // using Array = TestCArrayHelper::Array3d;
-  // constexpr int na = Array::extent< 0 >();
-  // constexpr int nb = Array::extent< 1 >();
-  // constexpr int nc = Array::extent< 2 >();
+  using TransformType =
+  LinearTransform< double,
+                   InterpolatedShape< double,
+                                     Cube< double >,
+                                     LagrangeBasis< double, 1, EqualSpacing >,
+                                     LagrangeBasis< double, 1, EqualSpacing >,
+                                     LagrangeBasis< double, 1, EqualSpacing > > >;
 
-  // pmpl::genericKernelWrapper( [] SHIVA_DEVICE ()
-  // {
-  //   forSequence< na >( [] ( auto const ica )
-  //   {
-  //     constexpr int a = decltype(ica)::value;
-  //     forSequence< nb >( [ = ] ( auto const icb )
-  //     {
-  //       constexpr int b = decltype(icb)::value;
-  //       forSequence< nc >( [ = ] ( auto const icc )
-  //       {
-  //         constexpr int c = decltype(icc)::value;
-  //         static_assert( pmpl::check( TestCArrayHelper::array3d.operator()< a, b, c >(),
-  //                                     3.14159 * CArrayHelper::linearIndexHelper< 2, 3, 4 >::eval( a, b, c ),
-  //                                     1.0e-12 ) );
-  //         static_assert( pmpl::check( TestCArrayHelper::array3d( a, b, c ),
-  //                                     3.14159 * CArrayHelper::linearIndexHelper< 2, 3, 4 >::eval( a, b, c ),
-  //                                     1.0e-12 ) );
-  //       } );
-  //     } );
-  //   } );
-  // } );
-}
+  using ParentElementType =
+  ParentElement< double,
+                 Cube< double >,
+                 LagrangeBasis< double, 1, EqualSpacing >,
+                 LagrangeBasis< double, 1, EqualSpacing >,
+                 LagrangeBasis< double, 1, EqualSpacing > >;
 
-void testParenthesesOperatorRT()
-{
-  // double * data = nullptr;
-  // constexpr int N = TestCArrayHelper::Array3d::size();
-  // data = new double[N];
-  // pmpl::genericKernelWrapper( N, data, [] SHIVA_DEVICE ( double * const kernelData )
-  // {
-  //   TestCArrayHelper::Array3d const array{ initializer< TestCArrayHelper::Array3d >( std::make_integer_sequence< int, 2 * 3 * 4 >() ) };;
-  //   int const na = array.extent< 0 >();
-  //   int const nb = array.extent< 1 >();
-  //   int const nc = array.extent< 2 >();
+  using Integrals = SEMQkGLIntegralsShiva< double, 1, TransformType, ParentElementType >;
+  
 
-  //   for ( int a = 0; a < na; ++a )
-  //   {
-  //     for ( int b = 0; b < nb; ++b )
-  //     {
-  //       for ( int c = 0; c < nc; ++c )
-  //       {
-  //         kernelData[ a * nb * nc + b * nc + c ] = array( a, b, c );
-  //       }
-  //     }
-  //   }
-  // } );
-
-  // for ( int a = 0; a < TestCArrayHelper::Array3d::size(); ++a )
-  // {
-  //   EXPECT_EQ( data[a], 3.14159 * a );
-  // }
-  // delete [] data;
+  double x0=0,y0=0,z0=0;
+  double x1=20,y1=20,z1=20;
+  double X[8][3]={{x0,y0,z0},{x1,y0,z0},{x0,y1,z0},{x1,y1,z0},
+                  {x0,y0,z1},{x1,y0,z1},{x0,y1,z1},{x1,y1,z1}}; 
 
 
-}
+  TransformType trilinearCell;
+  trilinearCell.setData( X );
+  double B[6] = {0.0};
 
+  Integrals::computeB<0,0,0>( trilinearCell, B );
 
-TEST( testIntegrals, testParenthesesOperator )
-{
-  testParenthesesOperatorCT();
-  testParenthesesOperatorRT();
 }
 
 
