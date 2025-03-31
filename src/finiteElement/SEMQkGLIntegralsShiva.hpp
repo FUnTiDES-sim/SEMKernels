@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/macros.hpp"
+#include "common/mathUtilites.hpp"
 
 #include "functions/bases/LagrangeBasis.hpp"
 #include "functions/quadrature/Quadrature.hpp"
@@ -43,91 +44,31 @@ public:
   using quadrature = QuadratureGaussLobatto<double, numPoints >;
   using basisFunction=LagrangeBasis< double, ORDER, GaussLobattoSpacing >;
 
-  SEMKERNELS_HOST_DEVICE SEMQkGLIntegralsShiva(){}
-  SEMKERNELS_HOST_DEVICE ~SEMQkGLIntegralsShiva(){}
-  
-  /////////////////////////////////////////////////////////////////////////////////////
-  //  from GEOS implementation
-  /////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * @brief Calculates the linear index for support/quadrature points from ijk
-   *   coordinates.
-   * @param r order of polynomial approximation
-   * @param i The index in the xi0 direction (0,r)
-   * @param j The index in the xi1 direction (0,r)
-   * @param k The index in the xi2 direction (0,r)
-   * @return The linear index of the support/quadrature point (0-(r+1)^3)
-   */
+  template< int qa, int qb, int qc >
   static constexpr inline
-  SEMKERNELS_HOST_DEVICE 
-  int linearIndex( const int r,
-                   const int i,
-                   const int j,
-                   const int k ) 
+  SEMKERNELS_HOST_DEVICE
+  void computeB( TransformType const & trilinearCell,
+                 double (&B)[6] )
   {
-    return i + (r+1) * j + (r+1)*(r+1) * k;
+    JacobianType J{ 0.0 };   
+    shiva::geometry::utilities::jacobian<quadrature, qa,qb,qc>( trilinearCell, J );
+     
+    // detJ
+    double const detJ = +J(0,0)*(J(1,1)*J(2,2)-J(2,1)*J(1,2))
+                        -J(0,1)*(J(1,0)*J(2,2)-J(2,0)*J(1,2))
+                        +J(0,2)*(J(1,0)*J(2,1)-J(2,0)*J(1,1));
+    
+    // compute J^{T}J/detJ
+    double const invDetJ = 1.0 / detJ;
+    B[0] = (J(0,0)*J(0,0)+J(1,0)*J(1,0)+J(2,0)*J(2,0)) * invDetJ;
+    B[1] = (J(0,1)*J(0,1)+J(1,1)*J(1,1)+J(2,1)*J(2,1)) * invDetJ;
+    B[2] = (J(0,2)*J(0,2)+J(1,2)*J(1,2)+J(2,2)*J(2,2)) * invDetJ;
+    B[3] = (J(0,1)*J(0,2)+J(1,1)*J(1,2)+J(2,1)*J(2,2)) * invDetJ;
+    B[4] = (J(0,0)*J(0,2)+J(1,0)*J(1,2)+J(2,0)*J(2,2)) * invDetJ;
+    B[5] = (J(0,0)*J(0,1)+J(1,0)*J(1,1)+J(2,0)*J(2,1)) * invDetJ;
+    // compute detJ*J^{-1}J^{-T}
+    symInvert0( B );
   }
-
-
-  /**
-   * @brief Invert the symmetric matrix @p srcSymMatrix and store the result in @p dstSymMatrix.
-   * @param dstSymMatrix The 3x3 symmetric matrix to write the inverse to.
-   * @param srcSymMatrix The 3x3 symmetric matrix to take the inverse of.
-   * @return The determinant.
-   * @note @p srcSymMatrix can contain integers but @p dstMatrix must contain floating point values.
-   */
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE 
-  void symInvert( double  dstSymMatrix[6], double  srcSymMatrix[6]) 
-  {
-   
-     using FloatingPoint = std::decay_t< decltype( dstSymMatrix[ 0 ] ) >;
-   
-     dstSymMatrix[ 0 ] = srcSymMatrix[ 1 ] * srcSymMatrix[ 2 ] - srcSymMatrix[ 3 ] * srcSymMatrix[ 3 ];
-     dstSymMatrix[ 5 ] = srcSymMatrix[ 4 ] * srcSymMatrix[ 3 ] - srcSymMatrix[ 5 ] * srcSymMatrix[ 2 ];
-     dstSymMatrix[ 4 ] = srcSymMatrix[ 5 ] * srcSymMatrix[ 3 ] - srcSymMatrix[ 4 ] * srcSymMatrix[ 1 ];
-   
-     double det = srcSymMatrix[ 0 ] * dstSymMatrix[ 0 ] + srcSymMatrix[ 5 ] * dstSymMatrix[ 5 ] + srcSymMatrix[ 4 ] * dstSymMatrix[ 4 ];
-  
-     FloatingPoint const invDet = FloatingPoint( 1 ) / det;
-   
-     dstSymMatrix[ 0 ] *= invDet;
-     dstSymMatrix[ 5 ] *= invDet;
-     dstSymMatrix[ 4 ] *= invDet;
-     dstSymMatrix[ 1 ] = ( srcSymMatrix[ 0 ] * srcSymMatrix[ 2 ] - srcSymMatrix[ 4 ] * srcSymMatrix[ 4 ] ) * invDet;
-     dstSymMatrix[ 3 ] = ( srcSymMatrix[ 5 ] * srcSymMatrix[ 4 ] - srcSymMatrix[ 0 ] * srcSymMatrix[ 3 ] ) * invDet;
-     dstSymMatrix[ 2 ] = ( srcSymMatrix[ 0 ] * srcSymMatrix[ 1 ] - srcSymMatrix[ 5 ] * srcSymMatrix[ 5 ] ) * invDet;
-   
-  }
-  
-  /**
-   * @brief Invert the symmetric matrix @p symMatrix overwritting it.
-   * @param symMatrix The 3x3 symmetric matrix to take the inverse of and overwrite.
-   * @return The determinant.
-   * @note @p symMatrix can contain integers but @p dstMatrix must contain floating point values.
-  */
-  static inline
-  SEMKERNELS_HOST_DEVICE  
-  void symInvert0( double  symMatrix[6] )
-  {
-      std::remove_reference_t< decltype( symMatrix[ 0 ] ) > temp[ 6 ];
-      symInvert( temp, symMatrix );
-      
-      symMatrix[0]=temp[0];
-      symMatrix[1]=temp[1];
-      symMatrix[2]=temp[2];
-      symMatrix[3]=temp[3];
-      symMatrix[4]=temp[4];
-      symMatrix[5]=temp[5];
-  }
-  
-
-
-
-
-
-
 
   template< int qa, int qb,  int qc, typename FUNC>
   static constexpr inline
@@ -176,31 +117,7 @@ public:
      }
   }
 
-  template< int qa, int qb, int qc >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  void computeB( TransformType const & trilinearCell,
-                 double (&B)[6] )
-  {
-    JacobianType J{ 0.0 };   
-    shiva::geometry::utilities::jacobian<quadrature, qa,qb,qc>( trilinearCell, J );
-     
-    // detJ
-    double const detJ = +J(0,0)*(J(1,1)*J(2,2)-J(2,1)*J(1,2))
-                        -J(0,1)*(J(1,0)*J(2,2)-J(2,0)*J(1,2))
-                        +J(0,2)*(J(1,0)*J(2,1)-J(2,0)*J(1,1));
-    
-    // compute J^{T}J/detJ
-    double const invDetJ = 1.0 / detJ;
-    B[0] = (J(0,0)*J(0,0)+J(1,0)*J(1,0)+J(2,0)*J(2,0)) * invDetJ;
-    B[1] = (J(0,1)*J(0,1)+J(1,1)*J(1,1)+J(2,1)*J(2,1)) * invDetJ;
-    B[2] = (J(0,2)*J(0,2)+J(1,2)*J(1,2)+J(2,2)*J(2,2)) * invDetJ;
-    B[3] = (J(0,1)*J(0,2)+J(1,1)*J(1,2)+J(2,1)*J(2,2)) * invDetJ;
-    B[4] = (J(0,0)*J(0,2)+J(1,0)*J(1,2)+J(2,0)*J(2,2)) * invDetJ;
-    B[5] = (J(0,0)*J(0,1)+J(1,0)*J(1,1)+J(2,0)*J(2,1)) * invDetJ;
-    // compute detJ*J^{-1}J^{-T}
-    symInvert0( B );
-  }
+
 
   template< typename FUNC>
   static constexpr inline
@@ -222,19 +139,15 @@ public:
           constexpr int qa = decltype(icqa)::value;
           constexpr int qb = decltype(icqb)::value;
           constexpr int qc = decltype(icqc)::value;
-
           // must be here, Jacobian must be put to 0 for each quadrature point
           //Jacobian matrix J
-          
-          J(0,0)=0;
-          J(0,1)=0;
-          J(0,2)=0;
-          J(1,0)=0;
-          J(1,1)=0;
-          J(1,2)=0;
-          J(2,0)=0;
-          J(2,1)=0;
-          J(2,2)=0;
+          for( int i=0; i<3; ++i )
+          {
+            for( int j=0; j<3; ++j )
+            {
+              J(i,j)=0;
+            }
+          }
          
           shiva::geometry::utilities::jacobian<quadrature, qa,qb,qc>( trilinearCell, J );
            
@@ -313,19 +226,12 @@ public:
       TransformType trilinearCell;
       typename TransformType::DataType & cellCoordData = trilinearCell.getData();
 
-      for( int k=0; k<2; ++k)
-      {
-          for ( int j=0; j<2; ++j)
-          {
-              for( int i=0; i<2; ++i)
-              {
-                  int const l = ORDER * ( i + j*(ORDER+1) + k*(ORDER+1)*(ORDER+1) ) ;
-                  cellCoordData(i,j,k,0) = nodesCoordsX(elementNumber,l);
-                  cellCoordData(i,j,k,1) = nodesCoordsZ(elementNumber,l);
-                  cellCoordData(i,j,k,2) = nodesCoordsY(elementNumber,l);
-              }
-          }
-      }
+      gatherCoordinates( elementNumber, 
+                         nodesCoordsX, 
+                         nodesCoordsY, 
+                         nodesCoordsZ, 
+                         cellCoordData );
+
       for (int q=0;q<nPointsPerElement;q++)
       {
          Y[q]=0;

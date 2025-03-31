@@ -29,7 +29,6 @@ void setX( double (&X)[8][3] )
       X[a][i] *= X0[a][i] * ( 0.9 + 0.1 * (rand() % 20) );
     }
   }
-
 }
 
 
@@ -70,11 +69,11 @@ TEST( testIntegrals, test_computeStiffnessTerm )
   using ParentElementType =
   ParentElement< double,
                  Cube< double >,
-                 LagrangeBasis< double, 1, EqualSpacing >,
-                 LagrangeBasis< double, 1, EqualSpacing >,
-                 LagrangeBasis< double, 1, EqualSpacing > >;
+                 LagrangeBasis< double, 3, EqualSpacing >,
+                 LagrangeBasis< double, 3, EqualSpacing >,
+                 LagrangeBasis< double, 3, EqualSpacing > >;
 
-  using Integrals = SEMQkGLIntegralsShiva< double, 1, TransformType, ParentElementType >;
+  using Integrals = SEMQkGLIntegralsShiva< double, 3, TransformType, ParentElementType >;
   
 
   double X[8][3]; 
