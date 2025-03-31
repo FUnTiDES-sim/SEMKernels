@@ -25,9 +25,9 @@ using namespace std;
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
-template< typename REAL_TYPE, 
+template< typename REAL_TYPE,
           int ORDER,
-          typename TRANSFORM, 
+          typename TRANSFORM,
           typename PARENT_ELEMENT >
 class SEMQkGLIntegralsShiva
 {
@@ -41,8 +41,8 @@ public:
   using ParentElementType = PARENT_ELEMENT;
 
   using JacobianType = typename std::remove_reference_t< TransformType >::JacobianType;
-  using quadrature = QuadratureGaussLobatto<double, numPoints >;
-  using basisFunction=LagrangeBasis< double, ORDER, GaussLobattoSpacing >;
+  using quadrature = QuadratureGaussLobatto< double, numPoints >;
+  using basisFunction = LagrangeBasis< double, ORDER, GaussLobattoSpacing >;
 
   template< int qa, int qb, int qc >
   static constexpr inline
@@ -50,136 +50,136 @@ public:
   void computeB( TransformType const & trilinearCell,
                  double (&B)[6] )
   {
-    JacobianType J{ 0.0 };   
-    shiva::geometry::utilities::jacobian<quadrature, qa,qb,qc>( trilinearCell, J );
-     
+    JacobianType J{ 0.0 };
+    shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
+
     // detJ
-    double const detJ = +J(0,0)*(J(1,1)*J(2,2)-J(2,1)*J(1,2))
-                        -J(0,1)*(J(1,0)*J(2,2)-J(2,0)*J(1,2))
-                        +J(0,2)*(J(1,0)*J(2,1)-J(2,0)*J(1,1));
-    
+    double const detJ = +J( 0, 0 ) * (J( 1, 1 ) * J( 2, 2 ) - J( 2, 1 ) * J( 1, 2 ))
+                        - J( 0, 1 ) * (J( 1, 0 ) * J( 2, 2 ) - J( 2, 0 ) * J( 1, 2 ))
+                        + J( 0, 2 ) * (J( 1, 0 ) * J( 2, 1 ) - J( 2, 0 ) * J( 1, 1 ));
+
     // compute J^{T}J/detJ
     double const invDetJ = 1.0 / detJ;
-    B[0] = (J(0,0)*J(0,0)+J(1,0)*J(1,0)+J(2,0)*J(2,0)) * invDetJ;
-    B[1] = (J(0,1)*J(0,1)+J(1,1)*J(1,1)+J(2,1)*J(2,1)) * invDetJ;
-    B[2] = (J(0,2)*J(0,2)+J(1,2)*J(1,2)+J(2,2)*J(2,2)) * invDetJ;
-    B[3] = (J(0,1)*J(0,2)+J(1,1)*J(1,2)+J(2,1)*J(2,2)) * invDetJ;
-    B[4] = (J(0,0)*J(0,2)+J(1,0)*J(1,2)+J(2,0)*J(2,2)) * invDetJ;
-    B[5] = (J(0,0)*J(0,1)+J(1,0)*J(1,1)+J(2,0)*J(2,1)) * invDetJ;
+    B[0] = (J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 )) * invDetJ;
+    B[1] = (J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 )) * invDetJ;
+    B[2] = (J( 0, 2 ) * J( 0, 2 ) + J( 1, 2 ) * J( 1, 2 ) + J( 2, 2 ) * J( 2, 2 )) * invDetJ;
+    B[3] = (J( 0, 1 ) * J( 0, 2 ) + J( 1, 1 ) * J( 1, 2 ) + J( 2, 1 ) * J( 2, 2 )) * invDetJ;
+    B[4] = (J( 0, 0 ) * J( 0, 2 ) + J( 1, 0 ) * J( 1, 2 ) + J( 2, 0 ) * J( 2, 2 )) * invDetJ;
+    B[5] = (J( 0, 0 ) * J( 0, 1 ) + J( 1, 0 ) * J( 1, 1 ) + J( 2, 0 ) * J( 2, 1 )) * invDetJ;
     // compute detJ*J^{-1}J^{-T}
     symInvert0( B );
   }
 
-  template< int qa, int qb,  int qc, typename FUNC>
+  template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeGradPhiBGradPhi( double const (&B)[6],
                                FUNC && func )
   {
-     constexpr double qcoords[3] = { quadrature::template coordinate<qa>(),
-                                     quadrature::template coordinate<qb>(),
-                                     quadrature::template coordinate<qc>() };
-     constexpr double w = quadrature::template weight<qa>() * quadrature::template weight<qb>() * quadrature::template weight<qc>();
-     for( int i=0; i<ORDER+1; i++ )
-     {
-       const int ibc = linearIndex( ORDER,  i, qb, qc );
-       const int aic = linearIndex( ORDER, qa,  i, qc );
-       const int abi = linearIndex( ORDER, qa, qb,  i );
-       const double gia = basisFunction::template gradient<qa>(qcoords[0]);
-       const double gib = basisFunction::template gradient<qb>(qcoords[1]);
-       const double gic = basisFunction::template gradient<qc>(qcoords[2]);
-       for( int j=0; j<ORDER+1; j++ )
-       {
-         const int jbc = linearIndex( ORDER,  j, qb, qc );
-         const int ajc = linearIndex( ORDER, qa,  j, qc );
-         const int abj = linearIndex( ORDER, qa, qb,  j );
-         const double gja = basisFunction::template gradient<qa>(qcoords[0]);
-         const double gjb = basisFunction::template gradient<qb>(qcoords[1]);
-         const double gjc = basisFunction::template gradient<qc>(qcoords[2]);
-         // diagonal terms
-         const double w0 = w * gia * gja;
-         func( ibc, jbc, w0 * B[0] );
-         const double w1 = w * gib * gjb;
-         func( aic, ajc, w1 * B[1] );
-         const double w2 = w * gic * gjc;
-         func( abi, abj, w2 * B[2] );
-         // off-diagonal terms
-         const double w3 = w * gib * gjc;
-         func( aic, abj, w3 * B[3] );
-         func( abj, aic, w3 * B[3] );
-         const double w4 = w * gia * gjc;
-         func( ibc, abj, w4 * B[4] );
-         func( abj, ibc, w4 * B[4] );
-         const double w5 = w * gia * gjb;
-         func( ibc, ajc, w5 * B[5] );
-         func( ajc, ibc, w5 * B[5] );
-       }
-     }
+    constexpr double qcoords[3] = { quadrature::template coordinate< qa >(),
+                                    quadrature::template coordinate< qb >(),
+                                    quadrature::template coordinate< qc >() };
+    constexpr double w = quadrature::template weight< qa >() * quadrature::template weight< qb >() * quadrature::template weight< qc >();
+    for ( int i = 0; i < ORDER + 1; i++ )
+    {
+      const int ibc = linearIndex( ORDER, i, qb, qc );
+      const int aic = linearIndex( ORDER, qa, i, qc );
+      const int abi = linearIndex( ORDER, qa, qb, i );
+      const double gia = basisFunction::template gradient< qa >( qcoords[0] );
+      const double gib = basisFunction::template gradient< qb >( qcoords[1] );
+      const double gic = basisFunction::template gradient< qc >( qcoords[2] );
+      for ( int j = 0; j < ORDER + 1; j++ )
+      {
+        const int jbc = linearIndex( ORDER, j, qb, qc );
+        const int ajc = linearIndex( ORDER, qa, j, qc );
+        const int abj = linearIndex( ORDER, qa, qb, j );
+        const double gja = basisFunction::template gradient< qa >( qcoords[0] );
+        const double gjb = basisFunction::template gradient< qb >( qcoords[1] );
+        const double gjc = basisFunction::template gradient< qc >( qcoords[2] );
+        // diagonal terms
+        const double w0 = w * gia * gja;
+        func( ibc, jbc, w0 * B[0] );
+        const double w1 = w * gib * gjb;
+        func( aic, ajc, w1 * B[1] );
+        const double w2 = w * gic * gjc;
+        func( abi, abj, w2 * B[2] );
+        // off-diagonal terms
+        const double w3 = w * gib * gjc;
+        func( aic, abj, w3 * B[3] );
+        func( abj, aic, w3 * B[3] );
+        const double w4 = w * gia * gjc;
+        func( ibc, abj, w4 * B[4] );
+        func( abj, ibc, w4 * B[4] );
+        const double w5 = w * gia * gjb;
+        func( ibc, ajc, w5 * B[5] );
+        func( ajc, ibc, w5 * B[5] );
+      }
+    }
   }
 
 
 
-  template< typename FUNC>
+  template< typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeStiffnessTerm( TransformType const & trilinearCell,
                              float massMatrix[],
                              FUNC && func )
   {
-        double B[6] = {0};
-        JacobianType J{ 0.0 };
+    double B[6] = {0};
+    JacobianType J{ 0.0 };
 
-        // this is a compile time quadrature loop over each tensor direction
-        forNestedSequence< ORDER+1,
-                           ORDER+1,
-                           ORDER+1 >( [&]( auto const icqa,
-                                           auto const icqb,
-                                           auto const icqc )
+    // this is a compile time quadrature loop over each tensor direction
+    forNestedSequence< ORDER + 1,
+                       ORDER + 1,
+                       ORDER + 1 >( [&] ( auto const icqa,
+                                          auto const icqb,
+                                          auto const icqc )
+    {
+      constexpr int qa = decltype(icqa)::value;
+      constexpr int qb = decltype(icqb)::value;
+      constexpr int qc = decltype(icqc)::value;
+      // must be here, Jacobian must be put to 0 for each quadrature point
+      //Jacobian matrix J
+      for ( int i = 0; i < 3; ++i )
+      {
+        for ( int j = 0; j < 3; ++j )
         {
-          constexpr int qa = decltype(icqa)::value;
-          constexpr int qb = decltype(icqb)::value;
-          constexpr int qc = decltype(icqc)::value;
-          // must be here, Jacobian must be put to 0 for each quadrature point
-          //Jacobian matrix J
-          for( int i=0; i<3; ++i )
-          {
-            for( int j=0; j<3; ++j )
-            {
-              J(i,j)=0;
-            }
-          }
-         
-          shiva::geometry::utilities::jacobian<quadrature, qa,qb,qc>( trilinearCell, J );
-           
-          // detJ
-          // j(0,0) j(0,1) j(0,2)
-          // j(1,0) j(1,1) j(1,2)
-          // j(2,0) j(2,1) j(2,2)
-          double const detJ = +J(0,0)*(J(1,1)*J(2,2)-J(2,1)*J(1,2))
-                              -J(0,1)*(J(1,0)*J(2,2)-J(2,0)*J(1,2))
-                              +J(0,2)*(J(1,0)*J(2,1)-J(2,0)*J(1,1));
-          
-          // mass matrix
-          constexpr int q=qc+qb*(ORDER+1)+qa*(ORDER+1)*(ORDER+1);
-          constexpr double w3D = quadrature::template weight<qa>()*
-                                 quadrature::template weight<qb>()*
-                                 quadrature::template weight<qc>();
-          massMatrix[q]=w3D*detJ;
+          J( i, j ) = 0;
+        }
+      }
 
-          // compute J^{T}J/detJ
-          double const invDetJ = 1.0 / detJ;
-          B[0] = (J(0,0)*J(0,0)+J(1,0)*J(1,0)+J(2,0)*J(2,0)) * invDetJ;
-          B[1] = (J(0,1)*J(0,1)+J(1,1)*J(1,1)+J(2,1)*J(2,1)) * invDetJ;
-          B[2] = (J(0,2)*J(0,2)+J(1,2)*J(1,2)+J(2,2)*J(2,2)) * invDetJ;
-          B[3] = (J(0,1)*J(0,2)+J(1,1)*J(1,2)+J(2,1)*J(2,2)) * invDetJ;
-          B[4] = (J(0,0)*J(0,2)+J(1,0)*J(1,2)+J(2,0)*J(2,2)) * invDetJ;
-          B[5] = (J(0,0)*J(0,1)+J(1,0)*J(1,1)+J(2,0)*J(2,1)) * invDetJ;
-          // compute detJ*J^{-1}J^{-T}
-          symInvert0( B );
+      shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
 
-          // compute gradPhiI*B*gradPhiJ and stiffness vector
-          computeGradPhiBGradPhi<ORDER,qa,qb,qc>(B, func);
-      });
+      // detJ
+      // j(0,0) j(0,1) j(0,2)
+      // j(1,0) j(1,1) j(1,2)
+      // j(2,0) j(2,1) j(2,2)
+      double const detJ = +J( 0, 0 ) * (J( 1, 1 ) * J( 2, 2 ) - J( 2, 1 ) * J( 1, 2 ))
+                          - J( 0, 1 ) * (J( 1, 0 ) * J( 2, 2 ) - J( 2, 0 ) * J( 1, 2 ))
+                          + J( 0, 2 ) * (J( 1, 0 ) * J( 2, 1 ) - J( 2, 0 ) * J( 1, 1 ));
+
+      // mass matrix
+      constexpr int q = qc + qb * (ORDER + 1) + qa * (ORDER + 1) * (ORDER + 1);
+      constexpr double w3D = quadrature::template weight< qa >() *
+                             quadrature::template weight< qb >() *
+                             quadrature::template weight< qc >();
+      massMatrix[q] = w3D * detJ;
+
+      // compute J^{T}J/detJ
+      double const invDetJ = 1.0 / detJ;
+      B[0] = (J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 )) * invDetJ;
+      B[1] = (J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 )) * invDetJ;
+      B[2] = (J( 0, 2 ) * J( 0, 2 ) + J( 1, 2 ) * J( 1, 2 ) + J( 2, 2 ) * J( 2, 2 )) * invDetJ;
+      B[3] = (J( 0, 1 ) * J( 0, 2 ) + J( 1, 1 ) * J( 1, 2 ) + J( 2, 1 ) * J( 2, 2 )) * invDetJ;
+      B[4] = (J( 0, 0 ) * J( 0, 2 ) + J( 1, 0 ) * J( 1, 2 ) + J( 2, 0 ) * J( 2, 2 )) * invDetJ;
+      B[5] = (J( 0, 0 ) * J( 0, 1 ) + J( 1, 0 ) * J( 1, 1 ) + J( 2, 0 ) * J( 2, 1 )) * invDetJ;
+      // compute detJ*J^{-1}J^{-T}
+      symInvert0( B );
+
+      // compute gradPhiI*B*gradPhiJ and stiffness vector
+      computeGradPhiBGradPhi< ORDER, qa, qb, qc >( B, func );
+    } );
   }
 
 
@@ -193,57 +193,56 @@ public:
                      ARRAY_REAL_VIEW const & nodesCoordsZ,
                      LOCAL_ARRAY & cellData )
   {
-      for( int k=0; k<2; ++k)
+    for ( int k = 0; k < 2; ++k )
+    {
+      for ( int j = 0; j < 2; ++j )
       {
-          for ( int j=0; j<2; ++j)
-          {
-              for( int i=0; i<2; ++i)
-              {
-                  int const l = ORDER * ( i + j*(ORDER+1) + k*(ORDER+1)*(ORDER+1) ) ;
-                  cellData(i,j,k,0) = nodesCoordsX(elementNumber,l);
-                  cellData(i,j,k,1) = nodesCoordsZ(elementNumber,l);
-                  cellData(i,j,k,2) = nodesCoordsY(elementNumber,l);
-              }
-          }
+        for ( int i = 0; i < 2; ++i )
+        {
+          int const l = ORDER * ( i + j * (ORDER + 1) + k * (ORDER + 1) * (ORDER + 1) );
+          cellData( i, j, k, 0 ) = nodesCoordsX( elementNumber, l );
+          cellData( i, j, k, 1 ) = nodesCoordsZ( elementNumber, l );
+          cellData( i, j, k, 2 ) = nodesCoordsY( elementNumber, l );
+        }
       }
+    }
   }
 
   /**
    * @brief compute  mass Matrix stiffnessVector.
    */
-  template< typename ARRAY_REAL_VIEW > 
+  template< typename ARRAY_REAL_VIEW >
   static constexpr inline
-  SEMKERNELS_HOST_DEVICE 
-  void computeMassMatrixAndStiffnessVector(const int & elementNumber,
-                                           const int & nPointsPerElement,
-                                           ARRAY_REAL_VIEW const & nodesCoordsX,
-                                           ARRAY_REAL_VIEW const & nodesCoordsY,
-                                           ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                           float massMatrixLocal[],
-                                           float pnLocal[],
-                                           float Y[])
+  SEMKERNELS_HOST_DEVICE
+  void computeMassMatrixAndStiffnessVector( const int & elementNumber,
+                                            const int & nPointsPerElement,
+                                            ARRAY_REAL_VIEW const & nodesCoordsX,
+                                            ARRAY_REAL_VIEW const & nodesCoordsY,
+                                            ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                            float massMatrixLocal[],
+                                            float pnLocal[],
+                                            float Y[] )
   {
-      TransformType trilinearCell;
-      typename TransformType::DataType & cellCoordData = trilinearCell.getData();
+    TransformType trilinearCell;
+    typename TransformType::DataType & cellCoordData = trilinearCell.getData();
 
-      gatherCoordinates( elementNumber, 
-                         nodesCoordsX, 
-                         nodesCoordsY, 
-                         nodesCoordsZ, 
-                         cellCoordData );
+    gatherCoordinates( elementNumber,
+                       nodesCoordsX,
+                       nodesCoordsY,
+                       nodesCoordsZ,
+                       cellCoordData );
 
-      for (int q=0;q<nPointsPerElement;q++)
-      {
-         Y[q]=0;
-      }
-      computeStiffnessTerm<ORDER>(elementNumber,trilinearCell, massMatrixLocal, [&] (const int i, const int j, const double val)
-                                 {
-                                    Y[i]= Y[i] + val*pnLocal[j];
-                                 });
+    for ( int q = 0; q < nPointsPerElement; q++ )
+    {
+      Y[q] = 0;
+    }
+    computeStiffnessTerm< ORDER >( elementNumber, trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const double val )
+    {
+      Y[i] = Y[i] + val * pnLocal[j];
+    } );
   }
   /////////////////////////////////////////////////////////////////////////////////////
   //  end from GEOS implementation
   /////////////////////////////////////////////////////////////////////////////////////
-  
+
 };
-  
