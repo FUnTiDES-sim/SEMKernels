@@ -14,6 +14,8 @@
 #include "common/types.hpp"
 #include "discretizations/finiteElementMethod/parentElements/ParentElement.hpp"
 
+#include <stdio.h>
+
 using namespace shiva;
 using namespace shiva::functions;
 using namespace shiva::geometry;
@@ -43,32 +45,6 @@ public:
   using JacobianType = typename std::remove_reference_t< TransformType >::JacobianType;
   using quadrature = QuadratureGaussLobatto< double, numPoints >;
   using basisFunction = LagrangeBasis< double, ORDER, GaussLobattoSpacing >;
-
-  template< int qa, int qb, int qc >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  void computeB( TransformType const & trilinearCell,
-                 double (&B)[6] )
-  {
-    JacobianType J{ 0.0 };
-    shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
-
-    // detJ
-    double const detJ = +J( 0, 0 ) * (J( 1, 1 ) * J( 2, 2 ) - J( 2, 1 ) * J( 1, 2 ))
-                        - J( 0, 1 ) * (J( 1, 0 ) * J( 2, 2 ) - J( 2, 0 ) * J( 1, 2 ))
-                        + J( 0, 2 ) * (J( 1, 0 ) * J( 2, 1 ) - J( 2, 0 ) * J( 1, 1 ));
-
-    // compute J^{T}J/detJ
-    double const invDetJ = 1.0 / detJ;
-    B[0] = (J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 )) * invDetJ;
-    B[1] = (J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 )) * invDetJ;
-    B[2] = (J( 0, 2 ) * J( 0, 2 ) + J( 1, 2 ) * J( 1, 2 ) + J( 2, 2 ) * J( 2, 2 )) * invDetJ;
-    B[3] = (J( 0, 1 ) * J( 0, 2 ) + J( 1, 1 ) * J( 1, 2 ) + J( 2, 1 ) * J( 2, 2 )) * invDetJ;
-    B[4] = (J( 0, 0 ) * J( 0, 2 ) + J( 1, 0 ) * J( 1, 2 ) + J( 2, 0 ) * J( 2, 2 )) * invDetJ;
-    B[5] = (J( 0, 0 ) * J( 0, 1 ) + J( 1, 0 ) * J( 1, 1 ) + J( 2, 0 ) * J( 2, 1 )) * invDetJ;
-    // compute detJ*J^{-1}J^{-T}
-    symInvert0( B );
-  }
 
   template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
@@ -126,7 +102,6 @@ public:
                              float massMatrix[],
                              FUNC && func )
   {
-    double B[6] = {0};
     JacobianType J{ 0.0 };
 
     // this is a compile time quadrature loop over each tensor direction
@@ -151,13 +126,15 @@ public:
 
       shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
 
-      // detJ
-      // j(0,0) j(0,1) j(0,2)
-      // j(1,0) j(1,1) j(1,2)
-      // j(2,0) j(2,1) j(2,2)
       double const detJ = +J( 0, 0 ) * (J( 1, 1 ) * J( 2, 2 ) - J( 2, 1 ) * J( 1, 2 ))
                           - J( 0, 1 ) * (J( 1, 0 ) * J( 2, 2 ) - J( 2, 0 ) * J( 1, 2 ))
                           + J( 0, 2 ) * (J( 1, 0 ) * J( 2, 1 ) - J( 2, 0 ) * J( 1, 1 ));
+
+
+      printf( " %6.2f %6.2f %6.2f \n", J( 0, 0 ), J( 0, 1 ), J( 0, 2 ) );
+      printf( " %6.2f %6.2f %6.2f \n", J( 1, 0 ), J( 1, 1 ), J( 1, 2 ) );
+      printf( " %6.2f %6.2f %6.2f \n", J( 2, 0 ), J( 2, 1 ), J( 2, 2 ) );
+      printf( "\n" );
 
       // mass matrix
       constexpr int q = qc + qb * (ORDER + 1) + qa * (ORDER + 1) * (ORDER + 1);
@@ -166,19 +143,16 @@ public:
                              quadrature::template weight< qc >();
       massMatrix[q] = w3D * detJ;
 
-      // compute J^{T}J/detJ
-      double const invDetJ = 1.0 / detJ;
-      B[0] = (J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 )) * invDetJ;
-      B[1] = (J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 )) * invDetJ;
-      B[2] = (J( 0, 2 ) * J( 0, 2 ) + J( 1, 2 ) * J( 1, 2 ) + J( 2, 2 ) * J( 2, 2 )) * invDetJ;
-      B[3] = (J( 0, 1 ) * J( 0, 2 ) + J( 1, 1 ) * J( 1, 2 ) + J( 2, 1 ) * J( 2, 2 )) * invDetJ;
-      B[4] = (J( 0, 0 ) * J( 0, 2 ) + J( 1, 0 ) * J( 1, 2 ) + J( 2, 0 ) * J( 2, 2 )) * invDetJ;
-      B[5] = (J( 0, 0 ) * J( 0, 1 ) + J( 1, 0 ) * J( 1, 1 ) + J( 2, 0 ) * J( 2, 1 )) * invDetJ;
+      double B[6] = {0};
+      computeB( J, B );
       // compute detJ*J^{-1}J^{-T}
-      symInvert0( B );
+      for( int i = 0; i < 6; ++i )
+      {
+        B[i] *= detJ;
+      }
 
       // compute gradPhiI*B*gradPhiJ and stiffness vector
-      computeGradPhiBGradPhi< ORDER, qa, qb, qc >( B, func );
+      computeGradPhiBGradPhi< qa, qb, qc >( B, func );
     } );
   }
 
@@ -199,10 +173,10 @@ public:
       {
         for ( int i = 0; i < 2; ++i )
         {
-          int const l = ORDER * ( i + j * (ORDER + 1) + k * (ORDER + 1) * (ORDER + 1) );
+          int const l = ( i + j * 2 + k * 2 * 2 );
           cellData( i, j, k, 0 ) = nodesCoordsX( elementNumber, l );
-          cellData( i, j, k, 1 ) = nodesCoordsZ( elementNumber, l );
-          cellData( i, j, k, 2 ) = nodesCoordsY( elementNumber, l );
+          cellData( i, j, k, 1 ) = nodesCoordsY( elementNumber, l );
+          cellData( i, j, k, 2 ) = nodesCoordsZ( elementNumber, l );
         }
       }
     }
@@ -236,13 +210,10 @@ public:
     {
       Y[q] = 0;
     }
-    computeStiffnessTerm< ORDER >( elementNumber, trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const double val )
+    computeStiffnessTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const double val )
     {
       Y[i] = Y[i] + val * pnLocal[j];
     } );
   }
-  /////////////////////////////////////////////////////////////////////////////////////
-  //  end from GEOS implementation
-  /////////////////////////////////////////////////////////////////////////////////////
 
 };
