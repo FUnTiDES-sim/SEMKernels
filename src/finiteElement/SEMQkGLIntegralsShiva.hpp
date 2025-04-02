@@ -130,12 +130,6 @@ public:
                           - J( 0, 1 ) * (J( 1, 0 ) * J( 2, 2 ) - J( 2, 0 ) * J( 1, 2 ))
                           + J( 0, 2 ) * (J( 1, 0 ) * J( 2, 1 ) - J( 2, 0 ) * J( 1, 1 ));
 
-
-      printf( " %6.2f %6.2f %6.2f \n", J( 0, 0 ), J( 0, 1 ), J( 0, 2 ) );
-      printf( " %6.2f %6.2f %6.2f \n", J( 1, 0 ), J( 1, 1 ), J( 1, 2 ) );
-      printf( " %6.2f %6.2f %6.2f \n", J( 2, 0 ), J( 2, 1 ), J( 2, 2 ) );
-      printf( "\n" );
-
       // mass matrix
       constexpr int q = qc + qb * (ORDER + 1) + qa * (ORDER + 1) * (ORDER + 1);
       constexpr double w3D = quadrature::template weight< qa >() *
