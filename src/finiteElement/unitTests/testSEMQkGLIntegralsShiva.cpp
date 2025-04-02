@@ -175,7 +175,8 @@ TEST( testSEMQkGLIntegralsShiva, computeMassMatrixAndStiffnessVector )
 
 TEST( testSEMQkGLIntegralsOptim, computeMassMatrixAndStiffnessVector )
 {
-  using Integrals = SEMQkGLIntegralsOptim;
+  constexpr int order = 3;
+  using Integrals = SEMQkGLIntegralsOptim<order>;
   Integrals integrals;
 
 

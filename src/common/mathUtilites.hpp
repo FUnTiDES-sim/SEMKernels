@@ -1,5 +1,15 @@
 
 #include "macros.hpp"
+#include<cmath>
+
+static constexpr inline
+SEMKERNELS_HOST_DEVICE
+double determinant( double  m[3][3] )
+{
+  return fabs( m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2])
+              - m[0][1] * (m[1][0] * m[2][2] - m[2][0] * m[1][2])
+              + m[0][2] * (m[1][0] * m[2][1] - m[2][0] * m[1][1]));
+}
 
 
 /**
@@ -20,6 +30,32 @@ int linearIndex( const int r,
 {
   return i + (r + 1) * j + (r + 1) * (r + 1) * k;
 }
+
+
+struct TripleIndex
+{
+  int i0;
+  int i1;
+  int i2;
+};
+
+  /**
+   * @brief Calculate the Cartesian/TensorProduct index given the linear index
+   *   of a support point.
+   * @param linearIndex The linear index of support point
+   * @param r order of polynomial approximation
+   * @param i0 The Cartesian index of the support point in the xi0 direction.
+   * @param i1 The Cartesian index of the support point in the xi1 direction.
+   * @param i2 The Cartesian index of the support point in the xi2 direction.
+   */
+  static constexpr inline 
+  SEMKERNELS_HOST_DEVICE
+  TripleIndex tripleIndex( int const r, int const linearIndex )
+  { 
+    return { linearIndex / ((r + 1) * (r + 1)),
+             (linearIndex % ((r + 1) * (r + 1))) / (r + 1),
+             (linearIndex % ((r + 1) * (r + 1))) % (r + 1) };
+  }
 
 /**
  * @brief Invert the symmetric matrix @p srcSymMatrix and store the result in @p dstSymMatrix.
