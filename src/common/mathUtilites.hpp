@@ -1,15 +1,27 @@
+#pragma once
 
 #include "macros.hpp"
 #include<cmath>
 
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-double determinant( double  m[3][3] )
+double determinant( double const (&m)[3][3] )
 {
-  return fabs( m[0][0] * (m[1][1] * m[2][2] - m[2][1] * m[1][2])
-              - m[0][1] * (m[1][0] * m[2][2] - m[2][0] * m[1][2])
-              + m[0][2] * (m[1][0] * m[2][1] - m[2][0] * m[1][1]));
+  return  + m[0][0] * ( m[1][1] * m[2][2] - m[2][1] * m[1][2] )
+          - m[0][1] * ( m[1][0] * m[2][2] - m[2][0] * m[1][2] )
+          + m[0][2] * ( m[1][0] * m[2][1] - m[2][0] * m[1][1] );
 }
+
+template< typename T >
+static constexpr inline
+SEMKERNELS_HOST_DEVICE
+double determinant( T const & m )
+{
+  return  + m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
+          - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
+          + m( 0, 2 ) * ( m( 1, 0 ) * m( 2, 1 ) - m( 2, 0 ) * m( 1, 1 ) );
+}
+
 
 
 /**

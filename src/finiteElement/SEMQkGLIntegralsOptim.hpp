@@ -5,7 +5,10 @@
 //#include "SEMmacros.hpp"
 //#include "SEMdata.hpp"
 #include "SEMQkGLBasisFunctions.hpp"
-using namespace std;
+#include "common/mathUtilites.hpp"
+
+#include<stdio.h>
+
 
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
@@ -13,26 +16,10 @@ using namespace std;
 template< int ORDER >
  class SEMQkGLIntegralsOptim
 {
-private:
-  struct SEMinfo infos;
-  SEMQkGLBasisFunctions GLBasis;
-
-  ////////////////////////////////////////////////////////////////////////////////////
-  //  from GEOS implementation
-  /////////////////////////////////////////////////////////////////////////////////////
-  constexpr static double sqrt5 = 2.2360679774997897;
-  // order of polynomial approximation
-  // number of support/quadrature/nodes points in one direction
-  constexpr static int numSupport1dPoints = ORDER + 1;
-  constexpr static int num1dNodes = numSupport1dPoints;
-  // Half the number of support points, rounded down. Precomputed for efficiency
-  constexpr static int halfNodes = ( numSupport1dPoints - 1 ) / 2;
-  // the number of nodes/support points per element
-  constexpr static int numSupportPoints = numSupport1dPoints * numSupport1dPoints * numSupport1dPoints;
-
 public:
-  SEMKERNELS_HOST_DEVICE SEMQkGLIntegralsOptim(){};
-  SEMKERNELS_HOST_DEVICE ~SEMQkGLIntegralsOptim(){};
+  static constexpr int order = ORDER;
+  constexpr static int numSupportPoints1d = ORDER + 1;
+
 
   /////////////////////////////////////////////////////////////////////////////////////
   //  from GEOS implementation
@@ -49,9 +36,9 @@ public:
    * @return The interpolation coefficient
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static double interpolationCoord( const int , const int q, const int k )
+  constexpr static double interpolationCoord( const int q, const int k )
   {
-    const double alpha = (SEMQkGLBasisFunctions::parentSupportCoord< SEMinfo >( q ) + 1.0 ) / 2.0;
+    const double alpha = (SEMQkGLBasisFunctions<ORDER>::parentSupportCoord( q ) + 1.0 ) / 2.0;
     return k == 0 ? ( 1.0 - alpha ) : alpha;
   }
 
@@ -67,15 +54,15 @@ public:
    * @return The value of the jacobian factor
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static double jacobianCoefficient1D( const int order, const int q, const int i, const int k, const int dir )
+  constexpr static double jacobianCoefficient1D( const int q, const int i, const int k, const int dir )
   {
     if ( i == dir )
     {
-      return k == 0 ? -1.0 / 2.0 : 1.0 / 2.0;
+      return k == 0 ? -0.5 : 0.5;
     }
     else
     {
-      return interpolationCoord( order, q, k );
+      return interpolationCoord( q, k );
     }
   }
 
@@ -103,11 +90,12 @@ public:
       const int ka = k % 2;
       const int kb = ( k % 4 ) / 2;
       const int kc = k / 4;
+      printf( "k, ka, kb, kc = %d %d %d %d\n", k, ka, kb, kc );
       for ( int j = 0; j < 3; j++ )
       {
-        double jacCoeff = jacobianCoefficient1D( ORDER, qa, 0, ka, j ) *
-                          jacobianCoefficient1D( ORDER, qb, 1, kb, j ) *
-                          jacobianCoefficient1D( ORDER, qc, 2, kc, j );
+        double jacCoeff = jacobianCoefficient1D( qa, 0, ka, j ) *
+                          jacobianCoefficient1D( qb, 1, kb, j ) *
+                          jacobianCoefficient1D( qc, 2, kc, j );
         for ( int i = 0; i < 3; i++ )
         {
           J[i][j] +=  jacCoeff * X[k][i];
@@ -115,29 +103,6 @@ public:
       }
     }
   }
-
-  /**
-   * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
-   *   mass matrix M, i.e., the superposition matrix of the shape functions.
-   * @param q The quadrature point index
-   * @param X Array containing the coordinates of the mesh support points.
-   * @return The diagonal mass term associated to q
-   */
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  double computeMassTerm( int const q, double const (&X)[8][3] )
-  {
-    TripleIndex ti = tripleIndex( 1, q );
-    int qa = ti.i0;
-    int qb = ti.i1;
-    int qc = ti.i2;
-    const double w3D = SEMQkGLBasisFunctions::weight< SEMinfo >( qa ) * SEMQkGLBasisFunctions::weight< SEMinfo >( qb ) * SEMQkGLBasisFunctions::weight< SEMinfo >( qc );
-    double J[3][3] = { {0} };
-    jacobianTransformation( qa, qb, qc, X, J );
-    return determinant( J ) * w3D;
-  }
-
-
 
   template< typename FUNC >
   static constexpr inline
@@ -149,25 +114,25 @@ public:
                                FUNC && func )
   {
     //const double w = GLBasis.weight<SEMinfo>(qa )*GLBasis.weight<SEMinfo>(qb )*GLBasis.weight<SEMinfo>(qc );
-    const double w = SEMQkGLBasisFunctions::weight< SEMinfo >( qa ) *
-                     SEMQkGLBasisFunctions::weight< SEMinfo >( qb ) *
-                     SEMQkGLBasisFunctions::weight< SEMinfo >( qc );
-    for ( int i = 0; i < num1dNodes; i++ )
+    const double w = SEMQkGLBasisFunctions<ORDER>::weight( qa ) *
+                     SEMQkGLBasisFunctions<ORDER>::weight( qb ) *
+                     SEMQkGLBasisFunctions<ORDER>::weight( qc );
+    for ( int i = 0; i < numSupportPoints1d; i++ )
     {
       const int ibc = linearIndex( ORDER, i, qb, qc );
       const int aic = linearIndex( ORDER, qa, i, qc );
       const int abi = linearIndex( ORDER, qa, qb, i );
-      const double gia = SEMQkGLBasisFunctions::basisGradientAt( ORDER, i, qa );
-      const double gib = SEMQkGLBasisFunctions::basisGradientAt( ORDER, i, qb );
-      const double gic = SEMQkGLBasisFunctions::basisGradientAt( ORDER, i, qc );
-      for ( int j = 0; j < num1dNodes; j++ )
+      const double gia = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qa );
+      const double gib = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qb );
+      const double gic = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qc );
+      for ( int j = 0; j < numSupportPoints1d; j++ )
       {
         const int jbc = linearIndex( ORDER, j, qb, qc );
         const int ajc = linearIndex( ORDER, qa, j, qc );
         const int abj = linearIndex( ORDER, qa, qb, j );
-        const double gja = SEMQkGLBasisFunctions::basisGradientAt( ORDER, j, qa );
-        const double gjb = SEMQkGLBasisFunctions::basisGradientAt( ORDER, j, qb );
-        const double gjc = SEMQkGLBasisFunctions::basisGradientAt( ORDER, j, qc );
+        const double gja = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qa );
+        const double gjb = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qb );
+        const double gjc = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qc );
         // diagonal terms
         const double w0 = w * gia * gja;
         func( ibc, jbc, w0 * B[0] );
@@ -193,17 +158,33 @@ public:
   template< typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
-  void computeStiffnessTerm( int const q,
+  void computeStiffnessAndMassTerm( int const q,
                              double const (&X)[8][3],
+                             float mass[],
                              FUNC && func )
   {
-    TripleIndex ti = tripleIndex( 1, q );
+    TripleIndex ti = tripleIndex( ORDER, q );
     int qa = ti.i0;
     int qb = ti.i1;
     int qc = ti.i2;
-    double B[6] = {0};
+
     double J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
+
+    printf( "J(%2d,%2d,%2d) = | % 6.3f % 6.3f % 6.3f |\n", qa, qb, qc, J[0][0], J[0][1], J[0][2] );
+    printf( "              | % 6.3f % 6.3f % 6.3f |\n", J[1][0], J[1][1], J[1][2] );
+    printf( "              | % 6.3f % 6.3f % 6.3f |\n", J[2][0], J[2][1], J[2][2] );
+
+    double detJ = determinant( J );
+//    printf( "detJ(%d,%d,%d) = %f\n", qa, qb, qc, detJ );
+
+    double const w3D = SEMQkGLBasisFunctions<ORDER>::weight( qa ) * 
+                       SEMQkGLBasisFunctions<ORDER>::weight( qb ) * 
+                       SEMQkGLBasisFunctions<ORDER>::weight( qc );
+
+    mass[q] = w3D * detJ;
+
+    double B[6] = {0};
     computeB( J, B );
     computeGradPhiBGradPhi( qa, qb, qc, B, func );
   }
@@ -234,8 +215,8 @@ public:
         {
           int l = i + j * (ORDER + 1) + k * (ORDER + 1) * (ORDER + 1);
           X[I][0] = nodesCoordsX( elementNumber, l );
-          X[I][1] = nodesCoordsZ( elementNumber, l );
-          X[I][2] = nodesCoordsY( elementNumber, l );
+          X[I][1] = nodesCoordsY( elementNumber, l );
+          X[I][2] = nodesCoordsZ( elementNumber, l );
           I++;
         }
       }
@@ -246,8 +227,7 @@ public:
     }
     for ( int q = 0; q < nPointsPerElement; q++ )
     {
-      massMatrixLocal[q] = computeMassTerm( q, X );
-      computeStiffnessTerm( q, X, [&] ( const int i, const int j, const double val )
+      computeStiffnessAndMassTerm( q, X, massMatrixLocal, [&] ( const int i, const int j, const double val )
       {
         Y[i] = Y[i] + val * pnLocal[j];
       } );

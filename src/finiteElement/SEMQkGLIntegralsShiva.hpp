@@ -36,14 +36,14 @@ class SEMQkGLIntegralsShiva
 public:
 
   static constexpr int order = ORDER;
-  static constexpr int numPoints = ORDER + 1;
+  static constexpr int numSupportPoints1d = ORDER + 1;
 
   using TransformType = TRANSFORM;
 
   using ParentElementType = PARENT_ELEMENT;
 
   using JacobianType = typename std::remove_reference_t< TransformType >::JacobianType;
-  using quadrature = QuadratureGaussLobatto< double, numPoints >;
+  using quadrature = QuadratureGaussLobatto< double, numSupportPoints1d >;
   using basisFunction = LagrangeBasis< double, ORDER, GaussLobattoSpacing >;
 
   template< int qa, int qb, int qc, typename FUNC >
@@ -98,7 +98,7 @@ public:
   template< typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
-  void computeStiffnessTerm( TransformType const & trilinearCell,
+  void computeStiffnessAndMassTerm( TransformType const & trilinearCell,
                              float massMatrix[],
                              FUNC && func )
   {
@@ -126,9 +126,13 @@ public:
 
       shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
 
-      double const detJ = +J( 0, 0 ) * (J( 1, 1 ) * J( 2, 2 ) - J( 2, 1 ) * J( 1, 2 ))
-                          - J( 0, 1 ) * (J( 1, 0 ) * J( 2, 2 ) - J( 2, 0 ) * J( 1, 2 ))
-                          + J( 0, 2 ) * (J( 1, 0 ) * J( 2, 1 ) - J( 2, 0 ) * J( 1, 1 ));
+      double const detJ = determinant( J );
+
+      printf( "J(%2d,%2d,%2d) = | % 4.1f % 4.1f % 4.1f |\n", qa, qb, qc, J(0,0), J(0,1), J(0,2) );
+      printf( "              | % 4.1f % 4.1f % 4.1f |\n", J(1,0), J(1,1), J(1,2) );
+      printf( "              | % 4.1f % 4.1f % 4.1f |\n", J(2,0), J(2,1), J(2,2) );
+  
+      printf( "detJ(%d,%d,%d) = %f\n", qa, qb, qc, detJ );
 
       // mass matrix
       constexpr int q = qc + qb * (ORDER + 1) + qa * (ORDER + 1) * (ORDER + 1);
@@ -204,7 +208,7 @@ public:
     {
       Y[q] = 0;
     }
-    computeStiffnessTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const double val )
+    computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const double val )
     {
       Y[i] = Y[i] + val * pnLocal[j];
     } );
