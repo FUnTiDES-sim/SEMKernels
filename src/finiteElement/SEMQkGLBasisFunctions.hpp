@@ -316,7 +316,7 @@ public:
   static constexpr inline
   SEMKERNELS_HOST_DEVICE 
   void getDerivativeBasisFunction1D( vectorDouble const & quadraturePoints,
-                                     arrayDouble const & derivativeBasisFunction1D )
+                                     arrayDouble & derivativeBasisFunction1D )
   {
     // loop over quadrature points
     for ( int i = 0; i < ORDER + 1; i++ )

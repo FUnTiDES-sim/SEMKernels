@@ -1,5 +1,5 @@
 
-//#include "../SEMQkGLIntegralsClassic.hpp"
+#include "../SEMQkGLIntegralsClassic.hpp"
 #include "../SEMQkGLIntegralsOptim.hpp"
 #include "../SEMQkGLIntegralsShiva.hpp"
 
@@ -154,13 +154,13 @@ TEST( testSEMQkGLIntegralsOptim, computeMassMatrixAndStiffnessVector )
   computeMassMatrixAndStiffnessVectorTester< Integrals >();
 }
 
-// TEST( testSEMQkGLIntegralsClassic, computeMassMatrixAndStiffnessVector )
-// {
-//   constexpr int order = 1;
-//   using Integrals = SEMQkGLIntegralsClassic<order>;
+TEST( testSEMQkGLIntegralsClassic, computeMassMatrixAndStiffnessVector )
+{
+  constexpr int order = 1;
+  using Integrals = SEMQkGLIntegralsClassic<order>;
 
-//   computeMassMatrixAndStiffnessVectorTester< Integrals >();
-// }
+  computeMassMatrixAndStiffnessVectorTester< Integrals >();
+}
 
 int main( int argc, char * * argv )
 {

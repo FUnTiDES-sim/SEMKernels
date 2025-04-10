@@ -30,7 +30,7 @@ public:
                                    ARRAY_REAL_VIEW const & nodesCoordsX,
                                    ARRAY_REAL_VIEW const & nodesCoordsY,
                                    ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                   ARRAY_DOUBLE_VIEW const & dPhi,
+                                   ARRAY_DOUBLE_VIEW & dPhi,
                                    float massMatrixLocal[],
                                    float B[][6] )
   {
@@ -58,9 +58,9 @@ public:
             double X = nodesCoordsX( elementNumber, j );
             double Y = nodesCoordsY( elementNumber, j );
             double Z = nodesCoordsZ( elementNumber, j );
-            jac00 += X * dPhi( j1, i1 );
-            jac20 += Y * dPhi( j1, i1 );
-            jac10 += Z * dPhi( j1, i1 );
+            jac00 += X * dPhi[j1][i1];
+            jac20 += Y * dPhi[j1][i1];
+            jac10 += Z * dPhi[j1][i1];
           }
           for ( int j2 = 0; j2 < order + 1; j2++ )
           {
@@ -68,9 +68,9 @@ public:
             double X = nodesCoordsX( elementNumber, j );
             double Y = nodesCoordsY( elementNumber, j );
             double Z = nodesCoordsZ( elementNumber, j );
-            jac01 += X * dPhi( j2, i2 );
-            jac21 += Y * dPhi( j2, i2 );
-            jac11 += Z * dPhi( j2, i2 );
+            jac01 += X * dPhi[j2][i2];
+            jac21 += Y * dPhi[j2][i2];
+            jac11 += Z * dPhi[j2][i2];
           }
           for ( int j3 = 0; j3 < order + 1; j3++ )
           {
@@ -78,14 +78,14 @@ public:
             double X = nodesCoordsX( elementNumber, j );
             double Y = nodesCoordsY( elementNumber, j );
             double Z = nodesCoordsZ( elementNumber, j );
-            jac02 += X * dPhi( j3, i3 );
-            jac22 += Y * dPhi( j3, i3 );
-            jac12 += Z * dPhi( j3, i3 );
+            jac02 += X * dPhi[j3][i3];
+            jac22 += Y * dPhi[j3][i3];
+            jac12 += Z * dPhi[j3][i3];
           }
 
           printf( "jac(%2d,%2d,%2d) = | % 4.1f % 4.1f % 4.1f |\n", i1, i2, i3, jac00, jac01, jac02 );
-          printf( "              | % 4.1f % 4.1f % 4.1f |\n", jac10, jac11, jac12 );
-          printf( "              | % 4.1f % 4.1f % 4.1f |\n", jac20, jac21, jac22 );
+          printf( "                | % 4.1f % 4.1f % 4.1f |\n", jac10, jac11, jac12 );
+          printf( "                | % 4.1f % 4.1f % 4.1f |\n", jac20, jac21, jac22 );
 
           // detJ
           double detJ = jac00 * (jac11 * jac22 - jac21 * jac12)
@@ -124,7 +124,7 @@ public:
           B[i][5] = (invJac10 * transpInvJac02 + invJac11 * transpInvJac12 + invJac12 * transpInvJac22) * detJM1; //B23,B32
 
           //M
-          massMatrixLocal[i] = weights(i1) * weights(i2) * weights(i3) * detJ;
+          massMatrixLocal[i] = weights[i1] * weights[i2] * weights[i3] * detJ;
 
         }
       }
@@ -163,7 +163,7 @@ public:
             for ( int l = 0; l < ORDER + 1; l++ )
             {
               int ll = l + i2 * (ORDER + 1) + i3 * orderPow2;
-              R[j] += weights(l)* weights(i2) * weights(i3) * (B[ll][0] * dPhi( i1, l ) * dPhi( j1, l ));
+              R[j] += weights[l]* weights[i2] * weights[i3] * (B[ll][0] * dPhi[i1][l ]* dPhi[j1][l ]);
             }
           }
           //B22
@@ -173,7 +173,7 @@ public:
             for ( int m = 0; m < ORDER + 1; m++ )
             {
               int mm = i1 + m * (ORDER + 1) + i3 * orderPow2;
-              R[j] += weights(i1) * weights(m)* weights(i3) * (B[mm][1] * dPhi( i2, m ) * dPhi( j2, m ));
+              R[j] += weights[i1] * weights[m]* weights[i3] * (B[mm][1] * dPhi[i2][m ]* dPhi[j2][m ]);
             }
           }
           //B33
@@ -183,7 +183,7 @@ public:
             for ( int n = 0; n < ORDER + 1; n++ )
             {
               int nn = i1 + i2 * (ORDER + 1) + n * orderPow2;
-              R[j] += weights(i1) * weights(i2) * weights(n)* (B[nn][2] * dPhi( i3, n ) * dPhi( j3, n ));
+              R[j] += weights[i1] * weights[i2] * weights[n]* (B[nn][2] * dPhi[i3][n ]* dPhi[j3][n ]);
             }
           }
           // B12,B21 (B[][3])
@@ -194,8 +194,8 @@ public:
               int j = j1 + j2 * (ORDER + 1) + i3 * orderPow2;
               int k = j1 + i2 * (ORDER + 1) + i3 * orderPow2;
               int l = i1 + j2 * (ORDER + 1) + i3 * orderPow2;
-              R[j] += weights(j1) * weights(i2) * weights(i3) * (B[k][3] * dPhi( i1, j1 ) * dPhi( j2, i2 )) +
-                      weights(i1) * weights(j2) * weights(i3) * (B[l][3] * dPhi( j1, i1 ) * dPhi( i2, j2 ));
+              R[j] += weights[j1] * weights[i2] * weights[i3] * (B[k][3] * dPhi[i1][j1] * dPhi[j2][i2] ) +
+                      weights[i1] * weights[j2] * weights[i3] * (B[l][3] * dPhi[j1][i1] * dPhi[i2][j2] );
             }
           }
           // B13,B31 (B[][4])
@@ -206,8 +206,8 @@ public:
               int j = j1 + i2 * (ORDER + 1) + i3 * orderPow2;
               int k = j1 + i2 * (ORDER + 1) + i3 * orderPow2;
               int l = j1 + i2 * (ORDER + 1) + j3 * orderPow2;
-              R[j] += weights(j1) * weights(i2) * weights(i3) * (B[k][4] * dPhi( j1, i1 ) * dPhi( j3, i3 )) +
-                      weights(j1) * weights(i2) * weights(j3) * (B[l][4] * dPhi( j1, i1 ) * dPhi( i3, j3 ));
+              R[j] += weights[j1] * weights[i2] * weights[i3] * (B[k][4] * dPhi[j1][i1] * dPhi[j3][i3] ) +
+                      weights[j1] * weights[i2] * weights[j3] * (B[l][4] * dPhi[j1][i1] * dPhi[i3][j3] );
             }
           }
           // B23,B32 (B[][5])
@@ -218,8 +218,8 @@ public:
               int j = i1 + j2 * (ORDER + 1) + j3 * orderPow2;
               int k = i1 + j2 * (ORDER + 1) + i3 * orderPow2;
               int l = i1 + i2 * (ORDER + 1) + j3 * orderPow2;
-              R[j] += weights(i1) * weights(j2) * weights(i3) * (B[k][5] * dPhi( i2, i2 ) * dPhi( j3, i3 )) +
-                      weights(i1) * weights(i2) * weights(j3) * (B[l][5] * dPhi( j2, i2 ) * dPhi( i3, j3 ));
+              R[j] += weights[i1] * weights[j2] * weights[i3] * (B[k][5] * dPhi[i2][i2] * dPhi[j3][i3] ) +
+                      weights[i1] * weights[i2] * weights[j3] * (B[l][5] * dPhi[j2][i2] * dPhi[i3][j3] );
             }
           }
 
@@ -252,11 +252,11 @@ public:
     float R[ROW];
     double parentCoords[ORDER+1];
     double weights[ORDER+1];
-    shiva::CArrayNd<double, ORDER+1, ORDER+1 > dPhi;
+    double dPhi[ORDER+1][ORDER+1];
 
     SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadraturePoints( parentCoords );
     SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadratureWeights( weights );
-    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction( parentCoords, dPhi );
+    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1D( parentCoords, dPhi );
 
 
     // compute Jacobian, massMatrix and B
