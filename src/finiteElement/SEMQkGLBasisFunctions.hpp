@@ -178,8 +178,8 @@ public:
                          * (0.778069933064125 * xi + 0.221930066935875) * (1.39905441140358 * xi - 0.399054411403579)
                          * (4.25632117622354 * xi - 3.25632117622354);
     }
-    return shapeFunction;
   }
+
   static constexpr inline 
   SEMKERNELS_HOST_DEVICE
   void derivativeShapeFunction1D( double xi, double (&derivativeShapeFunction)[ORDER+1] )
@@ -319,10 +319,10 @@ public:
                                      arrayDouble & derivativeBasisFunction1D )
   {
     // loop over quadrature points
-    for ( int i = 0; i < ORDER + 1; i++ )
+    for ( int q = 0; q < ORDER + 1; q++ )
     {
       //extract all basis functions  for current quadrature point
-      derivativeShapeFunction1D( quadraturePoints[i], derivativeBasisFunction1D[i] );
+      derivativeShapeFunction1D( quadraturePoints[q], derivativeBasisFunction1D[q] );
     }
   }
   /////////////////////////////////////////////////////////////////////////////////////

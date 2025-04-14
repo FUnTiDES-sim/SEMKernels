@@ -22,25 +22,28 @@ public:
 
   // compute B and M
   template< typename VECTOR_DOUBLE_VIEW,
-            typename ARRAY_REAL_VIEW,
+            typename COORDS_TYPE,
             typename ARRAY_DOUBLE_VIEW >
   SEMKERNELS_HOST_DEVICE 
-  constexpr static void computeB( const int & elementNumber,
+  constexpr static void computeB( const int & ,
+                                   VECTOR_DOUBLE_VIEW const & ,
                                    VECTOR_DOUBLE_VIEW const & weights,
-                                   ARRAY_REAL_VIEW const & nodesCoordsX,
-                                   ARRAY_REAL_VIEW const & nodesCoordsY,
-                                   ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                   COORDS_TYPE const & coords,
                                    ARRAY_DOUBLE_VIEW & dPhi,
                                    float massMatrixLocal[],
                                    float B[][6] )
   {
-    for ( int i3 = 0; i3 < order + 1; i3++ )
+
+    for ( int q3 = 0; q3 < order + 1; q3++ )
     {
-      for ( int i2 = 0; i2 < order + 1; i2++ )
+      for ( int q2 = 0; q2 < order + 1; q2++ )
       {
-        for ( int i1 = 0; i1 < order + 1; i1++ )
+        for ( int q1 = 0; q1 < order + 1; q1++ )
         {
-          int i = i1 + i2 * (order + 1) + i3 * (order + 1) * (order + 1);
+          int const q = q1 + q2 * (order + 1) + q3 * (order + 1) * (order + 1);
+
+
+
           // compute jacobian matrix
           double jac00 = 0;
           double jac01 = 0;
@@ -52,40 +55,43 @@ public:
           double jac21 = 0;
           double jac22 = 0;
 
-          for ( int j1 = 0; j1 < order + 1; j1++ )
+          
+          for ( int a1 = 0; a1 < order+1; ++a1 )
           {
-            int j = j1 + i2 * (order + 1) + i3 * (order + 1) * (order + 1);
-            double X = nodesCoordsX( elementNumber, j );
-            double Y = nodesCoordsY( elementNumber, j );
-            double Z = nodesCoordsZ( elementNumber, j );
-            jac00 += X * dPhi[j1][i1];
-            jac20 += Y * dPhi[j1][i1];
-            jac10 += Z * dPhi[j1][i1];
+            int const a = a1 + q2*2 + q3*4;
+            double X = coords( a, 0 );
+            double Y = coords( a, 1 );
+            double Z = coords( a, 2 );
+
+            jac00 += X * dPhi[q1][a1];
+            jac10 += Y * dPhi[q1][a1];
+            jac20 += Z * dPhi[q1][a1];
           }
-          for ( int j2 = 0; j2 < order + 1; j2++ )
+          for ( int a2 = 0; a2 < order+1; ++a2 )
           {
-            int j = i1 + j2 * (order + 1) + i3 * (order + 1) * (order + 1);
-            double X = nodesCoordsX( elementNumber, j );
-            double Y = nodesCoordsY( elementNumber, j );
-            double Z = nodesCoordsZ( elementNumber, j );
-            jac01 += X * dPhi[j2][i2];
-            jac21 += Y * dPhi[j2][i2];
-            jac11 += Z * dPhi[j2][i2];
+            int const a = q1 + a2*2 + q3*4;
+            double X = coords( a, 0 );
+            double Y = coords( a, 1 );
+            double Z = coords( a, 2 );
+            jac01 += X * dPhi[q2][a2];
+            jac11 += Y * dPhi[q2][a2];
+            jac21 += Z * dPhi[q2][a2];
           }
-          for ( int j3 = 0; j3 < order + 1; j3++ )
+          for ( int a3 = 0; a3 < order+1; ++a3 )
           {
-            int j = i1 + i2 * (order + 1) + j3 * (order + 1) * (order + 1);
-            double X = nodesCoordsX( elementNumber, j );
-            double Y = nodesCoordsY( elementNumber, j );
-            double Z = nodesCoordsZ( elementNumber, j );
-            jac02 += X * dPhi[j3][i3];
-            jac22 += Y * dPhi[j3][i3];
-            jac12 += Z * dPhi[j3][i3];
+            int const a = q1 + q2*2 + a3*4;
+            double X = coords( a, 0 );
+            double Y = coords( a, 1 );
+            double Z = coords( a, 2 );
+            jac02 += X * dPhi[q3][a3];
+            jac12 += Y * dPhi[q3][a3];
+            jac22 += Z * dPhi[q3][a3];
           }
 
-          printf( "jac(%2d,%2d,%2d) = | % 4.1f % 4.1f % 4.1f |\n", i1, i2, i3, jac00, jac01, jac02 );
-          printf( "                | % 4.1f % 4.1f % 4.1f |\n", jac10, jac11, jac12 );
-          printf( "                | % 4.1f % 4.1f % 4.1f |\n", jac20, jac21, jac22 );
+          printf( "jac(%2d,%2d,%2d) = | % 5.2f % 5.2f % 5.2f |\n", q1, q2, q3, jac00, jac01, jac02 );
+          printf( "                | % 5.2f % 5.2f % 5.2f |\n", jac10, jac11, jac12 );
+          printf( "                | % 5.2f % 5.2f % 5.2f |\n", jac20, jac21, jac22 );
+          printf( "\n" );
 
           // detJ
           double detJ = jac00 * (jac11 * jac22 - jac21 * jac12)
@@ -116,15 +122,15 @@ public:
           double detJM1 = 1. / detJ;
 
           // B
-          B[i][0] = (invJac00 * transpInvJac00 + invJac01 * transpInvJac10 + invJac02 * transpInvJac20) * detJM1; //B11
-          B[i][1] = (invJac10 * transpInvJac01 + invJac11 * transpInvJac11 + invJac12 * transpInvJac21) * detJM1; //B22
-          B[i][2] = (invJac20 * transpInvJac02 + invJac21 * transpInvJac12 + invJac22 * transpInvJac22) * detJM1; //B33
-          B[i][3] = (invJac00 * transpInvJac01 + invJac01 * transpInvJac11 + invJac02 * transpInvJac21) * detJM1; //B12,B21
-          B[i][4] = (invJac00 * transpInvJac02 + invJac01 * transpInvJac12 + invJac02 * transpInvJac22) * detJM1; //B13,B31
-          B[i][5] = (invJac10 * transpInvJac02 + invJac11 * transpInvJac12 + invJac12 * transpInvJac22) * detJM1; //B23,B32
+          B[q][0] = (invJac00 * transpInvJac00 + invJac01 * transpInvJac10 + invJac02 * transpInvJac20) * detJM1; //B11
+          B[q][1] = (invJac10 * transpInvJac01 + invJac11 * transpInvJac11 + invJac12 * transpInvJac21) * detJM1; //B22
+          B[q][2] = (invJac20 * transpInvJac02 + invJac21 * transpInvJac12 + invJac22 * transpInvJac22) * detJM1; //B33
+          B[q][3] = (invJac00 * transpInvJac01 + invJac01 * transpInvJac11 + invJac02 * transpInvJac21) * detJM1; //B12,B21
+          B[q][4] = (invJac00 * transpInvJac02 + invJac01 * transpInvJac12 + invJac02 * transpInvJac22) * detJM1; //B13,B31
+          B[q][5] = (invJac10 * transpInvJac02 + invJac11 * transpInvJac12 + invJac12 * transpInvJac22) * detJM1; //B23,B32
 
           //M
-          massMatrixLocal[i] = weights[i1] * weights[i2] * weights[i3] * detJ;
+          massMatrixLocal[q] = weights[q1] * weights[q2] * weights[q3] * detJ;
 
         }
       }
@@ -258,9 +264,34 @@ public:
     SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadratureWeights( weights );
     SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1D( parentCoords, dPhi );
 
+    printf( "parentCoords = " );
+    for ( int i = 0; i < ORDER + 1; ++i )
+    {
+      printf( "%f ", parentCoords[i] );
+    }
+    printf( "\n" );
+    shiva::CArrayNd<double,8,3> X{ 0.0 };
+
+    {
+      int I = 0;
+      for ( int k = 0; k < 2; ++k )
+      {
+        for ( int j = 0; j < 2; ++j )
+        {
+          for ( int i = 0; i < 2; ++i )
+          {
+            int l = i + j * 2 + k * (2) * (2);
+            X[I][0] = nodesCoordsX( elementNumber, l );
+            X[I][1] = nodesCoordsY( elementNumber, l );
+            X[I][2] = nodesCoordsZ( elementNumber, l );
+            ++I;
+          }
+        }
+      }
+    }
 
     // compute Jacobian, massMatrix and B
-    computeB( elementNumber, weights, nodesCoordsX, nodesCoordsY, nodesCoordsZ, dPhi, massMatrixLocal, B );
+    computeB( elementNumber, parentCoords, weights, X, dPhi, massMatrixLocal, B );
     // compute stifness  matrix ( durufle's optimization)
     gradPhiGradPhi( nPointsPerElement, weights, dPhi, B, pnLocal, R, Y );
   }

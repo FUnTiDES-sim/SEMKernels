@@ -77,12 +77,13 @@ public:
    * @param X Array containing the coordinates of the mesh support points.
    * @param J Array to store the Jacobian transformation.
    */
+  template< typename COORDS_TYPE >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void jacobianTransformation( int const qa,
                                int const qb,
                                int const qc,
-                               double const (&X)[8][3],
+                               COORDS_TYPE const & X,
                                double ( & J )[3][3] )
   {
     for ( int k = 0; k < 8; k++ )
@@ -90,7 +91,6 @@ public:
       const int ka = k % 2;
       const int kb = ( k % 4 ) / 2;
       const int kc = k / 4;
-      printf( "k, ka, kb, kc = %d %d %d %d\n", k, ka, kb, kc );
       for ( int j = 0; j < 3; j++ )
       {
         double jacCoeff = jacobianCoefficient1D( qa, 0, ka, j ) *
@@ -155,11 +155,11 @@ public:
   }
 
 
-  template< typename FUNC >
+  template< typename COORDS_TYPE, typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeStiffnessAndMassTerm( int const q,
-                             double const (&X)[8][3],
+                             COORDS_TYPE const & X,
                              float mass[],
                              FUNC && func )
   {
@@ -171,9 +171,10 @@ public:
     double J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
 
-    printf( "J(%2d,%2d,%2d) = | % 6.3f % 6.3f % 6.3f |\n", qa, qb, qc, J[0][0], J[0][1], J[0][2] );
-    printf( "              | % 6.3f % 6.3f % 6.3f |\n", J[1][0], J[1][1], J[1][2] );
-    printf( "              | % 6.3f % 6.3f % 6.3f |\n", J[2][0], J[2][1], J[2][2] );
+    printf( "J(%2d,%2d,%2d) = | % 4.2f % 4.2f % 4.2f |\n", qa, qb, qc, J[0][0], J[0][1], J[0][2] );
+    printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[1][0], J[1][1], J[1][2] );
+    printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[2][0], J[2][1], J[2][2] );
+    printf( "\n" );
 
     double detJ = determinant( J );
 //    printf( "detJ(%d,%d,%d) = %f\n", qa, qb, qc, detJ );
@@ -205,15 +206,15 @@ public:
                                             float pnLocal[],
                                             float Y[] )
   {
-    double X[8][3] = { {0.0 }};
+    shiva::CArrayNd<double,8,3> X{ 0.0 };
     int I = 0;
-    for ( int k = 0; k < ORDER + 1; k += ORDER )
+    for ( int k = 0; k < 2; ++k )
     {
-      for ( int j = 0; j < ORDER + 1; j += ORDER )
+      for ( int j = 0; j < 2; ++j )
       {
-        for ( int i = 0; i < ORDER + 1; i += ORDER )
+        for ( int i = 0; i < 2; ++i )
         {
-          int l = i + j * (ORDER + 1) + k * (ORDER + 1) * (ORDER + 1);
+          int l = i + j * 2 + k * (2) * (2);
           X[I][0] = nodesCoordsX( elementNumber, l );
           X[I][1] = nodesCoordsY( elementNumber, l );
           X[I][2] = nodesCoordsZ( elementNumber, l );

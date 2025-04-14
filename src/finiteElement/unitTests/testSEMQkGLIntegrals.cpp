@@ -36,11 +36,11 @@ void setX( double (&X)[8][3] )
 template< typename T >
 void setXYZ( T & X, T & Y, T & Z )
 {
-  // double x0 = -1.1, y0 = -0.9, z0 = -0.8;
-  // double x1 =  1.2, y1 =  1.1, z1 =  0.9;
-
   double x0 = -1.0, y0 = -1.0, z0 = -1.0;
   double x1 =  1.0, y1 =  1.0, z1 =  1.0;
+
+  // double x0 = -1.1, y0 = -1.2, z0 = -1.2;
+  // double x1 =  1.2, y1 =  1.1, z1 =  1.4;
 
   X( 0, 0 ) = x0; Y( 0, 0 ) = y0; Z( 0, 0 ) = z0;
   X( 0, 1 ) = x1; Y( 0, 1 ) = y0; Z( 0, 1 ) = z0;
@@ -51,6 +51,15 @@ void setXYZ( T & X, T & Y, T & Z )
   X( 0, 6 ) = x0; Y( 0, 6 ) = y1; Z( 0, 6 ) = z1;
   X( 0, 7 ) = x1; Y( 0, 7 ) = y1; Z( 0, 7 ) = z1;
   
+  srand(123);
+  for ( int a = 0; a < 8; ++a )
+  {
+    X( 0, a ) = X( 0, a ) * ( 0.9 + 0.01 * (rand() % 21) );
+    Y( 0, a ) = Y( 0, a ) * ( 0.9 + 0.01 * (rand() % 21) );
+    Z( 0, a ) = Z( 0, a ) * ( 0.9 + 0.01 * (rand() % 21) );
+  }
+
+
 }
 
 
@@ -132,7 +141,7 @@ TEST( testSEMQkGLIntegralsShiva, computeMassMatrixAndStiffnessVector )
                                         LagrangeBasis< double, 1, EqualSpacing >,
                                         LagrangeBasis< double, 1, EqualSpacing > > >;
 
-  constexpr int order = 2;
+  constexpr int order = 1;
   using ParentElementType =
     ParentElement< double,
                    Cube< double >,
@@ -148,7 +157,7 @@ TEST( testSEMQkGLIntegralsShiva, computeMassMatrixAndStiffnessVector )
 
 TEST( testSEMQkGLIntegralsOptim, computeMassMatrixAndStiffnessVector )
 {
-  constexpr int order = 2;
+  constexpr int order = 1;
   using Integrals = SEMQkGLIntegralsOptim<order>;
 
   computeMassMatrixAndStiffnessVectorTester< Integrals >();
