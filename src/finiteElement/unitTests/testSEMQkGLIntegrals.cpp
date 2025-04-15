@@ -58,40 +58,21 @@ void setXYZ( T & X, T & Y, T & Z )
     Y( 0, a ) = Y( 0, a ) * ( 0.9 + 0.01 * (rand() % 21) );
     Z( 0, a ) = Z( 0, a ) * ( 0.9 + 0.01 * (rand() % 21) );
   }
-
-
 }
 
 
-template< typename INTEGRALS >
-void testJacobian()
-{
-  using Integrals = INTEGRALS;
-  static constexpr int order = INTEGRALS::order;
 
-  CArrayNd<double, 1, 8> Xcoords;
-  CArrayNd<double, 1, 8> Ycoords;
-  CArrayNd<double, 1, 8> Zcoords;
-  setXYZ( Xcoords, Ycoords, Zcoords );
+template< int ORDER >
+struct MassAndStiffnessSolutions;
 
-  CArrayNd<double, 3, (order+1), (order+1), (order+1) > B;
-  
-  pmpl::genericKernelWrapper( B.size(), B.data(), [Xcoords, Ycoords, Zcoords] SHIVA_DEVICE ( auto * device_data )
-  {
-    double * const BLocal = device_data;
-
-    Integrals::computeB( Xcoords,
-                         Ycoords,
-                         Zcoords,
-                         BLocal );
-  } );
-
-} // testBMatrixCalculations
-
-
-
-
-
+template<>
+struct MassAndStiffnessSolutions<1>
+{ 
+  constexpr static int length = 8;
+  static constexpr float mass[length] = { 9.74300026893616e-01, 9.57599997520447e-01, 1.00481104850769e+00, 9.57065880298615e-01, 9.87788021564484e-01, 1.00162827968597e+00, 1.03112494945526e+00, 1.01409268379211e+00,  };
+  static constexpr float pN[length] = { 1.00000000000000e+00, 0.00000000000000e+00, 0.00000000000000e+00, 0.00000000000000e+00, 0.00000000000000e+00, 0.00000000000000e+00, 0.00000000000000e+00, 0.00000000000000e+00, };
+  static constexpr float Y[length] = { 1.63464689254761e+00, 5.55009663105011e-01, 4.78901594877243e-01, -8.43870174139738e-03, 4.89260762929916e-01, -3.51113788783550e-02, -6.79248124361038e-02, 0.00000000000000e+00, };
+};
 
 
 template< typename INTEGRALS >
@@ -140,25 +121,41 @@ void computeMassMatrixAndStiffnessVectorTester()
                                                     Y );  
   } );
 
-  float const massMatrixLocalSoln[] = {  0.004525463,   0.02262731,   0.02262731,  0.004525463,   0.02262731,    0.1131366,    0.1131366,   0.02262731,   0.02262731,    0.1131366,    0.1131366,   0.02262731,  0.004525463,   0.02262731,   0.02262731,  0.004525463,   0.02262731,    0.1131366,    0.1131366,   0.02262731,    0.1131366,    0.5656829,    0.5656829,    0.1131366,    0.1131366,    0.5656829,    0.5656829,    0.1131366,   0.02262731,    0.1131366,    0.1131366,   0.02262731,   0.02262731,    0.1131366,    0.1131366,   0.02262731,    0.1131366,    0.5656829,    0.5656829,    0.1131366,    0.1131366,    0.5656829,    0.5656829,    0.1131366,   0.02262731,    0.1131366,    0.1131366,   0.02262731,  0.004525463,   0.02262731,   0.02262731,  0.004525463,   0.02262731,    0.1131366,    0.1131366,   0.02262731,   0.02262731,    0.1131366,    0.1131366,   0.02262731,  0.004525463,   0.02262731,   0.02262731,  0.004525463 };
-  float const pnLocalSoln[] = {            1,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0,            0 };
-  float const YSoln[] = {    0.2557976,    0.0615942,    0.0615942,    0.0615942,   0.08145833,  9.555022e-35, -3.007746e-34, -2.031604e-34,   0.08145833,  4.684745e-34,  7.214965e-35,  1.697639e-34,   0.08145833,  2.987106e-34, -9.761423e-35,            0,    0.1127451,  4.467273e-34, -1.018192e-34,  3.328704e-35, -3.278528e-34,            0,            0,            0,  3.547664e-34,            0,            0,            0,  4.402211e-35,            0,            0,            0,    0.1127451,  1.021611e-33,  4.730649e-34,  6.081711e-34,  4.324314e-34,            0,            0,            0,  1.115051e-33,            0,            0,            0,  8.043063e-34,            0,            0,            0,    0.1127451,  4.134403e-34, -1.351062e-34,            0, -3.718749e-34,            0,            0,            0,  3.107443e-34,            0,            0,            0,            0,            0,            0,            0 };
 
   float maxMassSoln = 0.0;
-  float maxPNLocalSoln = 0.0;
   float maxYSoln = 0.0;
   for( int i = 0; i < length; ++i )
   {
-    maxMassSoln = std::max( maxMassSoln, std::abs( massMatrixLocalSoln[i] ) );
-    maxPNLocalSoln = std::max( maxPNLocalSoln, std::abs( pnLocalSoln[i] ) );
-    maxYSoln = std::max( maxYSoln, std::abs( YSoln[i] ) );
+    maxMassSoln = std::max( maxMassSoln, std::abs( MassAndStiffnessSolutions<order>::mass[i] ) );
+    maxYSoln = std::max( maxYSoln, std::abs( MassAndStiffnessSolutions<order>::Y[i] ) );
   }
   
+
+  printf( "massSoln = { " );
+  for( int i=0; i < length; ++i )
+  {
+    printf( "%18.14e, ", hostData[ massOffset + i ] );
+  }
+  printf( " };\n" );
+
+  printf( "pNLocalSoln = { " );
+  for( int i=0; i < length; ++i )
+  {
+    printf( "%18.14e, ", hostData[ pOffset + i ] );
+  }
+  printf( "};\n" );
+
+  printf( "YSoln = { " );
+  for( int i=0; i < length; ++i )
+  {
+    printf( "%18.14e, ", hostData[ YOffset + i ] );
+  }
+  printf( "};\n" );
+
   for( int i = 0; i < length; ++i )
   {
-//    EXPECT_NEAR( massMatrixLocalSoln[i], hostData[massOffset + i], maxMassSoln * 1e-4 );
-    // EXPECT_NEAR( pnLocalSoln[i], hostData[pOffset + i], maxPNLocalSoln * 1e-4 );
-    // EXPECT_NEAR( YSoln[i], hostData[YOffset + i], maxYSoln * 1e-4 );
+    EXPECT_NEAR( MassAndStiffnessSolutions<order>::mass[i], hostData[massOffset + i], maxMassSoln * 1e-4 );
+    EXPECT_NEAR( MassAndStiffnessSolutions<order>::Y[i], hostData[YOffset + i], maxYSoln * 1e-4 );
   }
 }
 
