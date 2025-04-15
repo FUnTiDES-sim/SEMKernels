@@ -25,13 +25,11 @@ public:
             typename COORDS_TYPE,
             typename ARRAY_DOUBLE_VIEW >
   SEMKERNELS_HOST_DEVICE 
-  constexpr static void computeB( const int & ,
-                                   VECTOR_DOUBLE_VIEW const & ,
-                                   VECTOR_DOUBLE_VIEW const & weights,
+  constexpr static void computeB(  VECTOR_DOUBLE_VIEW const & weights,
                                    COORDS_TYPE const & coords,
                                    ARRAY_DOUBLE_VIEW & dPhi,
                                    float massMatrixLocal[],
-                                   float B[][6] )
+                                   float B[order+1][6] )
   {
 
     for ( int q3 = 0; q3 < order + 1; q3++ )
@@ -41,8 +39,6 @@ public:
         for ( int q1 = 0; q1 < order + 1; q1++ )
         {
           int const q = q1 + q2 * (order + 1) + q3 * (order + 1) * (order + 1);
-
-
 
           // compute jacobian matrix
           double jac00 = 0;
@@ -55,8 +51,8 @@ public:
           double jac21 = 0;
           double jac22 = 0;
 
-          
-          for ( int a1 = 0; a1 < order+1; ++a1 )
+          // 1-parent direction
+          for ( int a1 = 0; a1 < 2; ++a1 )
           {
             int const a = a1 + q2*2 + q3*4;
             double X = coords( a, 0 );
@@ -67,7 +63,9 @@ public:
             jac10 += Y * dPhi[q1][a1];
             jac20 += Z * dPhi[q1][a1];
           }
-          for ( int a2 = 0; a2 < order+1; ++a2 )
+
+          // 2-parent direction
+          for ( int a2 = 0; a2 < 2; ++a2 )
           {
             int const a = q1 + a2*2 + q3*4;
             double X = coords( a, 0 );
@@ -77,7 +75,9 @@ public:
             jac11 += Y * dPhi[q2][a2];
             jac21 += Z * dPhi[q2][a2];
           }
-          for ( int a3 = 0; a3 < order+1; ++a3 )
+
+          // 3-parent direction
+          for ( int a3 = 0; a3 < 2; ++a3 )
           {
             int const a = q1 + q2*2 + a3*4;
             double X = coords( a, 0 );
@@ -87,11 +87,6 @@ public:
             jac12 += Y * dPhi[q3][a3];
             jac22 += Z * dPhi[q3][a3];
           }
-
-          printf( "jac(%2d,%2d,%2d) = | % 5.2f % 5.2f % 5.2f |\n", q1, q2, q3, jac00, jac01, jac02 );
-          printf( "                | % 5.2f % 5.2f % 5.2f |\n", jac10, jac11, jac12 );
-          printf( "                | % 5.2f % 5.2f % 5.2f |\n", jac20, jac21, jac22 );
-          printf( "\n" );
 
           // detJ
           double detJ = jac00 * (jac11 * jac22 - jac21 * jac12)
@@ -147,9 +142,10 @@ public:
                                          ARRAY_DOUBLE_VIEW const & dPhi,
                                          float const B[][6],
                                          float const pnLocal[],
-                                         float R[],
                                          float Y[] )
   {
+    float R[ROW];
+
     int orderPow2 = (ORDER + 1) * (ORDER + 1);
     for ( int i3 = 0; i3 < ORDER + 1; i3++ )
     {
@@ -254,24 +250,9 @@ public:
                                                               float const pnLocal[],
                                                               float Y[] )
   {
-    float B[ROW][6];
-    float R[ROW];
-    double parentCoords[ORDER+1];
-    double weights[ORDER+1];
-    double dPhi[ORDER+1][ORDER+1];
 
-    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadraturePoints( parentCoords );
-    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadratureWeights( weights );
-    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1D( parentCoords, dPhi );
-
-    printf( "parentCoords = " );
-    for ( int i = 0; i < ORDER + 1; ++i )
-    {
-      printf( "%f ", parentCoords[i] );
-    }
-    printf( "\n" );
+    // ***** Gather coordinates *****
     shiva::CArrayNd<double,8,3> X{ 0.0 };
-
     {
       int I = 0;
       for ( int k = 0; k < 2; ++k )
@@ -290,10 +271,25 @@ public:
       }
     }
 
-    // compute Jacobian, massMatrix and B
-    computeB( elementNumber, parentCoords, weights, X, dPhi, massMatrixLocal, B );
+
+    // ***** Compute Low order Jacobian and B-matrix *****
+    double parentCoords[ORDER+1];
+    double weights[ORDER+1];
+    double dPhiO1[ORDER+1][2];
+
+    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadraturePoints( parentCoords );
+    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1DLow( parentCoords, dPhiO1 );
+    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadratureWeights( weights );
+
+    float B[ROW][6];
+    computeB( weights, X, dPhiO1, massMatrixLocal, B );
+
+    // ***** Compute High order gradient operations for Stiffness *****
+    double dPhi[ORDER+1][ORDER+1];
+    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1D( parentCoords, dPhi );
+
     // compute stifness  matrix ( durufle's optimization)
-    gradPhiGradPhi( nPointsPerElement, weights, dPhi, B, pnLocal, R, Y );
+    gradPhiGradPhi( nPointsPerElement, weights, dPhi, B, pnLocal, Y );
   }
 
   /////////////////////////////////////////////////////////////////////////////////////

@@ -128,10 +128,10 @@ public:
 
       double const detJ = determinant( J );
 
-      printf( "J(%2d,%2d,%2d) = | % 4.2f % 4.2f % 4.2f |\n", qa, qb, qc, J(0,0), J(0,1), J(0,2) );
-      printf( "              | % 4.2f % 4.2f % 4.2f |\n", J(1,0), J(1,1), J(1,2) );
-      printf( "              | % 4.2f % 4.2f % 4.2f |\n", J(2,0), J(2,1), J(2,2) );
-      printf( "\n" );
+      // printf( "J(%2d,%2d,%2d) = | % 4.2f % 4.2f % 4.2f |\n", qa, qb, qc, J(0,0), J(0,1), J(0,2) );
+      // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J(1,0), J(1,1), J(1,2) );
+      // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J(2,0), J(2,1), J(2,2) );
+      // printf( "\n" );
       
       // mass matrix
       constexpr int q = qc + qb * (ORDER + 1) + qa * (ORDER + 1) * (ORDER + 1);

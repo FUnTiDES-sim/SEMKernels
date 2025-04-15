@@ -325,6 +325,21 @@ public:
       derivativeShapeFunction1D( quadraturePoints[q], derivativeBasisFunction1D[q] );
     }
   }
+
+  template< typename vectorDouble, typename arrayDouble >
+  static constexpr inline
+  SEMKERNELS_HOST_DEVICE 
+  void getDerivativeBasisFunction1DLow( vectorDouble const & quadraturePoints,
+                                        arrayDouble & derivativeBasisFunction1D )
+  {
+    // loop over quadrature points
+    for ( int q = 0; q < ORDER + 1; q++ )
+    {
+      //extract all basis functions  for current quadrature point
+      SEMQkGLBasisFunctions<1>::derivativeShapeFunction1D( quadraturePoints[q], derivativeBasisFunction1D[q] );
+    }
+  }
+
   /////////////////////////////////////////////////////////////////////////////////////
   //  end from first implementation
   /////////////////////////////////////////////////////////////////////////////////////
@@ -337,42 +352,44 @@ public:
   constexpr static double parentSupportCoord( const int supportPointIndex )
   {
     double result = 0.0;
-    switch ( order )
+    if constexpr ( order==1 )
     {
-      case 1:
-        return -1.0 + 2.0 * (supportPointIndex & 1);
-      case 2:
-        switch ( supportPointIndex )
-        {
-          case 0:
-            return -1.0;
-            break;
-          case 2:
-            return 1.0;
-          case 1:
-          default:
-            return 0.0;
-        }
-      case 3:
-        switch ( supportPointIndex )
-        {
-          case 0:
-            result = -1.0;
-            break;
-          case 1:
-            result = -1.0 / sqrt5;
-            break;
-          case 2:
-            result = 1.0 / sqrt5;
-            break;
-          case 3:
-            result = 1.0;
-            break;
-          default:
-            break;
-        }
-      default:
-        return 0;
+      return -1.0 + 2.0 * (supportPointIndex & 1);
+    }
+    else if constexpr ( order==2 )
+    {
+      switch ( supportPointIndex )
+      {
+        case 0:
+          return -1.0;
+        case 2:
+          return 1.0;
+        case 1:
+          return 0.0;
+        default:
+          return -1e99;
+      }
+    }
+    else if constexpr ( order==3 )
+    {
+      switch ( supportPointIndex )
+      {
+        case 0:
+          result = -1.0;
+          break;
+        case 1:
+          result = -1.0 / sqrt5;
+          break;
+        case 2:
+          result = 1.0 / sqrt5;
+          break;
+        case 3:
+          result = 1.0;
+          break;
+        default:
+          return -1e99;
+          break;
+      }
     }
     return result;
   }

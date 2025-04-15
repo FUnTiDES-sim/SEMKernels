@@ -63,7 +63,30 @@ void setXYZ( T & X, T & Y, T & Z )
 }
 
 
+template< typename INTEGRALS >
+void testJacobian()
+{
+  using Integrals = INTEGRALS;
+  static constexpr int order = INTEGRALS::order;
 
+  CArrayNd<double, 1, 8> Xcoords;
+  CArrayNd<double, 1, 8> Ycoords;
+  CArrayNd<double, 1, 8> Zcoords;
+  setXYZ( Xcoords, Ycoords, Zcoords );
+
+  CArrayNd<double, 3, (order+1), (order+1), (order+1) > B;
+  
+  pmpl::genericKernelWrapper( B.size(), B.data(), [Xcoords, Ycoords, Zcoords] SHIVA_DEVICE ( auto * device_data )
+  {
+    double * const BLocal = device_data;
+
+    Integrals::computeB( Xcoords,
+                         Ycoords,
+                         Zcoords,
+                         BLocal );
+  } );
+
+} // testBMatrixCalculations
 
 
 
@@ -93,7 +116,15 @@ void computeMassMatrixAndStiffnessVectorTester()
 
   hostData[pOffset] = 1.0;
 
-  pmpl::genericKernelWrapper( dataSize, hostData, [Xcoords, Ycoords, Zcoords, length] SHIVA_DEVICE ( auto * device_data )
+  pmpl::genericKernelWrapper( dataSize, 
+                              hostData, 
+                              [ Xcoords,
+                                Ycoords, 
+                                Zcoords,
+                                massOffset,
+                                pOffset,
+                                YOffset,
+                                length ] SHIVA_DEVICE ( auto * device_data )
   {
     float * const massMatrixLocal = device_data + massOffset;
     float * const pnLocal = device_data + pOffset;

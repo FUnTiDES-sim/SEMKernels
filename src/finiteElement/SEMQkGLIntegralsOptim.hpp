@@ -171,10 +171,10 @@ public:
     double J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
 
-    printf( "J(%2d,%2d,%2d) = | % 4.2f % 4.2f % 4.2f |\n", qa, qb, qc, J[0][0], J[0][1], J[0][2] );
-    printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[1][0], J[1][1], J[1][2] );
-    printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[2][0], J[2][1], J[2][2] );
-    printf( "\n" );
+    // printf( "J(%2d,%2d,%2d) = | % 4.2f % 4.2f % 4.2f |\n", qa, qb, qc, J[0][0], J[0][1], J[0][2] );
+    // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[1][0], J[1][1], J[1][2] );
+    // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[2][0], J[2][1], J[2][2] );
+    // printf( "\n" );
 
     double detJ = determinant( J );
 //    printf( "detJ(%d,%d,%d) = %f\n", qa, qb, qc, detJ );
