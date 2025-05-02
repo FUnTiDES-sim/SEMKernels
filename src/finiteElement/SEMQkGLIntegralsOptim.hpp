@@ -125,6 +125,7 @@ public:
       const double gia = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qa );
       const double gib = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qb );
       const double gic = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qc );
+//      printf("i: %d, ibc: %d, aic: %d, abi: %d, gia: %f, gib: %f, gic: %f\n", i, ibc, aic, abi, gia, gib, gic);
       for ( int j = 0; j < numSupportPoints1d; j++ )
       {
         const int jbc = linearIndex( ORDER, j, qb, qc );
@@ -133,6 +134,9 @@ public:
         const double gja = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qa );
         const double gjb = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qb );
         const double gjc = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qc );
+
+//        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
+
         // diagonal terms
         const double w0 = w * gia * gja;
         func( ibc, jbc, w0 * B[0] );
@@ -164,20 +168,14 @@ public:
                              FUNC && func )
   {
     TripleIndex ti = tripleIndex( ORDER, q );
-    int qa = ti.i0;
-    int qb = ti.i1;
-    int qc = ti.i2;
+    int const qa = ti.i0;
+    int const qb = ti.i1;
+    int const qc = ti.i2;
 
     double J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
 
-    // printf( "J(%2d,%2d,%2d) = | % 4.2f % 4.2f % 4.2f |\n", qa, qb, qc, J[0][0], J[0][1], J[0][2] );
-    // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[1][0], J[1][1], J[1][2] );
-    // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J[2][0], J[2][1], J[2][2] );
-    // printf( "\n" );
-
     double detJ = determinant( J );
-//    printf( "detJ(%d,%d,%d) = %f\n", qa, qb, qc, detJ );
 
     double const w3D = SEMQkGLBasisFunctions<ORDER>::weight( qa ) * 
                        SEMQkGLBasisFunctions<ORDER>::weight( qb ) * 
@@ -187,6 +185,9 @@ public:
 
     double B[6] = {0};
     computeB( J, B );
+
+//    printf( "B(%d,%d,%d): %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
+
     computeGradPhiBGradPhi( qa, qb, qc, B, func );
   }
 

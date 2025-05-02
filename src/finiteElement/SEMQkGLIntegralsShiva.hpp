@@ -56,22 +56,28 @@ public:
                                     quadrature::template coordinate< qb >(),
                                     quadrature::template coordinate< qc >() };
     constexpr double w = quadrature::template weight< qa >() * quadrature::template weight< qb >() * quadrature::template weight< qc >();
-    for ( int i = 0; i < ORDER + 1; i++ )
+    forSequence< numSupportPoints1d >( [&] ( auto const ici )
     {
+      constexpr int i = decltype(ici)::value;      
       const int ibc = linearIndex( ORDER, i, qb, qc );
       const int aic = linearIndex( ORDER, qa, i, qc );
       const int abi = linearIndex( ORDER, qa, qb, i );
-      const double gia = basisFunction::template gradient< qa >( qcoords[0] );
-      const double gib = basisFunction::template gradient< qb >( qcoords[1] );
-      const double gic = basisFunction::template gradient< qc >( qcoords[2] );
-      for ( int j = 0; j < ORDER + 1; j++ )
+      const double gia = basisFunction::template gradient< i >( qcoords[0] );
+      const double gib = basisFunction::template gradient< i >( qcoords[1] );
+      const double gic = basisFunction::template gradient< i >( qcoords[2] );
+//      printf("i: %d, ibc: %d, aic: %d, abi: %d, gia: %f, gib: %f, gic: %f\n", i, ibc, aic, abi, gia, gib, gic);
+
+      forSequence< numSupportPoints1d >( [&] ( auto const icj )
       {
+        constexpr int j = decltype(icj)::value;
         const int jbc = linearIndex( ORDER, j, qb, qc );
         const int ajc = linearIndex( ORDER, qa, j, qc );
         const int abj = linearIndex( ORDER, qa, qb, j );
-        const double gja = basisFunction::template gradient< qa >( qcoords[0] );
-        const double gjb = basisFunction::template gradient< qb >( qcoords[1] );
-        const double gjc = basisFunction::template gradient< qc >( qcoords[2] );
+        const double gja = basisFunction::template gradient< j >( qcoords[0] );
+        const double gjb = basisFunction::template gradient< j >( qcoords[1] );
+        const double gjc = basisFunction::template gradient< j >( qcoords[2] );
+
+//        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
         // diagonal terms
         const double w0 = w * gia * gja;
         func( ibc, jbc, w0 * B[0] );
@@ -89,8 +95,8 @@ public:
         const double w5 = w * gia * gjb;
         func( ibc, ajc, w5 * B[5] );
         func( ajc, ibc, w5 * B[5] );
-      }
-    }
+      } );
+    } );
   }
 
 
@@ -127,11 +133,6 @@ public:
       shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
 
       double const detJ = determinant( J );
-
-      // printf( "J(%2d,%2d,%2d) = | % 4.2f % 4.2f % 4.2f |\n", qa, qb, qc, J(0,0), J(0,1), J(0,2) );
-      // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J(1,0), J(1,1), J(1,2) );
-      // printf( "              | % 4.2f % 4.2f % 4.2f |\n", J(2,0), J(2,1), J(2,2) );
-      // printf( "\n" );
       
       // mass matrix
       constexpr int q = qc + qb * (ORDER + 1) + qa * (ORDER + 1) * (ORDER + 1);
@@ -142,10 +143,13 @@ public:
 
       double B[6] = {0};
       computeB( J, B );
+
+//      printf( "B(%d,%d,%d): %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
+
       // compute detJ*J^{-1}J^{-T}
       for( int i = 0; i < 6; ++i )
       {
-        B[i] *= detJ;
+//        B[i] *= detJ;
       }
 
       // compute gradPhiI*B*gradPhiJ and stiffness vector

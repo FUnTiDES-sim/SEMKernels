@@ -38,7 +38,7 @@ public:
       {
         for ( int q1 = 0; q1 < order + 1; q1++ )
         {
-          int const q = q1 + q2 * (order + 1) + q3 * (order + 1) * (order + 1);
+          int const q = q3 + q2 * (order + 1) + q1 * (order + 1) * (order + 1);
 
           // compute jacobian matrix
           double jac00 = 0;
@@ -88,45 +88,51 @@ public:
             jac22 += Z * dPhi[q3][a3];
           }
 
+          // printf( "J(%2d,%2d,%2d) = | % 6.4f % 6.4f % 6.4f |\n", q1, q2, q3, jac00, jac01, jac02 );
+          // printf( "              | % 6.4f % 6.4f % 6.4f |\n", jac10, jac11, jac12 );
+          // printf( "              | % 6.4f % 6.4f % 6.4f |\n", jac20, jac21, jac22 );
+//          printf( "\n" );
+
           // detJ
-          double detJ = jac00 * (jac11 * jac22 - jac21 * jac12)
+          double const detJ = jac00 * (jac11 * jac22 - jac21 * jac12)
                              - jac01 * (jac10 * jac22 - jac20 * jac12)
                              + jac02 * (jac10 * jac21 - jac20 * jac11);
 
+          double const detJM1 = 1. / detJ;
+
           // inv of jac is equal of the minors of the transposed of jac
-          double invJac00 = jac11 * jac22 - jac12 * jac21;
-          double invJac01 = jac02 * jac21 - jac01 * jac22;
-          double invJac02 = jac01 * jac12 - jac02 * jac11;
-          double invJac10 = jac12 * jac20 - jac10 * jac22;
-          double invJac11 = jac00 * jac22 - jac02 * jac20;
-          double invJac12 = jac02 * jac10 - jac00 * jac12;
-          double invJac20 = jac10 * jac21 - jac11 * jac20;
-          double invJac21 = jac01 * jac20 - jac00 * jac21;
-          double invJac22 = jac00 * jac11 - jac01 * jac10;
+          double const invJac00 = ( jac11 * jac22 - jac12 * jac21 ) * detJM1;
+          double const invJac01 = ( jac02 * jac21 - jac01 * jac22 ) * detJM1;
+          double const invJac02 = ( jac01 * jac12 - jac02 * jac11 ) * detJM1;
+          double const invJac10 = ( jac12 * jac20 - jac10 * jac22 ) * detJM1;
+          double const invJac11 = ( jac00 * jac22 - jac02 * jac20 ) * detJM1;
+          double const invJac12 = ( jac02 * jac10 - jac00 * jac12 ) * detJM1;
+          double const invJac20 = ( jac10 * jac21 - jac11 * jac20 ) * detJM1;
+          double const invJac21 = ( jac01 * jac20 - jac00 * jac21 ) * detJM1;
+          double const invJac22 = ( jac00 * jac11 - jac01 * jac10 ) * detJM1;
 
-          double transpInvJac00 = invJac00;
-          double transpInvJac01 = invJac10;
-          double transpInvJac02 = invJac20;
-          double transpInvJac10 = invJac01;
-          double transpInvJac11 = invJac11;
-          double transpInvJac12 = invJac21;
-          double transpInvJac20 = invJac02;
-          double transpInvJac21 = invJac12;
-          double transpInvJac22 = invJac22;
+          double const transpInvJac00 = invJac00;
+          double const transpInvJac01 = invJac10;
+          double const transpInvJac02 = invJac20;
+          double const transpInvJac10 = invJac01;
+          double const transpInvJac11 = invJac11;
+          double const transpInvJac12 = invJac21;
+          double const transpInvJac20 = invJac02;
+          double const transpInvJac21 = invJac12;
+          double const transpInvJac22 = invJac22;
 
-          double detJM1 = 1. / detJ;
 
           // B
-          B[q][0] = (invJac00 * transpInvJac00 + invJac01 * transpInvJac10 + invJac02 * transpInvJac20) * detJM1; //B11
-          B[q][1] = (invJac10 * transpInvJac01 + invJac11 * transpInvJac11 + invJac12 * transpInvJac21) * detJM1; //B22
-          B[q][2] = (invJac20 * transpInvJac02 + invJac21 * transpInvJac12 + invJac22 * transpInvJac22) * detJM1; //B33
-          B[q][3] = (invJac00 * transpInvJac01 + invJac01 * transpInvJac11 + invJac02 * transpInvJac21) * detJM1; //B12,B21
-          B[q][4] = (invJac00 * transpInvJac02 + invJac01 * transpInvJac12 + invJac02 * transpInvJac22) * detJM1; //B13,B31
-          B[q][5] = (invJac10 * transpInvJac02 + invJac11 * transpInvJac12 + invJac12 * transpInvJac22) * detJM1; //B23,B32
+          B[q][0] = (invJac00 * transpInvJac00 + invJac01 * transpInvJac10 + invJac02 * transpInvJac20); //B11
+          B[q][1] = (invJac10 * transpInvJac01 + invJac11 * transpInvJac11 + invJac12 * transpInvJac21); //B22
+          B[q][2] = (invJac20 * transpInvJac02 + invJac21 * transpInvJac12 + invJac22 * transpInvJac22); //B33
+          B[q][3] = (invJac10 * transpInvJac02 + invJac11 * transpInvJac12 + invJac12 * transpInvJac22); //B23,B32
+          B[q][4] = (invJac00 * transpInvJac02 + invJac01 * transpInvJac12 + invJac02 * transpInvJac22); //B13,B31
+          B[q][5] = (invJac00 * transpInvJac01 + invJac01 * transpInvJac11 + invJac02 * transpInvJac21); //B12,B21
+
 
           //M
           massMatrixLocal[q] = weights[q1] * weights[q2] * weights[q3] * detJ;
-
         }
       }
     }
