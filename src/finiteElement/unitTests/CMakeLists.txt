@@ -3,7 +3,7 @@
 #
 
 set( unit_tests_sources
-        testSEMQkGLIntegralsShiva.cpp
+        testSEMQkGLIntegrals.cpp
      )
 
 set( dependencyList ${parallelDeps} gtest finiteElement)
