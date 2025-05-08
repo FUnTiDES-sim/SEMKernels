@@ -6,6 +6,7 @@
 //#include "SEMdata.hpp"
 #include "SEMQkGLBasisFunctions.hpp"
 #include "common/CArray.hpp"
+#include "common/mathUtilites.hpp"
 
 #include<stdio.h>
 
@@ -38,7 +39,7 @@ public:
       {
         for ( int q1 = 0; q1 < order + 1; q1++ )
         {
-          int const q = q3 + q2 * (order + 1) + q1 * (order + 1) * (order + 1);
+          int const q = linearIndex( order, q1, q2, q3 );
 
           // compute jacobian matrix
           double jac00 = 0;
@@ -54,7 +55,7 @@ public:
           // 1-parent direction
           for ( int a1 = 0; a1 < 2; ++a1 )
           {
-            int const a = a1 + q2*2 + q3*4;
+            int const a = linearIndex( 1, a1, q2, q3 );
             double X = coords( a, 0 );
             double Y = coords( a, 1 );
             double Z = coords( a, 2 );
@@ -67,7 +68,7 @@ public:
           // 2-parent direction
           for ( int a2 = 0; a2 < 2; ++a2 )
           {
-            int const a = q1 + a2*2 + q3*4;
+            int const a = linearIndex( 1, q1, a2, q3 );
             double X = coords( a, 0 );
             double Y = coords( a, 1 );
             double Z = coords( a, 2 );
@@ -79,7 +80,7 @@ public:
           // 3-parent direction
           for ( int a3 = 0; a3 < 2; ++a3 )
           {
-            int const a = q1 + q2*2 + a3*4;
+            int const a = linearIndex( order, q1, q2, a3 );
             double X = coords( a, 0 );
             double Y = coords( a, 1 );
             double Z = coords( a, 2 );
@@ -130,6 +131,7 @@ public:
           B[q][4] = (invJac00 * transpInvJac02 + invJac01 * transpInvJac12 + invJac02 * transpInvJac22); //B13,B31
           B[q][5] = (invJac00 * transpInvJac01 + invJac01 * transpInvJac11 + invJac02 * transpInvJac21); //B12,B21
 
+//          printf( "B(%2d,%2d,%2d) = | %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e |\n", q1, q2, q3, B[q][0], B[q][1], B[q][2], B[q][3], B[q][4], B[q][5] );
 
           //M
           massMatrixLocal[q] = weights[q1] * weights[q2] * weights[q3] * detJ;
@@ -152,7 +154,6 @@ public:
   {
     float R[ROW];
 
-    int orderPow2 = (ORDER + 1) * (ORDER + 1);
     for ( int i3 = 0; i3 < ORDER + 1; i3++ )
     {
       for ( int i2 = 0; i2 < ORDER + 1; i2++ )
@@ -167,30 +168,30 @@ public:
           //B11
           for ( int j1 = 0; j1 < ORDER + 1; j1++ )
           {
-            int j = j1 + i2 * (ORDER + 1) + i3 * orderPow2;
+            int j = linearIndex( ORDER, j1, i2, i3 );
             for ( int l = 0; l < ORDER + 1; l++ )
             {
-              int ll = l + i2 * (ORDER + 1) + i3 * orderPow2;
+              int ll = linearIndex( ORDER, l, i2, i3 );
               R[j] += weights[l]* weights[i2] * weights[i3] * (B[ll][0] * dPhi[i1][l ]* dPhi[j1][l ]);
             }
           }
           //B22
           for ( int j2 = 0; j2 < ORDER + 1; j2++ )
           {
-            int j = i1 + j2 * (ORDER + 1) + i3 * orderPow2;
+            int j = linearIndex( ORDER, i1, j2, i3 );
             for ( int m = 0; m < ORDER + 1; m++ )
             {
-              int mm = i1 + m * (ORDER + 1) + i3 * orderPow2;
+              int mm = linearIndex( ORDER, i1, m, i3 );
               R[j] += weights[i1] * weights[m]* weights[i3] * (B[mm][1] * dPhi[i2][m ]* dPhi[j2][m ]);
             }
           }
           //B33
           for ( int j3 = 0; j3 < ORDER + 1; j3++ )
           {
-            int j = i1 + i2 * (ORDER + 1) + j3 * orderPow2;
+            int j = linearIndex( ORDER, i1, i2, j3 );
             for ( int n = 0; n < ORDER + 1; n++ )
             {
-              int nn = i1 + i2 * (ORDER + 1) + n * orderPow2;
+              int nn = linearIndex( ORDER, i1, i2, n );
               R[j] += weights[i1] * weights[i2] * weights[n]* (B[nn][2] * dPhi[i3][n ]* dPhi[j3][n ]);
             }
           }
@@ -199,9 +200,9 @@ public:
           {
             for ( int j1 = 0; j1 < ORDER + 1; j1++ )
             {
-              int j = j1 + j2 * (ORDER + 1) + i3 * orderPow2;
-              int k = j1 + i2 * (ORDER + 1) + i3 * orderPow2;
-              int l = i1 + j2 * (ORDER + 1) + i3 * orderPow2;
+              int j = linearIndex( ORDER, j1, j2, i3 );
+              int k = linearIndex( ORDER, j1, i2, i3 );
+              int l = linearIndex( ORDER, i1, j2, i3 );
               R[j] += weights[j1] * weights[i2] * weights[i3] * (B[k][3] * dPhi[i1][j1] * dPhi[j2][i2] ) +
                       weights[i1] * weights[j2] * weights[i3] * (B[l][3] * dPhi[j1][i1] * dPhi[i2][j2] );
             }
@@ -211,9 +212,9 @@ public:
           {
             for ( int j1 = 0; j1 < ORDER + 1; j1++ )
             {
-              int j = j1 + i2 * (ORDER + 1) + i3 * orderPow2;
-              int k = j1 + i2 * (ORDER + 1) + i3 * orderPow2;
-              int l = j1 + i2 * (ORDER + 1) + j3 * orderPow2;
+              int j = linearIndex( ORDER, j1, i2, i3 );
+              int k = linearIndex( ORDER, j1, i2, i3 );
+              int l = linearIndex( ORDER, j1, i2, j3 );
               R[j] += weights[j1] * weights[i2] * weights[i3] * (B[k][4] * dPhi[j1][i1] * dPhi[j3][i3] ) +
                       weights[j1] * weights[i2] * weights[j3] * (B[l][4] * dPhi[j1][i1] * dPhi[i3][j3] );
             }
@@ -223,15 +224,15 @@ public:
           {
             for ( int j2 = 0; j2 < ORDER + 1; j2++ )
             {
-              int j = i1 + j2 * (ORDER + 1) + j3 * orderPow2;
-              int k = i1 + j2 * (ORDER + 1) + i3 * orderPow2;
-              int l = i1 + i2 * (ORDER + 1) + j3 * orderPow2;
+              int j = linearIndex( ORDER, i1, j2, j3 );
+              int k = linearIndex( ORDER, i1, j2, i3 );
+              int l = linearIndex( ORDER, i1, i2, j3 );
               R[j] += weights[i1] * weights[j2] * weights[i3] * (B[k][5] * dPhi[i2][i2] * dPhi[j3][i3] ) +
                       weights[i1] * weights[i2] * weights[j3] * (B[l][5] * dPhi[j2][i2] * dPhi[i3][j3] );
             }
           }
 
-          int i = i1 + i2 * (ORDER + 1) + i3 * orderPow2;
+          int i = linearIndex( ORDER, i1, i2, i3 );
           Y[i] = 0;
           for ( int j = 0; j < nPointsPerElement; j++ )
           {
@@ -267,7 +268,7 @@ public:
         {
           for ( int i = 0; i < 2; ++i )
           {
-            int l = i + j * 2 + k * (2) * (2);
+            int l = linearIndex( 1, i, j, k );
             X[I][0] = nodesCoordsX( elementNumber, l );
             X[I][1] = nodesCoordsY( elementNumber, l );
             X[I][2] = nodesCoordsZ( elementNumber, l );

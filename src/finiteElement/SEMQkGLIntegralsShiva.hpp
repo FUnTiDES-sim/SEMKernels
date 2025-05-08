@@ -135,7 +135,7 @@ public:
       double const detJ = determinant( J );
       
       // mass matrix
-      constexpr int q = qc + qb * (ORDER + 1) + qa * (ORDER + 1) * (ORDER + 1);
+      constexpr int q = linearIndex( ORDER, qa, qb, qc );
       constexpr double w3D = quadrature::template weight< qa >() *
                              quadrature::template weight< qb >() *
                              quadrature::template weight< qc >();
@@ -144,7 +144,7 @@ public:
       double B[6] = {0};
       computeB( J, B );
 
-//      printf( "B(%d,%d,%d): %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
+//      printf( "B(%d,%d,%d) = | %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e |\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
 
       // compute detJ*J^{-1}J^{-T}
       for( int i = 0; i < 6; ++i )
@@ -174,7 +174,7 @@ public:
       {
         for ( int i = 0; i < 2; ++i )
         {
-          int const l = ( i + j * 2 + k * 2 * 2 );
+          int const l = linearIndex( 1, i, j, k );
           cellData( i, j, k, 0 ) = nodesCoordsX( elementNumber, l );
           cellData( i, j, k, 1 ) = nodesCoordsY( elementNumber, l );
           cellData( i, j, k, 2 ) = nodesCoordsZ( elementNumber, l );

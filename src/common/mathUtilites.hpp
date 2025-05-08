@@ -43,14 +43,6 @@ int linearIndex( const int r,
   return i + (r + 1) * j + (r + 1) * (r + 1) * k;
 }
 
-
-struct TripleIndex
-{
-  int i0;
-  int i1;
-  int i2;
-};
-
   /**
    * @brief Calculate the Cartesian/TensorProduct index given the linear index
    *   of a support point.
@@ -62,12 +54,12 @@ struct TripleIndex
    */
   static constexpr inline 
   SEMKERNELS_HOST_DEVICE
-  TripleIndex tripleIndex( int const r, int const linearIndex )
+  std::tuple<int,int,int> tripleIndex( int const r, int const linearIndex )
   { 
-    return { linearIndex / ((r + 1) * (r + 1)),
-             (linearIndex % ((r + 1) * (r + 1))) / (r + 1),
-             (linearIndex % ((r + 1) * (r + 1))) % (r + 1) };
-  }
+    return { ( linearIndex % ((r + 1) * (r + 1))) % (r + 1),
+             ( linearIndex % ((r + 1) * (r + 1))) / (r + 1),
+             ( linearIndex / ((r + 1) * (r + 1)) ) };
+}
 
 /**
  * @brief Invert the symmetric matrix @p srcSymMatrix and store the result in @p dstSymMatrix.

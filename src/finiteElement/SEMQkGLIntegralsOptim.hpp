@@ -1,9 +1,6 @@
 #ifndef SEMQKGLINTEGRALSOPTIM_HPP_
 #define SEMQKGLINTEGRALSOPTIM_HPP_
 
-//#include "dataType.hpp"
-//#include "SEMmacros.hpp"
-//#include "SEMdata.hpp"
 #include "SEMQkGLBasisFunctions.hpp"
 #include "common/mathUtilites.hpp"
 
@@ -167,10 +164,7 @@ public:
                              float mass[],
                              FUNC && func )
   {
-    TripleIndex ti = tripleIndex( ORDER, q );
-    int const qa = ti.i0;
-    int const qb = ti.i1;
-    int const qc = ti.i2;
+    auto const [ qa, qb, qc ] = tripleIndex( ORDER, q );
 
     double J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
