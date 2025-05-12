@@ -3,6 +3,8 @@
 
 #include "SEMQkGLBasisFunctions.hpp"
 #include "common/mathUtilites.hpp"
+#include "common/CArray.hpp"
+
 
 #include<stdio.h>
 

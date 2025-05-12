@@ -1,7 +1,8 @@
 #pragma once
 
 #include "macros.hpp"
-#include<cmath>
+#include <cmath>
+#include <tuple>
 
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
