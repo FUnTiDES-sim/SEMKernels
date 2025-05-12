@@ -76,14 +76,15 @@ public:
    * @param X Array containing the coordinates of the mesh support points.
    * @param J Array to store the Jacobian transformation.
    */
-  template< typename COORDS_TYPE >
+  template< typename COORDS_TYPE,
+            typename JACOBIAN_TYPE >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void jacobianTransformation( int const qa,
                                int const qb,
                                int const qc,
                                COORDS_TYPE const & X,
-                               double ( & J )[3][3] )
+                               JACOBIAN_TYPE ( & J )[3][3] )
   {
     for ( int k = 0; k < 8; k++ )
     {
@@ -92,7 +93,7 @@ public:
       const int kc = k / 4;
       for ( int j = 0; j < 3; j++ )
       {
-        double jacCoeff = jacobianCoefficient1D( qa, 0, ka, j ) *
+        JACOBIAN_TYPE jacCoeff = jacobianCoefficient1D( qa, 0, ka, j ) *
                           jacobianCoefficient1D( qb, 1, kb, j ) *
                           jacobianCoefficient1D( qc, 2, kc, j );
         for ( int i = 0; i < 3; i++ )
@@ -103,13 +104,14 @@ public:
     }
   }
 
-  template< typename FUNC >
+  template< typename TRANSFORM_TYPE, 
+            typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeGradPhiBGradPhi( int const qa,
                                int const qb,
                                int const qc,
-                               double const (&B)[6],
+                               TRANSFORM_TYPE const (&B)[6],
                                FUNC && func )
   {
     //const double w = GLBasis.weight<SEMinfo>(qa )*GLBasis.weight<SEMinfo>(qb )*GLBasis.weight<SEMinfo>(qc );
@@ -158,7 +160,8 @@ public:
   }
 
 
-  template< typename COORDS_TYPE, typename FUNC >
+  template< typename COORDS_TYPE, 
+            typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeStiffnessAndMassTerm( int const q,
@@ -168,10 +171,10 @@ public:
   {
     auto const [ qa, qb, qc ] = tripleIndex( ORDER, q );
 
-    double J[3][3] = { {0} };
+    float J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
 
-    double detJ = determinant( J );
+    float detJ = determinant( J );
 
     double const w3D = SEMQkGLBasisFunctions<ORDER>::weight( qa ) * 
                        SEMQkGLBasisFunctions<ORDER>::weight( qb ) * 
@@ -179,7 +182,7 @@ public:
 
     mass[q] = w3D * detJ;
 
-    double B[6] = {0};
+    float B[6] = {0};
     computeB( J, B );
 
 //    printf( "B(%d,%d,%d): %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
@@ -191,7 +194,7 @@ public:
   /**
    * @brief compute  mass Matrix stiffnessVector.
    */
-  template< typename ARRAY_REAL_VIEW >
+  template< typename ARRAY_REAL_VIEW, >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeMassMatrixAndStiffnessVector( const int & elementNumber,
@@ -203,7 +206,7 @@ public:
                                             float pnLocal[],
                                             float Y[] )
   {
-    shiva::CArrayNd<double,8,3> X{ 0.0 };
+    shiva::CArrayNd<float,8,3> X{ 0.0f };
     int I = 0;
     for ( int k = 0; k < 2; ++k )
     {

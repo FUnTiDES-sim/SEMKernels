@@ -4,9 +4,10 @@
 #include <cmath>
 #include <tuple>
 
+template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-double determinant( double const (&m)[3][3] )
+T determinant( T const (&m)[3][3] )
 {
   return  + m[0][0] * ( m[1][1] * m[2][2] - m[2][1] * m[1][2] )
           - m[0][1] * ( m[1][0] * m[2][2] - m[2][0] * m[1][2] )
@@ -16,7 +17,7 @@ double determinant( double const (&m)[3][3] )
 template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-double determinant( T const & m )
+T determinant( T const & m )
 {
   return  + m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
           - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
@@ -131,10 +132,10 @@ void computeB( T const (&J)[3][3],
   symInvert0( B );
 }
 
-template< typename T, typename JTYPE >
+template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-void computeB( JTYPE const & J,
+void computeB( T const & J,
                T (&B)[6] )
 {
   B[0] = ( J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 ) );
