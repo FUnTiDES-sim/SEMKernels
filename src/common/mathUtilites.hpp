@@ -17,7 +17,7 @@ T determinant( T const (&m)[3][3] )
 template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-T determinant( T const & m )
+typename T::value_type determinant( T const & m )
 {
   return  + m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
           - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
@@ -136,7 +136,7 @@ template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
 void computeB( T const & J,
-               T (&B)[6] )
+               typename T::value_type (&B)[6] )
 {
   B[0] = ( J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 ) );
   B[1] = ( J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 ) );
