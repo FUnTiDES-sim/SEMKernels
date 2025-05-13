@@ -194,7 +194,7 @@ public:
   /**
    * @brief compute  mass Matrix stiffnessVector.
    */
-  template< typename ARRAY_REAL_VIEW, >
+  template< typename ARRAY_REAL_VIEW >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeMassMatrixAndStiffnessVector( const int & elementNumber,
