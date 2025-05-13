@@ -4,7 +4,6 @@
 // #include "dataType.hpp"
 // #include "SEMmacros.hpp"
 #include "common/macros.hpp"
-#include "SEMdata.hpp"
 
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.

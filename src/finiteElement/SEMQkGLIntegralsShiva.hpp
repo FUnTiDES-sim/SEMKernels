@@ -46,6 +46,10 @@ public:
   using quadrature = QuadratureGaussLobatto< double, numSupportPoints1d >;
   using basisFunction = LagrangeBasis< double, ORDER, GaussLobattoSpacing >;
 
+  void init()
+  {}
+
+
   template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE

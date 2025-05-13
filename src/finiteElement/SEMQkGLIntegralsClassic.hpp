@@ -20,6 +20,13 @@ public:
   static constexpr int order = ORDER;
   static constexpr int rows = (order + 1) * (order + 1) * (order + 1);
 
+  void init()
+  {
+    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadraturePoints( m_quadraturePointCoords );
+    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadratureWeights( m_weights);
+    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1D( m_quadraturePointCoords, m_dPhi);
+    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1DLow( m_quadraturePointCoords, m_dPhiO1 );
+  };
 
   // compute B and M
   template< typename VECTOR_DOUBLE_VIEW,
@@ -280,12 +287,10 @@ public:
 
 
     // ***** Compute Low order Jacobian and B-matrix *****
-    double dPhiO1[ORDER+1][2];
 
-    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1DLow( m_quadraturePointCoords, dPhiO1 );
 
     float B[rows][6];
-    computeB( m_weights, X, dPhiO1, massMatrixLocal, B );
+    computeB( m_weights, X, m_dPhiO1, massMatrixLocal, B );
 
     // compute stifness  matrix ( durufle's optimization)
     gradPhiGradPhi( nPointsPerElement, m_weights, m_dPhi, B, pnLocal, Y );
@@ -296,6 +301,8 @@ public:
   double m_quadraturePointCoords[ORDER+1];
   double m_weights[ORDER+1];
   double m_dPhi[ORDER+1][ORDER+1];
+  double m_dPhiO1[ORDER+1][2];
+
   /////////////////////////////////////////////////////////////////////////////////////
   //  end from first implementation
   /////////////////////////////////////////////////////////////////////////////////////
