@@ -187,6 +187,12 @@ public:
     float B[6] = {0};
     computeB( J, B );
 
+    for( int i = 0; i < 6; ++i )
+    {
+      B[i] *= detJ;
+    }
+
+
 //    printf( "B(%d,%d,%d): %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
 
     computeGradPhiBGradPhi( qa, qb, qc, B, func );

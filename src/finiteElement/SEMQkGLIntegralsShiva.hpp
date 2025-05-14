@@ -153,7 +153,7 @@ public:
       // compute detJ*J^{-1}J^{-T}
       for( int i = 0; i < 6; ++i )
       {
-//        B[i] *= detJ;
+       B[i] *= detJ;
       }
 
       // compute gradPhiI*B*gradPhiJ and stiffness vector
