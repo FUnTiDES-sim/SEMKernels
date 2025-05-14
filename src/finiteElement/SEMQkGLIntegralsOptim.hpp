@@ -8,6 +8,10 @@
 
 #include<stdio.h>
 
+template <typename FUNC, int... Is>
+static constexpr void loop(FUNC &&func, std::integer_sequence<int, Is...>) {
+  (func(std::integral_constant<int, Is>{}), ...);
+}
 
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
@@ -120,8 +124,8 @@ public:
     const double w = SEMQkGLBasisFunctions<ORDER>::weight( qa ) *
                      SEMQkGLBasisFunctions<ORDER>::weight( qb ) *
                      SEMQkGLBasisFunctions<ORDER>::weight( qc );
-    for ( int i = 0; i < numSupportPoints1d; i++ )
-    {
+    loop(
+        [&](auto const i) {
       const int ibc = linearIndex( ORDER, i, qb, qc );
       const int aic = linearIndex( ORDER, qa, i, qc );
       const int abi = linearIndex( ORDER, qa, qb, i );
@@ -129,8 +133,8 @@ public:
       const double gib = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qb );
       const double gic = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qc );
 //      printf("i: %d, ibc: %d, aic: %d, abi: %d, gia: %f, gib: %f, gic: %f\n", i, ibc, aic, abi, gia, gib, gic);
-      for ( int j = 0; j < numSupportPoints1d; j++ )
-      {
+          loop(
+              [&](auto const j) {
         const int jbc = linearIndex( ORDER, j, qb, qc );
         const int ajc = linearIndex( ORDER, qa, j, qc );
         const int abj = linearIndex( ORDER, qa, qb, j );
@@ -148,17 +152,19 @@ public:
         const double w2 = w * gic * gjc;
         func( abi, abj, w2 * B[2] );
         // off-diagonal terms
-        const double w3 = w * gib * gjc;
-        func( aic, abj, w3 * B[3] );
-        func( abj, aic, w3 * B[3] );
-        const double w4 = w * gia * gjc;
-        func( ibc, abj, w4 * B[4] );
-        func( abj, ibc, w4 * B[4] );
-        const double w5 = w * gia * gjb;
-        func( ibc, ajc, w5 * B[5] );
-        func( ajc, ibc, w5 * B[5] );
-      }
-    }
+        // const double w3 = w * gib * gjc;
+        // func( aic, abj, w3 * B[3] );
+        // func( abj, aic, w3 * B[3] );
+        // const double w4 = w * gia * gjc;
+        // func( ibc, abj, w4 * B[4] );
+        // func( abj, ibc, w4 * B[4] );
+        // const double w5 = w * gia * gjb;
+        // func( ibc, ajc, w5 * B[5] );
+        // func( ajc, ibc, w5 * B[5] );
+              },
+              std::make_integer_sequence<int, ORDER + 1>{});
+        },
+        std::make_integer_sequence<int, ORDER + 1>{});
   }
 
 
@@ -214,7 +220,7 @@ public:
                                             float pnLocal[],
                                             float Y[] )
   {
-    shiva::CArrayNd<float,8,3> X{ 0.0f };
+    float X[8][3];
     int I = 0;
     for ( int k = 0; k < 2; ++k )
     {
