@@ -139,7 +139,7 @@ public:
       double const detJ = determinant( J );
       
       // mass matrix
-      constexpr int q = linearIndex( ORDER, qa, qb, qc );
+      constexpr int q = linearIndex( ORDER, qc, qb, qa );
       constexpr double w3D = quadrature::template weight< qa >() *
                              quadrature::template weight< qb >() *
                              quadrature::template weight< qc >();
