@@ -63,9 +63,9 @@ public:
     forSequence< numSupportPoints1d >( [&] ( auto const ici )
     {
       constexpr int i = decltype(ici)::value;      
-      const int ibc = linearIndex( ORDER, i, qb, qc );
-      const int aic = linearIndex( ORDER, qa, i, qc );
-      const int abi = linearIndex( ORDER, qa, qb, i );
+      const int ibc = linearIndex<ORDER>( i, qb, qc );
+      const int aic = linearIndex<ORDER>( qa, i, qc );
+      const int abi = linearIndex<ORDER>( qa, qb, i );
       const double gia = basisFunction::template gradient< i >( qcoords[0] );
       const double gib = basisFunction::template gradient< i >( qcoords[1] );
       const double gic = basisFunction::template gradient< i >( qcoords[2] );
@@ -74,9 +74,9 @@ public:
       forSequence< numSupportPoints1d >( [&] ( auto const icj )
       {
         constexpr int j = decltype(icj)::value;
-        const int jbc = linearIndex( ORDER, j, qb, qc );
-        const int ajc = linearIndex( ORDER, qa, j, qc );
-        const int abj = linearIndex( ORDER, qa, qb, j );
+        const int jbc = linearIndex<ORDER>( j, qb, qc );
+        const int ajc = linearIndex<ORDER>( qa, j, qc );
+        const int abj = linearIndex<ORDER>( qa, qb, j );
         const double gja = basisFunction::template gradient< j >( qcoords[0] );
         const double gjb = basisFunction::template gradient< j >( qcoords[1] );
         const double gjc = basisFunction::template gradient< j >( qcoords[2] );
@@ -90,15 +90,15 @@ public:
         const double w2 = w * gic * gjc;
         func( abi, abj, w2 * B[2] );
         // off-diagonal terms
-        const double w3 = w * gib * gjc;
-        func( aic, abj, w3 * B[3] );
-        func( abj, aic, w3 * B[3] );
-        const double w4 = w * gia * gjc;
-        func( ibc, abj, w4 * B[4] );
-        func( abj, ibc, w4 * B[4] );
-        const double w5 = w * gia * gjb;
-        func( ibc, ajc, w5 * B[5] );
-        func( ajc, ibc, w5 * B[5] );
+        // const double w3 = w * gib * gjc;
+        // func( aic, abj, w3 * B[3] );
+        // func( abj, aic, w3 * B[3] );
+        // const double w4 = w * gia * gjc;
+        // func( ibc, abj, w4 * B[4] );
+        // func( abj, ibc, w4 * B[4] );
+        // const double w5 = w * gia * gjb;
+        // func( ibc, ajc, w5 * B[5] );
+        // func( ajc, ibc, w5 * B[5] );
       } );
     } );
   }
@@ -112,7 +112,6 @@ public:
                              float massMatrix[],
                              FUNC && func )
   {
-    JacobianType J{ 0.0 };
 
     // this is a compile time quadrature loop over each tensor direction
     forNestedSequence< ORDER + 1,
@@ -124,22 +123,15 @@ public:
       constexpr int qa = decltype(icqa)::value;
       constexpr int qb = decltype(icqb)::value;
       constexpr int qc = decltype(icqc)::value;
-      // must be here, Jacobian must be put to 0 for each quadrature point
-      //Jacobian matrix J
-      for ( int i = 0; i < 3; ++i )
-      {
-        for ( int j = 0; j < 3; ++j )
-        {
-          J( i, j ) = 0;
-        }
-      }
+
+      JacobianType J{ 0.0 };
 
       shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
 
       double const detJ = determinant( J );
       
       // mass matrix
-      constexpr int q = linearIndex( ORDER, qc, qb, qa );
+      constexpr int q = linearIndex<ORDER>( qc, qb, qa );
       constexpr double w3D = quadrature::template weight< qa >() *
                              quadrature::template weight< qb >() *
                              quadrature::template weight< qc >();
@@ -178,7 +170,7 @@ public:
       {
         for ( int i = 0; i < 2; ++i )
         {
-          int const l = linearIndex( 1, i, j, k );
+          int const l = linearIndex<1>( i, j, k );
           cellData( i, j, k, 0 ) = nodesCoordsX( elementNumber, l );
           cellData( i, j, k, 1 ) = nodesCoordsY( elementNumber, l );
           cellData( i, j, k, 2 ) = nodesCoordsZ( elementNumber, l );
