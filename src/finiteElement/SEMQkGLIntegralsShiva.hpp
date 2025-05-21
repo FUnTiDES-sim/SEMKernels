@@ -44,8 +44,8 @@ public:
   using gfloat = typename ParentElementType::RealType;
 
   using JacobianType = typename std::remove_reference_t< TransformType >::JacobianType;
-  using quadrature = QuadratureGaussLobatto< double, numSupportPoints1d >;
-  using basisFunction = LagrangeBasis< double, ORDER, GaussLobattoSpacing >;
+  using quadrature = QuadratureGaussLobatto< gfloat, numSupportPoints1d >;
+  using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
 
 
