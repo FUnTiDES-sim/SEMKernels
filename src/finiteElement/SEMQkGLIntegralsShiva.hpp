@@ -210,7 +210,7 @@ public:
     {
       Y[q] = 0;
     }
-    computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const double val )
+    computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val )
     {
       Y[i] = Y[i] + val * pnLocal[j];
     } );
