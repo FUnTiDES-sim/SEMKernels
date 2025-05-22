@@ -66,31 +66,31 @@ public:
     forSequence< numSupportPoints1d >( [&] ( auto const ici )
     {
       constexpr int i = decltype(ici)::value;      
-      const int ibc = linearIndex<ORDER>( i, qb, qc );
-      const int aic = linearIndex<ORDER>( qa, i, qc );
-      const int abi = linearIndex<ORDER>( qa, qb, i );
-      const gfloat gia = basisFunction::template gradient< i >( qcoords[0] );
-      const gfloat gib = basisFunction::template gradient< i >( qcoords[1] );
-      const gfloat gic = basisFunction::template gradient< i >( qcoords[2] );
+      constexpr int ibc = linearIndex<ORDER>( i, qb, qc );
+      constexpr int aic = linearIndex<ORDER>( qa, i, qc );
+      constexpr int abi = linearIndex<ORDER>( qa, qb, i );
+      constexpr gfloat gia = basisFunction::template gradient< i >( qcoords[0] );
+      constexpr gfloat gib = basisFunction::template gradient< i >( qcoords[1] );
+      constexpr gfloat gic = basisFunction::template gradient< i >( qcoords[2] );
 //      printf("i: %d, ibc: %d, aic: %d, abi: %d, gia: %f, gib: %f, gic: %f\n", i, ibc, aic, abi, gia, gib, gic);
 
       forSequence< numSupportPoints1d >( [&] ( auto const icj )
       {
         constexpr int j = decltype(icj)::value;
-        const int jbc = linearIndex<ORDER>( j, qb, qc );
-        const int ajc = linearIndex<ORDER>( qa, j, qc );
-        const int abj = linearIndex<ORDER>( qa, qb, j );
-        const gfloat gja = basisFunction::template gradient< j >( qcoords[0] );
-        const gfloat gjb = basisFunction::template gradient< j >( qcoords[1] );
-        const gfloat gjc = basisFunction::template gradient< j >( qcoords[2] );
+        constexpr int jbc = linearIndex<ORDER>( j, qb, qc );
+        constexpr int ajc = linearIndex<ORDER>( qa, j, qc );
+        constexpr int abj = linearIndex<ORDER>( qa, qb, j );
+        constexpr gfloat gja = basisFunction::template gradient< j >( qcoords[0] );
+        constexpr gfloat gjb = basisFunction::template gradient< j >( qcoords[1] );
+        constexpr gfloat gjc = basisFunction::template gradient< j >( qcoords[2] );
 
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
         // diagonal terms
-        const gfloat w0 = w * gia * gja;
+        constexpr gfloat w0 = w * gia * gja;
         func( ibc, jbc, w0 * B[0] );
-        const gfloat w1 = w * gib * gjb;
+        constexpr gfloat w1 = w * gib * gjb;
         func( aic, ajc, w1 * B[1] );
-        const gfloat w2 = w * gic * gjc;
+        constexpr gfloat w2 = w * gic * gjc;
         func( abi, abj, w2 * B[2] );
         // off-diagonal terms
         // const gfloat w3 = w * gib * gjc;
@@ -206,10 +206,6 @@ public:
                        nodesCoordsZ,
                        cellCoordData );
 
-    for ( int q = 0; q < nPointsPerElement; q++ )
-    {
-      Y[q] = 0;
-    }
     computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val )
     {
       Y[i] = Y[i] + val * pnLocal[j];
