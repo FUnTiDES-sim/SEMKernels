@@ -4,12 +4,12 @@
 // #include "dataType.hpp"
 // #include "SEMmacros.hpp"
 #include "common/macros.hpp"
-#include "SEMdata.hpp"
 
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
-template< int ORDER >
+template< int ORDER,
+          typename FLOAT_TYPE >
 class SEMQkGLBasisFunctions
 {
   static constexpr int order = ORDER;
@@ -18,7 +18,7 @@ private:
   ////////////////////////////////////////////////////////////////////////////////////
   //  from GEOS implementation
   /////////////////////////////////////////////////////////////////////////////////////
-  constexpr static double sqrt5 = 2.2360679774997897;
+  constexpr static FLOAT_TYPE sqrt5 = 2.2360679774997897;
   // order of polynomial approximation
   constexpr static  int r = ORDER;
   // number of support/quadrature/nodes points in one direction
@@ -35,7 +35,7 @@ public:
 
   static constexpr inline 
   SEMKERNELS_HOST_DEVICE
-  void gaussLobattoQuadraturePoints( double (&quadraturePoints)[ORDER+1] )
+  void gaussLobattoQuadraturePoints( FLOAT_TYPE (&quadraturePoints)[ORDER+1] )
   {
     if constexpr ( ORDER==1 )
     {
@@ -57,7 +57,7 @@ public:
     }
     else if constexpr ( ORDER==4 )
     {
-       constexpr double sqrt3_7 = 0.6546536707079771;
+       constexpr FLOAT_TYPE sqrt3_7 = 0.6546536707079771;
         quadraturePoints[0] = -1.0;
         quadraturePoints[1] = -sqrt3_7;
         quadraturePoints[2] = 0.0;
@@ -66,9 +66,9 @@ public:
     }
     else if constexpr ( ORDER==5 )
     {
-         constexpr double sqrt__7_plus_2sqrt7__ = 3.50592393273573196;
-         constexpr double sqrt__7_mins_2sqrt7__ = 1.30709501485960033;
-         constexpr double sqrt_inv21 = 0.218217890235992381;
+         constexpr FLOAT_TYPE sqrt__7_plus_2sqrt7__ = 3.50592393273573196;
+         constexpr FLOAT_TYPE sqrt__7_mins_2sqrt7__ = 1.30709501485960033;
+         constexpr FLOAT_TYPE sqrt_inv21 = 0.218217890235992381;
         quadraturePoints[0] = -1.0;
         quadraturePoints[1] = -sqrt_inv21 * sqrt__7_plus_2sqrt7__;
         quadraturePoints[2] = -sqrt_inv21 * sqrt__7_mins_2sqrt7__;
@@ -80,7 +80,7 @@ public:
 
   static constexpr inline 
   SEMKERNELS_HOST_DEVICE
-  void gaussLobattoQuadratureWeights( double (&weights)[ORDER+1] )
+  void gaussLobattoQuadratureWeights( FLOAT_TYPE (&weights)[ORDER+1] )
   {
     if constexpr ( ORDER == 1 )
     {
@@ -121,7 +121,7 @@ public:
 
   static constexpr inline 
   SEMKERNELS_HOST_DEVICE
-  void shapeFunction1D( double xi, double (&shapeFunction)[ORDER+1] )
+  void shapeFunction1D( FLOAT_TYPE xi, FLOAT_TYPE (&shapeFunction)[ORDER+1] )
   {
     if constexpr ( ORDER == 1 )
     {
@@ -182,7 +182,7 @@ public:
 
   static constexpr inline 
   SEMKERNELS_HOST_DEVICE
-  void derivativeShapeFunction1D( double xi, double (&derivativeShapeFunction)[ORDER+1] )
+  void derivativeShapeFunction1D( FLOAT_TYPE xi, FLOAT_TYPE (&derivativeShapeFunction)[ORDER+1] )
   {
 
     if constexpr ( ORDER == 1 )
@@ -312,11 +312,11 @@ public:
     }
   }
 
-  template< typename vectorDouble, typename arrayDouble >
+  template< typename vectorFloat, typename arrayFloat >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE 
-  void getDerivativeBasisFunction1D( vectorDouble const & quadraturePoints,
-                                     arrayDouble & derivativeBasisFunction1D )
+  void getDerivativeBasisFunction1D( vectorFloat const & quadraturePoints,
+                                     arrayFloat & derivativeBasisFunction1D )
   {
     // loop over quadrature points
     for ( int q = 0; q < ORDER + 1; q++ )
@@ -326,17 +326,17 @@ public:
     }
   }
 
-  template< typename vectorDouble, typename arrayDouble >
+  template< typename vectorFloat, typename arrayFloat >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE 
-  void getDerivativeBasisFunction1DLow( vectorDouble const & quadraturePoints,
-                                        arrayDouble & derivativeBasisFunction1D )
+  void getDerivativeBasisFunction1DLow( vectorFloat const & quadraturePoints,
+                                        arrayFloat & derivativeBasisFunction1D )
   {
     // loop over quadrature points
     for ( int q = 0; q < ORDER + 1; q++ )
     {
       //extract all basis functions  for current quadrature point
-      SEMQkGLBasisFunctions<1>::derivativeShapeFunction1D( quadraturePoints[q], derivativeBasisFunction1D[q] );
+      SEMQkGLBasisFunctions<1,FLOAT_TYPE>::derivativeShapeFunction1D( quadraturePoints[q], derivativeBasisFunction1D[q] );
     }
   }
 
@@ -349,9 +349,9 @@ public:
   /////////////////////////////////////////////////////////////////////////////////////
 
   SEMKERNELS_HOST_DEVICE
-  constexpr static double parentSupportCoord( const int supportPointIndex )
+  constexpr static FLOAT_TYPE parentSupportCoord( const int supportPointIndex )
   {
-    double result = 0.0;
+    FLOAT_TYPE result = 0.0;
     if constexpr ( order==1 )
     {
       return -1.0 + 2.0 * (supportPointIndex & 1);
@@ -402,7 +402,7 @@ public:
    * @return The gradient of basis function.
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static double gradientAt( const int q, const int p )
+  constexpr static FLOAT_TYPE gradientAt( const int q, const int p )
   {
     switch ( order )
     {
@@ -446,7 +446,7 @@ public:
    * @return The derivative value
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static double basisGradientAt( const int , const int q, const int p )
+  constexpr static FLOAT_TYPE basisGradientAt( const int , const int q, const int p )
   {
     if ( p <= halfNodes )
     {
@@ -464,7 +464,7 @@ public:
    * @return The value of the weight
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static double weight( const int q )
+  constexpr static FLOAT_TYPE weight( const int q )
   {
     switch ( order )
     {

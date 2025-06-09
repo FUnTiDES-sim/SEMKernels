@@ -1,11 +1,13 @@
 #pragma once
 
 #include "macros.hpp"
-#include<cmath>
+#include <cmath>
+#include <tuple>
 
+template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-double determinant( double const (&m)[3][3] )
+T determinant( T const (&m)[3][3] )
 {
   return  + m[0][0] * ( m[1][1] * m[2][2] - m[2][1] * m[1][2] )
           - m[0][1] * ( m[1][0] * m[2][2] - m[2][0] * m[1][2] )
@@ -15,7 +17,7 @@ double determinant( double const (&m)[3][3] )
 template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-double determinant( T const & m )
+typename T::value_type determinant( T const & m )
 {
   return  + m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
           - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
@@ -33,14 +35,12 @@ double determinant( T const & m )
  * @param k The index in the xi2 direction (0,r)
  * @return The linear index of the support/quadrature point (0-(r+1)^3)
  */
+template< int ORDER>
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-int linearIndex( const int r,
-                 const int i,
-                 const int j,
-                 const int k )
+int linearIndex( const int i, const int j, const int k )
 {
-  return i + (r + 1) * j + (r + 1) * (r + 1) * k;
+  return i + (ORDER + 1) * j + (ORDER + 1) * (ORDER + 1) * k;
 }
 
   /**
@@ -52,13 +52,14 @@ int linearIndex( const int r,
    * @param i1 The Cartesian index of the support point in the xi1 direction.
    * @param i2 The Cartesian index of the support point in the xi2 direction.
    */
+  template< int ORDER >
   static constexpr inline 
   SEMKERNELS_HOST_DEVICE
-  std::tuple<int,int,int> tripleIndex( int const r, int const linearIndex )
+  std::tuple<int,int,int> tripleIndex( int const linearIndex )
   { 
-    return { ( linearIndex % ((r + 1) * (r + 1))) % (r + 1),
-             ( linearIndex % ((r + 1) * (r + 1))) / (r + 1),
-             ( linearIndex / ((r + 1) * (r + 1)) ) };
+    return { ( linearIndex % ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) % ( ORDER + 1 ) ,
+             ( linearIndex % ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) / ( ORDER + 1 ) ,
+             ( linearIndex / ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) };
 }
 
 /**
@@ -130,11 +131,11 @@ void computeB( T const (&J)[3][3],
   symInvert0( B );
 }
 
-template< typename T, typename JTYPE >
+template< typename T >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
-void computeB( JTYPE const & J,
-               T (&B)[6] )
+void computeB( T const & J,
+               typename T::value_type (&B)[6] )
 {
   B[0] = ( J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 ) );
   B[1] = ( J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 ) );

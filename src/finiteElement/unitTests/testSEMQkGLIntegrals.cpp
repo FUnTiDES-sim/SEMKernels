@@ -111,7 +111,10 @@ void computeMassMatrixAndStiffnessVectorTester()
     float * const pnLocal = device_data + pOffset;
     float * const Y = device_data + YOffset;
 
-    Integrals::computeMassMatrixAndStiffnessVector( 0,
+    Integrals integralInterface;
+
+    integralInterface.init();
+    integralInterface.computeMassMatrixAndStiffnessVector( 0,
                                                     length,
                                                     Xcoords,
                                                     Ycoords,

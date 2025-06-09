@@ -1,6 +1,6 @@
 [submodule "cmake/blt"]
 	path = cmake/blt
-	url = ../../LLNL/blt.git
+	url = https://github.com/LLNL/blt.git
 [submodule "src/Shiva"]
 	path = src/Shiva
-	url = ../../GEOS-DEV/Shiva.git
+	url = https://github.com/GEOS-DEV/Shiva.git

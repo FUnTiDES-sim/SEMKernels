@@ -3,6 +3,8 @@
 
 #include "SEMQkGLBasisFunctions.hpp"
 #include "common/mathUtilites.hpp"
+#include "common/CArray.hpp"
+
 
 #include<stdio.h>
 
@@ -10,7 +12,9 @@
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
-template< int ORDER >
+template< int ORDER,
+          typename TRANSFORM_FLOAT,
+          typename GRADIENT_FLOAT >
  class SEMQkGLIntegralsOptim
 {
 public:
@@ -18,6 +22,8 @@ public:
   constexpr static int numSupportPoints1d = ORDER + 1;
 
 
+  void init()
+  {}
   /////////////////////////////////////////////////////////////////////////////////////
   //  from GEOS implementation
   /////////////////////////////////////////////////////////////////////////////////////
@@ -33,9 +39,9 @@ public:
    * @return The interpolation coefficient
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static double interpolationCoord( const int q, const int k )
+  constexpr static TRANSFORM_FLOAT interpolationCoord( const int q, const int k )
   {
-    const double alpha = (SEMQkGLBasisFunctions<ORDER>::parentSupportCoord( q ) + 1.0 ) / 2.0;
+    const TRANSFORM_FLOAT alpha = (SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::parentSupportCoord( q ) + 1.0 ) / 2.0;
     return k == 0 ? ( 1.0 - alpha ) : alpha;
   }
 
@@ -51,7 +57,7 @@ public:
    * @return The value of the jacobian factor
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static double jacobianCoefficient1D( const int q, const int i, const int k, const int dir )
+  constexpr static TRANSFORM_FLOAT jacobianCoefficient1D( const int q, const int i, const int k, const int dir )
   {
     if ( i == dir )
     {
@@ -74,23 +80,25 @@ public:
    * @param X Array containing the coordinates of the mesh support points.
    * @param J Array to store the Jacobian transformation.
    */
-  template< typename COORDS_TYPE >
+  template< typename COORDS_TYPE,
+            typename JACOBIAN_TYPE >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void jacobianTransformation( int const qa,
                                int const qb,
                                int const qc,
                                COORDS_TYPE const & X,
-                               double ( & J )[3][3] )
+                               JACOBIAN_TYPE ( & J )[3][3] )
   {
     for ( int k = 0; k < 8; k++ )
     {
-      const int ka = k % 2;
-      const int kb = ( k % 4 ) / 2;
-      const int kc = k / 4;
+      // const int ka = k % 2;
+      // const int kb = ( k % 4 ) / 2;
+      // const int kc = k / 4;
+      auto const [ ka, kb, kc ] = tripleIndex<1>( k );
       for ( int j = 0; j < 3; j++ )
       {
-        double jacCoeff = jacobianCoefficient1D( qa, 0, ka, j ) *
+        JACOBIAN_TYPE jacCoeff = jacobianCoefficient1D( qa, 0, ka, j ) *
                           jacobianCoefficient1D( qb, 1, kb, j ) *
                           jacobianCoefficient1D( qc, 2, kc, j );
         for ( int i = 0; i < 3; i++ )
@@ -107,56 +115,56 @@ public:
   void computeGradPhiBGradPhi( int const qa,
                                int const qb,
                                int const qc,
-                               double const (&B)[6],
+                               TRANSFORM_FLOAT const (&B)[6],
                                FUNC && func )
   {
-    //const double w = GLBasis.weight<SEMinfo>(qa )*GLBasis.weight<SEMinfo>(qb )*GLBasis.weight<SEMinfo>(qc );
-    const double w = SEMQkGLBasisFunctions<ORDER>::weight( qa ) *
-                     SEMQkGLBasisFunctions<ORDER>::weight( qb ) *
-                     SEMQkGLBasisFunctions<ORDER>::weight( qc );
+    const TRANSFORM_FLOAT w = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::weight( qa ) *
+                              SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::weight( qb ) *
+                              SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::weight( qc );
     for ( int i = 0; i < numSupportPoints1d; i++ )
     {
-      const int ibc = linearIndex( ORDER, i, qb, qc );
-      const int aic = linearIndex( ORDER, qa, i, qc );
-      const int abi = linearIndex( ORDER, qa, qb, i );
-      const double gia = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qa );
-      const double gib = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qb );
-      const double gic = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, i, qc );
+      int const ibc = linearIndex<ORDER>( i, qb, qc );
+      int const aic = linearIndex<ORDER>( qa, i, qc );
+      int const abi = linearIndex<ORDER>( qa, qb, i );
+      GRADIENT_FLOAT const gia = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qa );
+      GRADIENT_FLOAT const gib = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qb );
+      GRADIENT_FLOAT const gic = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qc );
 //      printf("i: %d, ibc: %d, aic: %d, abi: %d, gia: %f, gib: %f, gic: %f\n", i, ibc, aic, abi, gia, gib, gic);
       for ( int j = 0; j < numSupportPoints1d; j++ )
       {
-        const int jbc = linearIndex( ORDER, j, qb, qc );
-        const int ajc = linearIndex( ORDER, qa, j, qc );
-        const int abj = linearIndex( ORDER, qa, qb, j );
-        const double gja = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qa );
-        const double gjb = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qb );
-        const double gjc = SEMQkGLBasisFunctions<ORDER>::basisGradientAt( ORDER, j, qc );
+        int const jbc = linearIndex<ORDER>( j, qb, qc );
+        int const ajc = linearIndex<ORDER>( qa, j, qc );
+        int const abj = linearIndex<ORDER>( qa, qb, j );
+        GRADIENT_FLOAT const gja = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qa );
+        GRADIENT_FLOAT const gjb = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qb );
+        GRADIENT_FLOAT const gjc = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qc );
 
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
 
         // diagonal terms
-        const double w0 = w * gia * gja;
+        GRADIENT_FLOAT const w0 = w * gia * gja;
         func( ibc, jbc, w0 * B[0] );
-        const double w1 = w * gib * gjb;
+        GRADIENT_FLOAT const w1 = w * gib * gjb;
         func( aic, ajc, w1 * B[1] );
-        const double w2 = w * gic * gjc;
+        GRADIENT_FLOAT const w2 = w * gic * gjc;
         func( abi, abj, w2 * B[2] );
         // off-diagonal terms
-        const double w3 = w * gib * gjc;
-        func( aic, abj, w3 * B[3] );
-        func( abj, aic, w3 * B[3] );
-        const double w4 = w * gia * gjc;
-        func( ibc, abj, w4 * B[4] );
-        func( abj, ibc, w4 * B[4] );
-        const double w5 = w * gia * gjb;
-        func( ibc, ajc, w5 * B[5] );
-        func( ajc, ibc, w5 * B[5] );
+        // GRADIENT_FLOAT const w3 = w * gib * gjc;
+        // func( aic, abj, w3 * B[3] );
+        // func( abj, aic, w3 * B[3] );
+        // GRADIENT_FLOAT const w4 = w * gia * gjc;
+        // func( ibc, abj, w4 * B[4] );
+        // func( abj, ibc, w4 * B[4] );
+        // GRADIENT_FLOAT const w5 = w * gia * gjb;
+        // func( ibc, ajc, w5 * B[5] );
+        // func( ajc, ibc, w5 * B[5] );
       }
     }
   }
 
 
-  template< typename COORDS_TYPE, typename FUNC >
+  template< typename COORDS_TYPE, 
+            typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeStiffnessAndMassTerm( int const q,
@@ -164,21 +172,27 @@ public:
                              float mass[],
                              FUNC && func )
   {
-    auto const [ qa, qb, qc ] = tripleIndex( ORDER, q );
+    auto const [ qa, qb, qc ] = tripleIndex<ORDER>( q );
 
-    double J[3][3] = { {0} };
+    TRANSFORM_FLOAT J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
 
-    double detJ = determinant( J );
+    TRANSFORM_FLOAT detJ = determinant( J );
 
-    double const w3D = SEMQkGLBasisFunctions<ORDER>::weight( qa ) * 
-                       SEMQkGLBasisFunctions<ORDER>::weight( qb ) * 
-                       SEMQkGLBasisFunctions<ORDER>::weight( qc );
+    TRANSFORM_FLOAT const w3D = SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::weight( qa ) * 
+                                SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::weight( qb ) * 
+                                SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::weight( qc );
 
     mass[q] = w3D * detJ;
 
-    double B[6] = {0};
+    TRANSFORM_FLOAT B[6] = {0};
     computeB( J, B );
+
+    for( int i = 0; i < 6; ++i )
+    {
+      B[i] *= detJ;
+    }
+
 
 //    printf( "B(%d,%d,%d): %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
 
@@ -201,7 +215,7 @@ public:
                                             float pnLocal[],
                                             float Y[] )
   {
-    shiva::CArrayNd<double,8,3> X{ 0.0 };
+    TRANSFORM_FLOAT X[8][3]{ {0} };
     int I = 0;
     for ( int k = 0; k < 2; ++k )
     {
@@ -209,7 +223,7 @@ public:
       {
         for ( int i = 0; i < 2; ++i )
         {
-          int l = i + j * 2 + k * (2) * (2);
+          int const l = linearIndex<1>( i, j, k );
           X[I][0] = nodesCoordsX( elementNumber, l );
           X[I][1] = nodesCoordsY( elementNumber, l );
           X[I][2] = nodesCoordsZ( elementNumber, l );
@@ -223,8 +237,9 @@ public:
     }
     for ( int q = 0; q < nPointsPerElement; q++ )
     {
-      computeStiffnessAndMassTerm( q, X, massMatrixLocal, [&] ( const int i, const int j, const double val )
+      computeStiffnessAndMassTerm( q, X, massMatrixLocal, [&] ( const int i, const int j, const GRADIENT_FLOAT val )
       {
+        GRADIENT_FLOAT localIncrement = val * pnLocal[j];
         Y[i] = Y[i] + val * pnLocal[j];
       } );
     }

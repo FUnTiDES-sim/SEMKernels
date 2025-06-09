@@ -18,8 +18,15 @@ class SEMQkGLIntegralsClassic
 {
 public:
   static constexpr int order = ORDER;
-  static constexpr int ROW = (order + 1) * (order + 1) * (order + 1);
+  static constexpr int rows = (order + 1) * (order + 1) * (order + 1);
 
+  void init()
+  {
+    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadraturePoints( m_quadraturePointCoords );
+    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadratureWeights( m_weights);
+    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1D( m_quadraturePointCoords, m_dPhi);
+    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1DLow( m_quadraturePointCoords, m_dPhiO1 );
+  };
 
   // compute B and M
   template< typename VECTOR_DOUBLE_VIEW,
@@ -152,7 +159,7 @@ public:
                                          float const pnLocal[],
                                          float Y[] )
   {
-    float R[ROW];
+    float R[rows];
 
     for ( int i3 = 0; i3 < ORDER + 1; i3++ )
     {
@@ -248,7 +255,7 @@ public:
   // returns mass matrix and stiffness vector local to an element
   template< typename ARRAY_DOUBLE_VIEW >
   SEMKERNELS_HOST_DEVICE 
-  constexpr static void computeMassMatrixAndStiffnessVector( const int & elementNumber,
+  constexpr void computeMassMatrixAndStiffnessVector( const int & elementNumber,
                                                               const int & nPointsPerElement,
                                                               ARRAY_DOUBLE_VIEW const & nodesCoordsX,
                                                               ARRAY_DOUBLE_VIEW const & nodesCoordsY,
@@ -280,24 +287,21 @@ public:
 
 
     // ***** Compute Low order Jacobian and B-matrix *****
-    double parentCoords[ORDER+1];
-    double weights[ORDER+1];
-    double dPhiO1[ORDER+1][2];
 
-    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadraturePoints( parentCoords );
-    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1DLow( parentCoords, dPhiO1 );
-    SEMQkGLBasisFunctions<ORDER>::gaussLobattoQuadratureWeights( weights );
 
-    float B[ROW][6];
-    computeB( weights, X, dPhiO1, massMatrixLocal, B );
-
-    // ***** Compute High order gradient operations for Stiffness *****
-    double dPhi[ORDER+1][ORDER+1];
-    SEMQkGLBasisFunctions<ORDER>::getDerivativeBasisFunction1D( parentCoords, dPhi );
+    float B[rows][6];
+    computeB( m_weights, X, m_dPhiO1, massMatrixLocal, B );
 
     // compute stifness  matrix ( durufle's optimization)
-    gradPhiGradPhi( nPointsPerElement, weights, dPhi, B, pnLocal, Y );
+    gradPhiGradPhi( nPointsPerElement, m_weights, m_dPhi, B, pnLocal, Y );
   }
+
+
+  
+  double m_quadraturePointCoords[ORDER+1];
+  double m_weights[ORDER+1];
+  double m_dPhi[ORDER+1][ORDER+1];
+  double m_dPhiO1[ORDER+1][2];
 
   /////////////////////////////////////////////////////////////////////////////////////
   //  end from first implementation
