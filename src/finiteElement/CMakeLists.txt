@@ -2,9 +2,10 @@
 set( finiteElement_headers
      SEMQkGLBasisFunctions.hpp
      SEMQkGLIntegrals.hpp
-     SEMQkGLIntegralsClassic.hpp
-     SEMQkGLIntegralsOptim.hpp
-     SEMQkGLIntegralsShiva.hpp
+     classic/SEMQkGLIntegralsClassic.hpp
+     optim/SEMQkGLIntegralsOptim.hpp
+     geos/SEMQkGLIntegralsGeos.hpp
+     shiva/SEMQkGLIntegralsShiva.hpp
      )
 
 set( finiteElement_sources
@@ -47,14 +48,17 @@ option(USE_SHIVA "Use SEMShiva" OFF)
 
 # Set the appropriate values
 if(USE_SEMCLASSIC)
-    set(SEMQkGLIntegrals_HEADER "SEMQkGLIntegralsClassic.hpp")
-    set(SEMQkGLIntegrals_TYPE "SEMQkGLIntegralsClassic")
+    set(SEMQkGLIntegrals_HEADER "classic/SEMQkGLIntegralsClassic.hpp")
+    set(SEMQkGLIntegrals_TYPE "classic/SEMQkGLIntegralsClassic")
 elseif(USE_SEMOPTIM)
-    set(SEMQkGLIntegrals_HEADER "SEMQkGLIntegralsOptim.hpp")
-    set(SEMQkGLIntegrals_TYPE "SEMQkGLIntegralsOptim")
+    set(SEMQkGLIntegrals_HEADER "optim/SEMQkGLIntegralsOptim.hpp")
+    set(SEMQkGLIntegrals_TYPE "optim/SEMQkGLIntegralsOptim")
+elseif(USE_SEMGEOS)
+    set(SEMQkGLIntegrals_HEADER "geos/SEMQkGLIntegralsGeos.hpp")
+    set(SEMQkGLIntegrals_TYPE "geos/SEMQkGLIntegralsGeos")
 elseif(USE_SHIVA)
-    set(SEMQkGLIntegrals_HEADER "SEMQkGLIntegralsShiva.hpp")
-    set(SEMQkGLIntegrals_TYPE "SEMQkGLIntegralsShiva")
+    set(SEMQkGLIntegrals_HEADER "shiva/SEMQkGLIntegralsShiva.hpp")
+    set(SEMQkGLIntegrals_TYPE "shiva/SEMQkGLIntegralsShiva")
 endif()
 
 # Generate the alias header
