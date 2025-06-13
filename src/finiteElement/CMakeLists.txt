@@ -1,11 +1,31 @@
+option(USE_SEMCLASSIC "Use SEMClassic" ON)
+option(USE_SEMOPTIM "Use SEMOptim" OFF)
+option(USE_SHIVA "Use SEMShiva" OFF)
 
-set( finiteElement_headers
-     SEMQkGLBasisFunctions.hpp
-     SEMQkGLIntegrals.hpp
-     classic/SEMQkGLIntegralSClassic.hpp
-     optim/SEMQkGLIntegralsOptim.hpp
-     shiva/SEMQkGLIntegralsShiva.hpp
-     )
+if( USE_SEMCLASSIC) 
+    set( finiteElement_headers
+         SEMQkGLBasisFunctions.hpp
+         SEMQkGLIntegrals.hpp
+         classic/SEMQkGLIntegralSClassic.hpp
+    )
+endif()
+
+if( USE_SEMOPTIM)
+    set( finiteElement_headers
+         SEMQkGLBasisFunctions.hpp
+         SEMQkGLIntegrals.hpp
+         optim/SEMQkGLIntegralsOptim.hpp
+)
+endif()
+
+if( USE_SHIVA)
+    set( finiteElement_headers
+         SEMQkGLBasisFunctions.hpp
+         SEMQkGLIntegrals.hpp
+         shiva/SEMQkGLIntegralsShiva.hpp
+    )
+endif()
+
 
 set( finiteElement_sources
      )
@@ -40,9 +60,6 @@ install( FILES ${finiteElement_headers}
 
 
 
-option(USE_SEMCLASSIC "Use SEMClassic" ON)
-option(USE_SEMOPTIM "Use SEMOptim" OFF)
-option(USE_SHIVA "Use SEMShiva" OFF)
 
 
 # Set the appropriate values
