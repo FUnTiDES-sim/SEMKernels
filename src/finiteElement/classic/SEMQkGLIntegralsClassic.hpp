@@ -1,7 +1,7 @@
 #ifndef SEMQKGLINTEGRALS_HPP_
 #define SEMQKGLINTEGRALS_HPP_
 
-#include "SEMQkGLBasisFunctions.hpp"
+#include "SEMQkGLBasisFunctionsClassic.hpp"
 #include "common/CArray.hpp"
 #include "common/mathUtilites.hpp"
 
@@ -11,7 +11,7 @@
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
 template< int ORDER >
-class SEMQkGLIntegrals
+class SEMQkGLIntegralsClassic
 {
 public:
   static constexpr int order = ORDER;
