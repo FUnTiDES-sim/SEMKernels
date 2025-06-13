@@ -3,7 +3,7 @@ set( finiteElement_headers
      SEMQkGLBasisFunctions.hpp
      SEMQkGLIntegrals.hpp
      classic/SEMQkGLIntegrals.hpp
-     optim/SEMQkGLIntegrals.hpp
+     optim/SEMQkGLIntegralsOptim.hpp
      shiva/SEMQkGLIntegralsShiva.hpp
      )
 

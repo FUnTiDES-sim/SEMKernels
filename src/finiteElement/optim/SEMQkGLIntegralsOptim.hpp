@@ -1,7 +1,7 @@
 #ifndef SEMQKGLINTEGRALS_HPP_
 #define SEMQKGLINTEGRALS_HPP_
 
-#include "SEMQkGLBasisFunctions.hpp"
+#include "SEMQkGLBasisFunctionsOptim.hpp"
 #include "common/mathUtilites.hpp"
 #include "common/CArray.hpp"
 
