@@ -4,7 +4,6 @@ set( finiteElement_headers
      SEMQkGLIntegrals.hpp
      classic/SEMQkGLIntegralsClassic.hpp
      optim/SEMQkGLIntegralsOptim.hpp
-     geos/SEMQkGLIntegralsGeos.hpp
      shiva/SEMQkGLIntegralsShiva.hpp
      )
 
