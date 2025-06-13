@@ -1,5 +1,5 @@
-#ifndef SEMQKGLINTEGRALSOPTIM_HPP_
-#define SEMQKGLINTEGRALSOPTIM_HPP_
+#ifndef SEMQKGLINTEGRALS_HPP_
+#define SEMQKGLINTEGRALS_HPP_
 
 #include "SEMQkGLBasisFunctions.hpp"
 #include "common/mathUtilites.hpp"
@@ -28,10 +28,6 @@ public:
   //  from GEOS implementation
   /////////////////////////////////////////////////////////////////////////////////////
 
-
-
-
-
   /**
    * @brief Compute the interpolation coefficients of the q-th quadrature point in a given direction
    * @param q the index of the quadrature point in 1D
@@ -41,7 +37,7 @@ public:
   SEMKERNELS_HOST_DEVICE
   constexpr static TRANSFORM_FLOAT interpolationCoord( const int q, const int k )
   {
-    const TRANSFORM_FLOAT alpha = (SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::parentSupportCoord( q ) + 1.0 ) / 2.0;
+    const TRANSFORM_FLOAT alpha = (SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::parentSupportCoord( q ) + 1.0 ) / 2.0;
     return k == 0 ? ( 1.0 - alpha ) : alpha;
   }
 
@@ -118,26 +114,26 @@ public:
                                TRANSFORM_FLOAT const (&B)[6],
                                FUNC && func )
   {
-    const TRANSFORM_FLOAT w = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::weight( qa ) *
-                              SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::weight( qb ) *
-                              SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::weight( qc );
+    const TRANSFORM_FLOAT w = SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::weight( qa ) *
+                              SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::weight( qb ) *
+                              SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::weight( qc );
     for ( int i = 0; i < numSupportPoints1d; i++ )
     {
       int const ibc = linearIndex<ORDER>( i, qb, qc );
       int const aic = linearIndex<ORDER>( qa, i, qc );
       int const abi = linearIndex<ORDER>( qa, qb, i );
-      GRADIENT_FLOAT const gia = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qa );
-      GRADIENT_FLOAT const gib = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qb );
-      GRADIENT_FLOAT const gic = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qc );
+      GRADIENT_FLOAT const gia = SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qa );
+      GRADIENT_FLOAT const gib = SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qb );
+      GRADIENT_FLOAT const gic = SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, i, qc );
 //      printf("i: %d, ibc: %d, aic: %d, abi: %d, gia: %f, gib: %f, gic: %f\n", i, ibc, aic, abi, gia, gib, gic);
       for ( int j = 0; j < numSupportPoints1d; j++ )
       {
         int const jbc = linearIndex<ORDER>( j, qb, qc );
         int const ajc = linearIndex<ORDER>( qa, j, qc );
         int const abj = linearIndex<ORDER>( qa, qb, j );
-        GRADIENT_FLOAT const gja = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qa );
-        GRADIENT_FLOAT const gjb = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qb );
-        GRADIENT_FLOAT const gjc = SEMQkGLBasisFunctions<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qc );
+        GRADIENT_FLOAT const gja = SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qa );
+        GRADIENT_FLOAT const gjb = SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qb );
+        GRADIENT_FLOAT const gjc = SEMQkGLBasisFunctionsOptim<ORDER,GRADIENT_FLOAT>::basisGradientAt( ORDER, j, qc );
 
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
 
@@ -179,9 +175,9 @@ public:
 
     TRANSFORM_FLOAT detJ = determinant( J );
 
-    TRANSFORM_FLOAT const w3D = SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::weight( qa ) * 
-                                SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::weight( qb ) * 
-                                SEMQkGLBasisFunctions<ORDER, TRANSFORM_FLOAT>::weight( qc );
+    TRANSFORM_FLOAT const w3D = SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::weight( qa ) * 
+                                SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::weight( qb ) * 
+                                SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::weight( qc );
 
     mass[q] = w3D * detJ;
 
@@ -250,4 +246,4 @@ public:
 
 };
 
-#endif //SEMQKGLINTEGRALSOPTIM_HPP_
+#endif //SEMQKGLINTEGRALS_HPP_

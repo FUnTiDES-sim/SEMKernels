@@ -2,8 +2,8 @@
 set( finiteElement_headers
      SEMQkGLBasisFunctions.hpp
      SEMQkGLIntegrals.hpp
-     classic/SEMQkGLIntegralsClassic.hpp
-     optim/SEMQkGLIntegralsOptim.hpp
+     classic/SEMQkGLIntegrals.hpp
+     optim/SEMQkGLIntegrals.hpp
      shiva/SEMQkGLIntegralsShiva.hpp
      )
 
@@ -50,8 +50,8 @@ if(USE_SEMCLASSIC)
     set(SEMQkGLIntegrals_HEADER "classic/SEMQkGLIntegralsClassic.hpp")
     set(SEMQkGLIntegrals_TYPE "classic/SEMQkGLIntegralsClassic")
 elseif(USE_SEMOPTIM)
-    set(SEMQkGLIntegrals_HEADER "optim/SEMQkGLIntegralsOptim.hpp")
-    set(SEMQkGLIntegrals_TYPE "optim/SEMQkGLIntegralsOptim")
+    set(SEMQkGLIntegrals_HEADER "optim/SEMQkGLIntegrals.hpp")
+    set(SEMQkGLIntegrals_TYPE "optim/SEMQkGLIntegrals")
 elseif(USE_SEMGEOS)
     set(SEMQkGLIntegrals_HEADER "geos/SEMQkGLIntegralsGeos.hpp")
     set(SEMQkGLIntegrals_TYPE "geos/SEMQkGLIntegralsGeos")
