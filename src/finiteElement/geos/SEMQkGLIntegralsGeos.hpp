@@ -6,21 +6,24 @@
 #include <dataType.hpp>
 #include "Qk_Hexahedron_Lagrange_GaussLobatto.hpp"
 
-// class SEMQkGLIntegralsGeos
-// {
-// private:
-//   int order;
-//   struct SEMinfo infos;
+template< int ORDER,
+          typename TRANSFORM_FLOAT,
+          typename GRADIENT_FLOAT >
+class SEMQkGLIntegralsGeos
+{
+private:
+   int order;
+   struct SEMinfo infos;
 
-//   constexpr static double sqrt5 = 2.2360679774997897;
-//   // order of polynomial approximation
-//   constexpr static int ORDER = SEMinfo::myOrderNumber;
-//   // Half the number of support points, rounded down. Precomputed for efficiency
-//   constexpr static int halfNodes = ORDER / 2;
+   constexpr static double sqrt5 = 2.2360679774997897;
+   // order of polynomial approximation
+   //constexpr static int ORDER = SEMinfo::myOrderNumber;
+   // Half the number of support points, rounded down. Precomputed for efficiency
+   constexpr static int halfNodes = ORDER / 2;
 
-// public:
-//   PROXY_HOST_DEVICE SEMQkGLIntegralsGeos() {};
-//   PROXY_HOST_DEVICE ~SEMQkGLIntegralsGeos(){};
+public:
+   PROXY_HOST_DEVICE SEMQkGLIntegralsGeos() {};
+   PROXY_HOST_DEVICE ~SEMQkGLIntegralsGeos(){};
 
 //   template <int ORDER>
 //   PROXY_HOST_DEVICE void computeMassMatrixAndStiffnessVector(
@@ -56,10 +59,9 @@
 //           });
 //     }
 //   }
-// };
+using computeMassMatrixAndStiffnessVector=Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeMassMatrixAndStiffnessVector   ;
 
-
-
-
+   
+};
 
 #endif // SEMQKINTEGRALSGEOS_HPP_

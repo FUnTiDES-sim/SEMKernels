@@ -2,6 +2,7 @@
 
 using tfloat = float;
 using gfloat = float;
+using real_t = float;
 
 #ifdef USE_SEMCLASSIC
     #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLIntegralsClassic.hpp>
@@ -10,6 +11,10 @@ using gfloat = float;
 #ifdef  USE_SEMOPTIM 
     #include <fe/SEMKernels/src/finiteElement/optim/SEMQkGLIntegralsOptim.hpp>
     using SEMQkGLIntegrals = SEMQkGLIntegralsOptim<SEMinfo::myOrderNumber, tfloat, gfloat>;
+#endif
+#ifdef  USE_SEMGEOS 
+    #include <fe/SEMKernels/src/finiteElement/geos/SEMQkGLIntegralsGeos.hpp>
+    using SEMQkGLIntegrals = SEMQkGLIntegralsGeos<SEMinfo::myOrderNumber, tfloat, gfloat>;
 #endif
 #ifdef USE_SHIVA
     #include <fe/SEMKernels/src/finiteElement/shiva/SEMQkGLIntegralsShiva.hpp>

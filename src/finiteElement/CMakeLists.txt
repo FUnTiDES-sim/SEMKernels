@@ -16,6 +16,14 @@ if( USE_SEMOPTIM)
          SEMQkGLIntegrals.hpp
          optim/SEMQkGLIntegralsOptim.hpp
 )
+
+endif()
+if( USE_SEMGEOS)
+    set( finiteElement_headers
+         SEMQkGLBasisFunctions.hpp
+         SEMQkGLIntegrals.hpp
+         geos/SEMQkGLIntegralsGeos.hpp
+)
 endif()
 
 if( USE_SHIVA)
