@@ -5,7 +5,7 @@
 #include <SEMmacros.hpp>
 #include <dataType.hpp>
 #include "Qk_Hexahedron_Lagrange_GaussLobatto.hpp"
-
+/*
 template< int ORDER,
           typename TRANSFORM_FLOAT,
           typename GRADIENT_FLOAT >
@@ -59,9 +59,7 @@ public:
 //           });
 //     }
 //   }
-using computeMassMatrixAndStiffnessVector=Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeMassMatrixAndStiffnessVector   ;
-
-   
 };
+*/
 
 #endif // SEMQKINTEGRALSGEOS_HPP_
