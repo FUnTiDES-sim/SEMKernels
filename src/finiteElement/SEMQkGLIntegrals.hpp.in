@@ -1,3 +1,0 @@
-#pragma once
-#include <@SEMQkGLIntegrals_HEADER@>
-using SEMQkGLIntegrals = @SEMQkGLIntegrals_TYPE@;
