@@ -1,10 +1,7 @@
-#ifndef SEMQKGLINTEGRALSCLASSIC_HPP_
-#define SEMQKGLINTEGRALSCLASSIC_HPP_
+#ifndef SEMQKGLINTEGRALS_HPP_
+#define SEMQKGLINTEGRALS_HPP_
 
-//#include "dataType.hpp"
-//#include "SEMmacros.hpp"
-//#include "SEMdata.hpp"
-#include "SEMQkGLBasisFunctions.hpp"
+#include "SEMQkGLBasisFunctionsClassic.hpp"
 #include "common/CArray.hpp"
 #include "common/mathUtilites.hpp"
 
@@ -309,4 +306,4 @@ public:
 
 };
 
-#endif //SEMQKGLINTEGRALSCLASSIC_HPP_
+#endif //SEMQKGLINTEGRALS_HPP_
