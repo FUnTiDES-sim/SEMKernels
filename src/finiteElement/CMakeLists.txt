@@ -3,7 +3,7 @@ if( USE_SEMCLASSIC)
     set( finiteElement_headers
          SEMQkGLBasisFunctions.hpp
          SEMQkGLIntegrals.hpp
-         classic/SEMQkGLIntegralSClassic.hpp
+         classic/SEMQkGLIntegralsClassic.hpp
     )
 endif()
 
