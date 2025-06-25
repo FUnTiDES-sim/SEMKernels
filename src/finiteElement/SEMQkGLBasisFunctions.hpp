@@ -4,7 +4,8 @@ using tfloat = float;
 using gfloat = float;
 
 #ifdef USE_SEMCLASSIC
-    #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctions.hpp>
+    #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctionsClassic.hpp>
+    using SEMQkGLBasisFunctions = SEMQkGLBasisFunctionsClassic;
 #endif
 
 #ifdef  USE_SEMOPTIM 

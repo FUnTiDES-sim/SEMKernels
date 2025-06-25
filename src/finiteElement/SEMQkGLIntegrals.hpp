@@ -6,7 +6,7 @@ using real_t = float;
 
 #ifdef USE_SEMCLASSIC
     #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLIntegralsClassic.hpp>
-    using SEMQkGLIntegrals = SEMQkGLIntegralsClassic<SEMinfo::myOrderNumber> ;
+    using SEMQkGLIntegrals = SEMQkGLIntegralsClassic ;
 #endif
 #ifdef  USE_SEMOPTIM 
     #include <fe/SEMKernels/src/finiteElement/optim/SEMQkGLIntegralsOptim.hpp>
