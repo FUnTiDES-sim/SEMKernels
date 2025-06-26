@@ -24,11 +24,11 @@ public:
   // compute B and M
   PROXY_HOST_DEVICE void computeB( const int & elementNumber,
                                      const int & order,
-                                     VECTOR_DOUBLE_VIEW const & weights,
+                                     VECTOR_REAL_VIEW const & weights,
                                      ARRAY_REAL_VIEW const & nodesCoordsX,
                                      ARRAY_REAL_VIEW const & nodesCoordsY,
                                      ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                     ARRAY_DOUBLE_VIEW const & dPhi,
+                                     ARRAY_REAL_VIEW const & dPhi,
                                      float massMatrixLocal[],
                                      float B[][COL] ) const
   {
@@ -127,8 +127,8 @@ public:
   // Marc Durufle Formulae
   PROXY_HOST_DEVICE void gradPhiGradPhi( const int & nPointsPerElement,
                                            const int & order,
-                                           VECTOR_DOUBLE_VIEW const & weights,
-                                           ARRAY_DOUBLE_VIEW const & dPhi,
+                                           VECTOR_REAL_VIEW const & weights,
+                                           ARRAY_REAL_VIEW const & dPhi,
                                            float const B[][COL],
                                            float const pnLocal[],
                                            float R[],
@@ -233,8 +233,8 @@ public:
                                                                       ARRAY_REAL_VIEW const & nodesCoordsX,
                                                                       ARRAY_REAL_VIEW const & nodesCoordsY,
                                                                       ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                                                      VECTOR_DOUBLE_VIEW const & weights,
-                                                                      ARRAY_DOUBLE_VIEW const & dPhi,
+                                                                      VECTOR_REAL_VIEW const & weights,
+                                                                      ARRAY_REAL_VIEW const & dPhi,
                                                                       float massMatrixLocal[],
                                                                       float const pnLocal[],
                                                                       float Y[]) const

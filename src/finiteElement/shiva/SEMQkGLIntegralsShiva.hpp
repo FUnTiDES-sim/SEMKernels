@@ -93,15 +93,15 @@ public:
         constexpr gfloat w2 = w * gic * gjc;
         func( abi, abj, w2 * B[2] );
         // off-diagonal terms
-        // const gfloat w3 = w * gib * gjc;
-        // func( aic, abj, w3 * B[3] );
-        // func( abj, aic, w3 * B[3] );
-        // const gfloat w4 = w * gia * gjc;
-        // func( ibc, abj, w4 * B[4] );
-        // func( abj, ibc, w4 * B[4] );
-        // const gfloat w5 = w * gia * gjb;
-        // func( ibc, ajc, w5 * B[5] );
-        // func( ajc, ibc, w5 * B[5] );
+        const gfloat w3 = w * gib * gjc;
+        func( aic, abj, w3 * B[3] );
+        func( abj, aic, w3 * B[3] );
+        const gfloat w4 = w * gia * gjc;
+        func( ibc, abj, w4 * B[4] );
+        func( abj, ibc, w4 * B[4] );
+        const gfloat w5 = w * gia * gjb;
+        func( ibc, ajc, w5 * B[5] );
+        func( ajc, ibc, w5 * B[5] );
       } );
     } );
   }
