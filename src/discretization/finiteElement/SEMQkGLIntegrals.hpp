@@ -5,7 +5,8 @@ using gfloat = float;
 using real_t = float;
 
 #ifdef USE_SEMCLASSIC
-    #include <fe/SEMKernels/src/discretization/finiteElement/classic/SEMQkGLIntegralsClassic.hpp>
+   // #include <fe/SEMKernels/src/discretization/finiteElement/classic/SEMQkGLIntegralsClassic.hpp>
+    #include <discretization/finiteElement/classic/SEMQkGLIntegralsClassic.hpp>
     using SEMQkGLIntegrals = SEMQkGLIntegralsClassic ;
 #endif
 #ifdef  USE_SEMOPTIM 
