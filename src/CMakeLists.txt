@@ -1,5 +1,5 @@
-add_subdirectory(Shiva)
+add_subdirectory(discretization/Shiva)
 
 shiva_add_code_checks( PREFIX SEMKernels
                        EXCLUDES "Shiva/*" )
-add_subdirectory(finiteElement)
+add_subdirectory(discretization/finiteElement)
