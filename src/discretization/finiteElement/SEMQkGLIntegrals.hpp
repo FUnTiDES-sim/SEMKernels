@@ -10,17 +10,19 @@ using real_t = float;
     using SEMQkGLIntegrals = SEMQkGLIntegralsClassic ;
 #endif
 #ifdef  USE_SEMOPTIM 
-    #include <fe/SEMKernels/src/discretization/finiteElement/optim/SEMQkGLIntegralsOptim.hpp>
+    //#include <fe/SEMKernels/src/discretization/finiteElement/optim/SEMQkGLIntegralsOptim.hpp>
+    #include <discretization/finiteElement/optim/SEMQkGLIntegralsOptim.hpp>
     using SEMQkGLIntegrals = SEMQkGLIntegralsOptim<SEMinfo::myOrderNumber, tfloat, gfloat>;
 #endif
 #ifdef  USE_SEMGEOS 
-    #include <fe/SEMKernels/src/discretization/finiteElement/geos/SEMQkGLIntegralsGeos.hpp>
+    //#include <fe/SEMKernels/src/discretization/finiteElement/geos/SEMQkGLIntegralsGeos.hpp>
+    #include <discretization/finiteElement/geos/SEMQkGLIntegralsGeos.hpp>
     //using SEMQkGLIntegrals = SEMQkGLIntegralsGeos<SEMinfo::myOrderNumber, tfloat, gfloat>;
     using SEMQkGLIntegrals = Q2_Hexahedron_Lagrange_GaussLobatto; 
 #endif // USE_SEMGEOS
 
 #ifdef USE_SHIVA
-    #include <fe/SEMKernels/src/discretization/finiteElement/shiva/SEMQkGLIntegralsShiva.hpp>
+    #include <discretization/finiteElement/shiva/SEMQkGLIntegralsShiva.hpp>
     using TransformType =
     LinearTransform< tfloat,
                      InterpolatedShape< tfloat,

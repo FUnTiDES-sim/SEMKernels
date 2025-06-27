@@ -9,9 +9,10 @@ using gfloat = float;
 #endif
 
 #ifdef  USE_SEMOPTIM 
-    #include <fe/SEMKernels/src/discretization/finiteElement/optim/SEMQkGLBasisFunctionsOptim.hpp>
+    //#include <fe/SEMKernels/src/discretization/finiteElement/optim/SEMQkGLBasisFunctionsOptim.hpp>
+    #include <discretization/finiteElement/optim/SEMQkGLBasisFunctionsOptim.hpp>
 #endif
 
 #ifdef  USE_SEMGEOS
-    #include <fe/SEMKernels/src/discretization/finiteElement/geos/SEMQkGLBasisFunctionsGeos.hpp>
+    #include <discretization/finiteElement/geos/SEMQkGLBasisFunctionsGeos.hpp>
 #endif
