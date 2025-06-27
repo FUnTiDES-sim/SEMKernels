@@ -1,6 +1,0 @@
-[submodule "cmake/blt"]
-	path = cmake/blt
-	url = https://github.com/LLNL/blt.git
-[submodule "tpl/camp"]
-	path = tpl/camp
-	url = https://github.com/LLNL/camp.git

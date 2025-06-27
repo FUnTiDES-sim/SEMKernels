@@ -1,3 +1,0 @@
-[submodule "extern/blt"]
-	path = extern/blt
-	url = https://github.com/llnl/blt
