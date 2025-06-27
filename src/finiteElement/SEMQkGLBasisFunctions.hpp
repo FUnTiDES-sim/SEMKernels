@@ -5,7 +5,7 @@ using gfloat = float;
 
 #ifdef USE_SEMCLASSIC
     #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctionsClassic.hpp>
-    using SEMQkGLBasisFunctions = SEMQkGLBasisFunctionsClassic;
+    using SEMQkGLBasisFunctions = SEMQkGLBasisFunctionsClassic<SEMinfo::myOrderNumber>;
 #endif
 
 #ifdef  USE_SEMOPTIM 

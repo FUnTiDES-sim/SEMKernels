@@ -5,85 +5,91 @@
 #include "SEMmacros.hpp"
 #include "SEMdata.hpp"
 using namespace std;
+#include "common/macros.hpp"
 
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
+template< int ORDER>
 class SEMQkGLBasisFunctionsClassic
 {
 private:
-  int order;
+  static constexpr int order=ORDER;
+  constexpr static double sqrt5 = 2.2360679774997897;
+  static constexpr double sqrt3_7 = 0.6546536707079771;
+  static constexpr double sqrt__7_plus_2sqrt7__ = 3.50592393273573196;
+  static constexpr double sqrt__7_mins_2sqrt7__ = 1.30709501485960033;
+  static constexpr double sqrt_inv21 = 0.218217890235992381;
   struct SEMinfo infos;
 
 public:
   PROXY_HOST_DEVICE SEMQkGLBasisFunctionsClassic(){};
   PROXY_HOST_DEVICE ~SEMQkGLBasisFunctionsClassic(){};
-
-  static  void gaussLobattoQuadraturePoints( int order, VECTOR_REAL_VIEW const & quadraturePoints ) //const
+  
+  static constexpr inline 
+  SEMKERNELS_HOST_DEVICE
+  void gaussLobattoQuadraturePoints( VECTOR_REAL_VIEW const & quadraturePoints ) //const
   {
-   switch( order )
-   {
-     case 1:
+    if constexpr ( ORDER < 1 )
+    {
        quadraturePoints[0]=-1.;
        quadraturePoints[1]=1.;
-       break;
-     case 2:
+    }
+    if constexpr ( ORDER == 2 )
+    {
        quadraturePoints[0]=-1.;
        quadraturePoints[1]=0.;
        quadraturePoints[2]=1.;
-       break;
-     case 3:
-       static constexpr double sqrt5 = 2.2360679774997897;
+    }
+    if constexpr ( ORDER == 3 )
+    {
        quadraturePoints[0] = -1.0;
        quadraturePoints[1] = -1./sqrt5;
        quadraturePoints[2] = 1./sqrt5;
        quadraturePoints[3] = 1.;
-       break;
-     case 4:
-       static constexpr double sqrt3_7 = 0.6546536707079771;
+    }
+    if constexpr ( ORDER == 4 )
+    {
        quadraturePoints[0] = -1.0;
        quadraturePoints[1] = -sqrt3_7;
        quadraturePoints[2] = 0.0;
        quadraturePoints[3] = sqrt3_7;
        quadraturePoints[4] = 1.0;
-       break;
-     case 5:
-       static constexpr double sqrt__7_plus_2sqrt7__ = 3.50592393273573196;
-       static constexpr double sqrt__7_mins_2sqrt7__ = 1.30709501485960033;
-       static constexpr double sqrt_inv21 = 0.218217890235992381;
+    }
+    if constexpr ( ORDER == 5 )
+    {
        quadraturePoints[0] = -1.0;
        quadraturePoints[1] = -sqrt_inv21*sqrt__7_plus_2sqrt7__;
        quadraturePoints[2] = -sqrt_inv21*sqrt__7_mins_2sqrt7__;
        quadraturePoints[3] = sqrt_inv21*sqrt__7_mins_2sqrt7__;
        quadraturePoints[4] = sqrt_inv21*sqrt__7_plus_2sqrt7__;
        quadraturePoints[5] = 1.0;
-       break;
-     default:
-       break;
-   }
+    }
   }
 
-  void gaussLobattoQuadratureWeights( int order, VECTOR_REAL_VIEW const & weights ) const
+  static constexpr inline 
+  SEMKERNELS_HOST_DEVICE
+  void gaussLobattoQuadratureWeights(VECTOR_REAL_VIEW const & weights )
   {
-    if( order == 1 )
+    if constexpr( order == 1 )
     {
       weights[0]=1.0;
       weights[1]=1.0;
     }
-    if( order == 2 )
+    if constexpr( order == 2 )
     {
       weights[0]=0.33333333;
       weights[1]=1.33333333;
       weights[2]= 0.33333333;
     }
-    if( order == 3 )
+    if constexpr( order == 3 )
     {
       weights[0]=0.16666667;
       weights[1]=0.83333333;
       weights[2]=0.83333333;
       weights[3]=0.16666667;
     }
-    if( order == 4 )
+    if constexpr( order == 4 )
     {
       weights[0]=0.1;
       weights[1]=0.54444444;
@@ -91,7 +97,7 @@ public:
       weights[3]=0.54444444;
       weights[4]=0.1;
     }
-    if( order == 5 )
+    if constexpr( order == 5 )
     {
       weights[0]=0.06666667;
       weights[1]=0.37847496;
@@ -101,21 +107,24 @@ public:
       weights[5]=0.06666667;
     }
   }
-  vector< double > shapeFunction1D( int order, double xi ) const
+
+  static constexpr inline 
+  SEMKERNELS_HOST_DEVICE
+  void shapeFunction1D(double xi, double shapeFunction[ORDER+1] ) //const
   {
-    std::vector< double > shapeFunction( order+1 );
-    if( order==1 )
+    //std::vector< double > shapeFunction( order+1 );
+    if constexpr( order==1 )
     {
       shapeFunction[0]=0.5*(1.0-xi);
       shapeFunction[1]=0.5*(1.0+xi);
     }
-    if( order==2 )
+    if constexpr( order==2 )
     {
       shapeFunction[0]= -1.0*xi*(0.5 - 0.5*xi);
       shapeFunction[1]=(1.0 - 1.0*xi)*(1.0*xi + 1.0);
       shapeFunction[2]= 1.0*xi*(0.5*xi + 0.5);
     }
-    if( order==3 )
+    if constexpr( order==3 )
     {
       shapeFunction[0]=(0.309016994374947 - 0.690983005625053*xi)*(0.5 - 0.5*xi)
                         *(-1.80901699437495*xi - 0.809016994374947);
@@ -126,7 +135,7 @@ public:
       shapeFunction[3]=(0.5*xi + 0.5)*(0.690983005625053*xi + 0.309016994374947)
                         *(1.80901699437495*xi - 0.809016994374947);
     }
-    if( order==4 )
+    if constexpr( order==4 )
     {
       shapeFunction[0]=1.0*xi*(0.39564392373896 - 0.60435607626104*xi)*(0.5 - 0.5*xi)
                         *(-2.89564392373896*xi - 1.89564392373896);
@@ -138,7 +147,7 @@ public:
       shapeFunction[4]= 1.0*xi*(0.5*xi + 0.5)*(0.60435607626104*xi + 0.39564392373896)
                       *(2.89564392373896*xi - 1.89564392373896);
     }
-    if( order==5 )
+    if constexpr( order==5 )
     {
       shapeFunction[0]=(0.221930066935875 - 0.778069933064125*xi)*(0.433445520691247 - 0.566554479308753*xi)
                         *(0.5 - 0.5*xi)*(-4.25632117622354*xi - 3.25632117622354)
@@ -159,24 +168,27 @@ public:
                         *(0.778069933064125*xi + 0.221930066935875)*(1.39905441140358*xi - 0.399054411403579)
                         *(4.25632117622354*xi - 3.25632117622354);
     }
-    return shapeFunction;
+    //return shapeFunction;
   }
-  vector< double > derivativeShapeFunction1D( int order, double xi ) const
-  {
-    std::vector< double > derivativeShapeFunction( order+1 );
 
-    if( order == 1 )
+  static constexpr inline 
+  SEMKERNELS_HOST_DEVICE
+  void derivativeShapeFunction1D( double xi,double derivativeShapeFunction[ORDER+1] ) //const
+  {
+    //std::vector< double > derivativeShapeFunction( order+1 );
+
+    if constexpr( order == 1 )
     {
       derivativeShapeFunction[0]=-0.5;
       derivativeShapeFunction[1]=0.5;
     }
-    if( order == 2 )
+    if constexpr( order == 2 )
     {
       derivativeShapeFunction[0]=1.0*xi - 0.5;
       derivativeShapeFunction[1]=-2.0*xi;
       derivativeShapeFunction[2]=1.0*xi + 0.5;
     }
-    if( order == 3 )
+    if constexpr( order == 3 )
     {
       derivativeShapeFunction[0]=-1.80901699437495*(0.309016994374947 - 0.690983005625053*xi)*(0.5 - 0.5*xi)
                                   + (-1.80901699437495*xi - 0.809016994374947)*(0.345491502812526*xi - 0.345491502812526)
@@ -194,7 +206,7 @@ public:
                                   (0.345491502812526*xi + 0.345491502812526)*(1.80901699437495*xi - 0.809016994374947) +
                                   1.80901699437495*(0.5*xi + 0.5)*(0.690983005625053*xi + 0.309016994374947);
     }
-    if( order == 4 )
+    if constexpr( order == 4 )
     {
       derivativeShapeFunction[0]=2.89564392373896*xi*(0.39564392373896 - 0.60435607626104*xi)*(0.5 - 0.5*xi) +
                                   0.5*xi*(0.39564392373896 - 0.60435607626104*xi)*(-2.89564392373896*xi - 1.89564392373896)
@@ -223,7 +235,7 @@ public:
                                   + 0.5*xi*(0.60435607626104*xi + 0.39564392373896)*(2.89564392373896*xi - 1.89564392373896)
                                   + (0.5*xi + 0.5)*(0.60435607626104*xi + 0.39564392373896)*(2.89564392373896*xi - 1.89564392373896);
     }
-    if( order == 5 )
+    if constexpr( order == 5 )
     {
       derivativeShapeFunction[0]=-1.39905441140358*(0.221930066935875 - 0.778069933064125*xi)*(0.433445520691247 - 0.566554479308753*xi)
                                   *(0.5 - 0.5*xi)*(-4.25632117622354*xi - 3.25632117622354)
@@ -290,18 +302,21 @@ public:
                                   + 0.778069933064125*(0.5*xi + 0.5)*(0.566554479308753*xi + 0.433445520691247)
                                   *(1.39905441140358*xi - 0.399054411403579)*(4.25632117622354*xi - 3.25632117622354);
     }
-    return derivativeShapeFunction  ;
+    //return derivativeShapeFunction  ;
   }
 
-  void getDerivativeBasisFunction1D( int order, VECTOR_REAL_VIEW const & quadraturePoints,
-                                     ARRAY_REAL_VIEW const & derivativeBasisFunction1D ) const
+
+  static constexpr inline 
+  SEMKERNELS_HOST_DEVICE
+  void getDerivativeBasisFunction1D( VECTOR_REAL_VIEW const & quadraturePoints,
+                                     ARRAY_REAL_VIEW const & derivativeBasisFunction1D ) //const
   {
     // loop over quadrature points
     for( int i = 0; i < order+1; i++ )
     {
-      std::vector< double > tmp( order+1 );
+      double tmp[ order+1 ]={0};
       //extract all basis functions  for current quadrature point
-      tmp=derivativeShapeFunction1D( order, quadraturePoints[i] );
+      derivativeShapeFunction1D(quadraturePoints[i],tmp );
       for( int j=0; j<order+1; j++ )
       {
         derivativeBasisFunction1D( j, i )=tmp[j];
