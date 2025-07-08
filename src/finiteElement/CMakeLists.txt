@@ -1,36 +1,10 @@
 
-if( USE_SEMCLASSIC) 
-    set( finiteElement_headers
-         SEMQkGLBasisFunctions.hpp
-         SEMQkGLIntegrals.hpp
-         classic/SEMQkGLIntegralsClassic.hpp
-    )
-endif()
-
-if( USE_SEMOPTIM)
-    set( finiteElement_headers
-         SEMQkGLBasisFunctions.hpp
-         SEMQkGLIntegrals.hpp
+  set( finiteElement_headers
+       classic/SEMQkGLIntegralsClassic.hpp
          optim/SEMQkGLIntegralsOptim.hpp
-)
-
-endif()
-if( USE_SEMGEOS)
-    set( finiteElement_headers
-         SEMQkGLBasisFunctions.hpp
-         SEMQkGLIntegrals.hpp
          geos/SEMQkGLIntegralsGeos.hpp
-)
-endif()
-
-if( USE_SHIVA)
-    set( finiteElement_headers
-         SEMQkGLBasisFunctions.hpp
-         SEMQkGLIntegrals.hpp
          shiva/SEMQkGLIntegralsShiva.hpp
-    )
-endif()
-
+      )
 
 set( finiteElement_dependencies
      shiva

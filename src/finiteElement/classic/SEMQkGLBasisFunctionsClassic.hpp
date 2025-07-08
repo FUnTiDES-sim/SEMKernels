@@ -13,13 +13,15 @@ class SEMQkGLBasisFunctionsClassic
 {
 private:
   int order;
-  struct SEMinfo infos;
 
 public:
   PROXY_HOST_DEVICE SEMQkGLBasisFunctionsClassic(){};
   PROXY_HOST_DEVICE ~SEMQkGLBasisFunctionsClassic(){};
 
-  static  void gaussLobattoQuadraturePoints( int order, VECTOR_REAL_VIEW const & quadraturePoints ) //const
+  
+  template< typename TYPE >
+  PROXY_HOST_DEVICE
+  static void gaussLobattoQuadraturePoints( int order, TYPE & quadraturePoints ) //const
   {
    switch( order )
    {
@@ -63,7 +65,9 @@ public:
    }
   }
 
-  void gaussLobattoQuadratureWeights( int order, VECTOR_REAL_VIEW const & weights ) const
+  template< typename TYPE >
+  PROXY_HOST_DEVICE
+  static void gaussLobattoQuadratureWeights( int order, TYPE & weights )
   {
     if( order == 1 )
     {
@@ -101,7 +105,9 @@ public:
       weights[5]=0.06666667;
     }
   }
-  vector< double > shapeFunction1D( int order, double xi ) const
+
+  PROXY_HOST_DEVICE
+  static vector< double > shapeFunction1D( int order, double xi )
   {
     std::vector< double > shapeFunction( order+1 );
     if( order==1 )
@@ -161,7 +167,11 @@ public:
     }
     return shapeFunction;
   }
-  vector< double > derivativeShapeFunction1D( int order, double xi ) const
+
+
+  PROXY_HOST_DEVICE
+  static  
+  vector< double > derivativeShapeFunction1D( int order, double xi )
   {
     std::vector< double > derivativeShapeFunction( order+1 );
 
@@ -293,8 +303,10 @@ public:
     return derivativeShapeFunction  ;
   }
 
-  void getDerivativeBasisFunction1D( int order, VECTOR_REAL_VIEW const & quadraturePoints,
-                                     ARRAY_REAL_VIEW const & derivativeBasisFunction1D ) const
+  template< typename T1, typename T2 >
+  PROXY_HOST_DEVICE
+  static void getDerivativeBasisFunction1D( int order, T1 const & quadraturePoints,
+                                     T2 & derivativeBasisFunction1D )
   {
     // loop over quadrature points
     for( int i = 0; i < order+1; i++ )
@@ -304,7 +316,7 @@ public:
       tmp=derivativeShapeFunction1D( order, quadraturePoints[i] );
       for( int j=0; j<order+1; j++ )
       {
-        derivativeBasisFunction1D( j, i )=tmp[j];
+        derivativeBasisFunction1D[ j ][ i ]=tmp[j];
       }
     }
   }

@@ -33,8 +33,6 @@ public:
   SEMKERNELS_HOST_DEVICE SEMQkGLBasisFunctionsOptim(){};
   SEMKERNELS_HOST_DEVICE ~SEMQkGLBasisFunctionsOptim(){};
 
-
-
   SEMKERNELS_HOST_DEVICE
   constexpr static FLOAT_TYPE parentSupportCoord( const int supportPointIndex )
   {

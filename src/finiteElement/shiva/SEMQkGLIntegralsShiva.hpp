@@ -47,11 +47,12 @@ public:
   using quadrature = QuadratureGaussLobatto< gfloat, numSupportPoints1d >;
   using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
+  struct PrecomputedData
+  {};
 
-
-  void init()
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
   {}
-
 
   template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
@@ -193,6 +194,7 @@ public:
                                             ARRAY_REAL_VIEW const & nodesCoordsX,
                                             ARRAY_REAL_VIEW const & nodesCoordsY,
                                             ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                            PrecomputedData const & precomputedData,
                                             float massMatrixLocal[],
                                             float pnLocal[],
                                             float Y[] )

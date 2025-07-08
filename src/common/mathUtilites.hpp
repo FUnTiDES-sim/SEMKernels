@@ -182,7 +182,7 @@ void computeB( T const (&J)[3][3],
   B[4] = ( J[0][0] * J[0][2] + J[1][0] * J[1][2] + J[2][0] * J[2][2] );
   B[5] = ( J[0][0] * J[0][1] + J[1][0] * J[1][1] + J[2][0] * J[2][1] );
 
-  symInvert0( B );
+  symInvert( B );
 }
 
 template< typename T >
