@@ -4,7 +4,8 @@
 #include "dataType.hpp"
 #include "SEMmacros.hpp"
 #include "SEMdata.hpp"
-#include "SEMQkGLBasisFunctions.hpp"
+#include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctionsClassic.hpp>
+
 using namespace std;
 
 /**
@@ -15,7 +16,7 @@ class SEMQkGLIntegralsClassic
 private:
   int order;
   struct SEMinfo infos;
-  SEMQkGLBasisFunctions GLBasis;
+  SEMQkGLBasisFunctionsClassic GLBasis;
 
 public:
   PROXY_HOST_DEVICE SEMQkGLIntegralsClassic(){};

@@ -62,6 +62,60 @@ int linearIndex( const int i, const int j, const int k )
              ( linearIndex / ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) };
 }
 
+template<typename T>
+PROXY_HOST_DEVICE
+T symDeterminant( T (&B)[3] )
+{
+  return B[0] * B[1] - B[2] * B[2];
+}
+
+template<typename T>
+PROXY_HOST_DEVICE
+T symDeterminant( T (&B)[6] )
+{
+  return B[ 0 ] * B[ 1 ] * B[ 2 ] +
+         B[ 5 ] * B[ 4 ] * B[ 3 ] * 2 -
+         B[ 0 ] * B[ 3 ] * B[ 3 ] -
+         B[ 1 ] * B[ 4 ] * B[ 4 ] -
+         B[ 2 ] * B[ 5 ] * B[ 5 ];
+}
+
+template <typename T>
+PROXY_HOST_DEVICE
+auto invert3x3(T (&Jinv)[3][3], T const (&J)[3][3])
+{
+  Jinv[ 0 ][ 0 ] = J[ 1 ][ 1 ] * J[ 2 ][ 2 ] - J[ 1 ][ 2 ] * J[ 2 ][ 1 ];
+  Jinv[ 0 ][ 1 ] = J[ 0 ][ 2 ] * J[ 2 ][ 1 ] - J[ 0 ][ 1 ] * J[ 2 ][ 2 ];
+  Jinv[ 0 ][ 2 ] = J[ 0 ][ 1 ] * J[ 1 ][ 2 ] - J[ 0 ][ 2 ] * J[ 1 ][ 1 ];  
+  T const det = J[ 0 ][ 0 ] * Jinv[ 0 ][ 0 ] +
+                J[ 1 ][ 0 ] * Jinv[ 0 ][ 1 ] +
+                J[ 2 ][ 0 ] * Jinv[ 0 ][ 2 ];
+
+  T const invDet = T(1) / det;
+
+  Jinv[ 0 ][ 0 ] *= invDet;
+  Jinv[ 0 ][ 1 ] *= invDet;
+  Jinv[ 0 ][ 2 ] *= invDet;
+  Jinv[ 1 ][ 0 ] = ( J[ 1 ][ 2 ] * J[ 2 ][ 0 ] - J[ 1 ][ 0 ] * J[ 2 ][ 2 ] ) * invDet;
+  Jinv[ 1 ][ 1 ] = ( J[ 0 ][ 0 ] * J[ 2 ][ 2 ] - J[ 0 ][ 2 ] * J[ 2 ][ 0 ] ) * invDet;
+  Jinv[ 1 ][ 2 ] = ( J[ 0 ][ 2 ] * J[ 1 ][ 0 ] - J[ 0 ][ 0 ] * J[ 1 ][ 2 ] ) * invDet;
+  Jinv[ 2 ][ 0 ] = ( J[ 1 ][ 0 ] * J[ 2 ][ 1 ] - J[ 1 ][ 1 ] * J[ 2 ][ 0 ] ) * invDet;
+  Jinv[ 2 ][ 1 ] = ( J[ 0 ][ 1 ] * J[ 2 ][ 0 ] - J[ 0 ][ 0 ] * J[ 2 ][ 1 ] ) * invDet;
+  Jinv[ 2 ][ 2 ] = ( J[ 0 ][ 0 ] * J[ 1 ][ 1 ] - J[ 0 ][ 1 ] * J[ 1 ][ 0 ] ) * invDet;
+
+  return det;
+}
+
+template <typename T>
+PROXY_HOST_DEVICE
+auto invert3x3( T (&Jinv)[3][3] )
+{
+  T const J[3][3] = { { Jinv[0][0], Jinv[0][1], Jinv[0][2] },
+                      { Jinv[1][0], Jinv[1][1], Jinv[1][2] },
+                      { Jinv[2][0], Jinv[2][1], Jinv[2][2] } };
+  return invert3x3( Jinv, J );
+}
+
 /**
  * @brief Invert the symmetric matrix @p srcSymMatrix and store the result in @p dstSymMatrix.
  * @param dstSymMatrix The 3x3 symmetric matrix to write the inverse to.
@@ -101,7 +155,7 @@ void symInvert( T (&dstSymMatrix)[6], T const (&srcSymMatrix)[6] )
 template< typename T >
 static inline
 SEMKERNELS_HOST_DEVICE
-void symInvert0( T (&symMatrix)[6] )
+void symInvert( T (&symMatrix)[6] )
 {
   T temp[ 6 ];
   symInvert( temp, symMatrix );
@@ -143,5 +197,5 @@ void computeB( T const & J,
   B[3] = ( J( 0, 1 ) * J( 0, 2 ) + J( 1, 1 ) * J( 1, 2 ) + J( 2, 1 ) * J( 2, 2 ) );
   B[4] = ( J( 0, 0 ) * J( 0, 2 ) + J( 1, 0 ) * J( 1, 2 ) + J( 2, 0 ) * J( 2, 2 ) );
   B[5] = ( J( 0, 0 ) * J( 0, 1 ) + J( 1, 0 ) * J( 1, 1 ) + J( 2, 0 ) * J( 2, 1 ) );
-  symInvert0( B );
+  symInvert( B );
 }

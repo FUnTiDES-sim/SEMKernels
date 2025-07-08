@@ -25,7 +25,8 @@
 #include "LagrangeBasis3GL.hpp"
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
-#include "tensorops.hpp"
+//#include "tensorops.hpp"
+#include "common/mathUtilites.hpp"
 #include <dataType.hpp>
 
 /**
@@ -1184,7 +1185,7 @@ computeDampingTerm( int const q,
   B[0] = J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0];
   B[1] = J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1];
   B[2] = J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1];
-  return sqrt( std::abs( symDeterminant< 2 >( B ) ) )*w2D;
+  return sqrt( std::abs( symDeterminant( B ) ) )*w2D;
 }
 
 template< typename GL_BASIS >
@@ -1229,7 +1230,7 @@ computeBzMatrix( int const qa,
                  real_t (& B)[6] )
 {
   jacobianTransformation( qa, qb, qc, X, J );
-  real_t const detJ = determinant< 3 >( J );
+  real_t const detJ = determinant( J );
 
   real_t Jinv[3][3] = {{0}};
   invert3x3( Jinv, J );
