@@ -57,6 +57,14 @@ public:
   /// The number of quadrature points per element.
   constexpr static int numQuadraturePoints = numNodes;
 
+  struct PrecomputedData
+  {};
+
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
+  {}
+
+
   /**
    * @brief The linear index associated to the given one-dimensional indices in the three directions
    * @param qa The index in the first direction
@@ -776,11 +784,15 @@ public:
                                                     real_t ( &gradN )[numNodes][3] );
 
   PROXY_HOST_DEVICE
-  void computeMassMatrixAndStiffnessVector(
-                          const int &elementNumber, const int &nPointsPerElement,
-                          ARRAY_REAL_VIEW const &nodesCoordsX, ARRAY_REAL_VIEW const &nodesCoordsY,
-                          ARRAY_REAL_VIEW const &nodesCoordsZ, float massMatrixLocal[],
-                          float pnLocal[], float Y[]) const;
+  static void computeMassMatrixAndStiffnessVector( const int &elementNumber, 
+                                            const int &nPointsPerElement,
+                                            ARRAY_REAL_VIEW const &nodesCoordsX, 
+                                            ARRAY_REAL_VIEW const &nodesCoordsY,
+                                            ARRAY_REAL_VIEW const &nodesCoordsZ, 
+                                            PrecomputedData const & precomputedData,
+                                            float massMatrixLocal[],
+                                            float pnLocal[], 
+                                            float Y[]);
 
 
 private:
@@ -1677,10 +1689,15 @@ gradient( int const q,
 template< typename GL_BASIS >
 PROXY_HOST_DEVICE
 void Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMassMatrixAndStiffnessVector(const int &elementNumber, const int &nPointsPerElement,
-                                    ARRAY_REAL_VIEW const &nodesCoordsX, ARRAY_REAL_VIEW const &nodesCoordsY,
-                                    ARRAY_REAL_VIEW const &nodesCoordsZ, float massMatrixLocal[],
-                                    float pnLocal[], float Y[]) const
+computeMassMatrixAndStiffnessVector( const int &elementNumber, 
+                                     const int &nPointsPerElement,
+                                     ARRAY_REAL_VIEW const &nodesCoordsX, 
+                                     ARRAY_REAL_VIEW const &nodesCoordsY,
+                                     ARRAY_REAL_VIEW const &nodesCoordsZ, 
+                                     PrecomputedData const & precomputedData,
+                                     float massMatrixLocal[],
+                                     float pnLocal[], 
+                                     float Y[] )
 {
     real_t X[8][3];
     int I = 0;
