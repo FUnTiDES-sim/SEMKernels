@@ -171,10 +171,8 @@ public:
 
   PROXY_HOST_DEVICE
   static  
-  vector< double > derivativeShapeFunction1D( int order, double xi )
+  void derivativeShapeFunction1D( int order, double xi, float * const derivativeShapeFunction )
   {
-    std::vector< double > derivativeShapeFunction( order+1 );
-
     if( order == 1 )
     {
       derivativeShapeFunction[0]=-0.5;
@@ -300,24 +298,18 @@ public:
                                   + 0.778069933064125*(0.5*xi + 0.5)*(0.566554479308753*xi + 0.433445520691247)
                                   *(1.39905441140358*xi - 0.399054411403579)*(4.25632117622354*xi - 3.25632117622354);
     }
-    return derivativeShapeFunction  ;
   }
 
   template< typename T1, typename T2 >
   PROXY_HOST_DEVICE
   static void getDerivativeBasisFunction1D( int order, T1 const & quadraturePoints,
-                                     T2 & derivativeBasisFunction1D )
+                                            T2 & derivativeBasisFunction1D )
   {
     // loop over quadrature points
-    for( int i = 0; i < order+1; i++ )
+    for( int q = 0; q < order+1; q++ )
     {
-      std::vector< double > tmp( order+1 );
       //extract all basis functions  for current quadrature point
-      tmp=derivativeShapeFunction1D( order, quadraturePoints[i] );
-      for( int j=0; j<order+1; j++ )
-      {
-        derivativeBasisFunction1D[ j ][ i ]=tmp[j];
-      }
+      derivativeShapeFunction1D( order, quadraturePoints[q], derivativeBasisFunction1D[q] );
     }
   }
 };

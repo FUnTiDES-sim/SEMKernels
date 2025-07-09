@@ -38,8 +38,8 @@ public:
 
     // initialize derivative basis function
     SEMQkGLBasisFunctionsClassic::getDerivativeBasisFunction1D( ORDER,
-                                  precomputedData.quadraturePoints,
-                                  precomputedData.derivativeBasisFunction1D );
+                                                                precomputedData.quadraturePoints,
+                                                                precomputedData.derivativeBasisFunction1D );
   }
 
   // compute B and M
@@ -77,9 +77,9 @@ public:
               float X=nodesCoordsX( elementNumber, j );
               float Y=nodesCoordsY( elementNumber, j );
               float Z=nodesCoordsZ( elementNumber, j );
-              jac00+=X*dPhi[ j1 ][ i1 ];
-              jac20+=Y*dPhi[ j1 ][ i1 ];
-              jac10+=Z*dPhi[ j1 ][ i1 ];
+              jac00+=X*dPhi[ i1 ][ j1 ];
+              jac20+=Y*dPhi[ i1 ][ j1 ];
+              jac10+=Z*dPhi[ i1 ][ j1 ];
               }
             for( int j2=0; j2<order+1; j2++ )
             {
@@ -87,9 +87,9 @@ public:
               float X=nodesCoordsX( elementNumber, j );
               float Y=nodesCoordsY( elementNumber, j );
               float Z=nodesCoordsZ( elementNumber, j );
-              jac01+=X*dPhi[ j2 ][ i2 ];
-              jac21+=Y*dPhi[ j2 ][ i2 ];
-              jac11+=Z*dPhi[ j2 ][ i2 ];
+              jac01+=X*dPhi[ i2 ][ j2 ];
+              jac21+=Y*dPhi[ i2 ][ j2 ];
+              jac11+=Z*dPhi[ i2 ][ j2 ];
             }
             for( int j3=0; j3<order+1; j3++ )
             {
@@ -97,9 +97,9 @@ public:
               float X=nodesCoordsX( elementNumber, j );
               float Y=nodesCoordsY( elementNumber, j );
               float Z=nodesCoordsZ( elementNumber, j );
-              jac02+=X*dPhi[ j3 ][ i3 ];
-              jac22+=Y*dPhi[ j3 ][ i3 ];
-              jac12+=Z*dPhi[ j3 ][ i3 ];
+              jac02+=X*dPhi[ i3 ][ j3 ];
+              jac22+=Y*dPhi[ i3 ][ j3 ];
+              jac12+=Z*dPhi[ i3 ][ j3 ];
             }
             // detJ
             float detJ=abs( jac00*(jac11*jac22-jac21*jac12)
@@ -174,7 +174,7 @@ public:
               for( int l=0; l<order+1; l++ )
               {
                 int ll=l+i2*(order+1)+i3*orderPow2;
-                R[j]+=weights[l]*weights[i2]*weights[i3]*(B[ll][0]*dPhi[ i1 ][ l ]*dPhi[ j1 ][ l ]);
+                R[j]+=weights[l]*weights[i2]*weights[i3]*(B[ll][0]*dPhi[ l ][ i1 ]*dPhi[ l ][ j1 ]);
               }
             }
             //B22
@@ -184,7 +184,7 @@ public:
               for( int m=0; m<order+1; m++ )
               {
                 int mm=i1+m*(order+1)+i3*orderPow2;
-                R[j]+=weights[i1]*weights[m]*weights[i3]*(B[mm][1]*dPhi[ i2 ][ m ]*dPhi[ j2 ][ m ]);
+                R[j]+=weights[i1]*weights[m]*weights[i3]*(B[mm][1]*dPhi[ m ][ i2 ]*dPhi[ m ][ j2 ]);
               }
             }
             //B33
@@ -194,7 +194,7 @@ public:
               for( int n=0; n<order+1; n++ )
               {
                 int nn=i1+i2*(order+1)+n*orderPow2;
-                R[j]+=weights[i1]*weights[i2]*weights[n]*(B[nn][2]*dPhi[ i3 ][ n ]*dPhi[ j3 ][ n ]);
+                R[j]+=weights[i1]*weights[i2]*weights[n]*(B[nn][2]*dPhi[ n ][ i3 ]*dPhi[ n ][ j3 ]);
               }
             }
             // B12,B21 (B[][3])
@@ -205,8 +205,8 @@ public:
                 int j=j1+j2*(order+1)+i3*orderPow2;
                 int k=j1+i2*(order+1)+i3*orderPow2;
                 int l=i1+j2*(order+1)+i3*orderPow2;
-                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][3]*dPhi[ i1 ][ j1 ] )*dPhi[ j2 ][ i2 ] +
-                       weights[i1]*weights[j2]*weights[i3]*(B[l][3]*dPhi[ j1 ][ i1 ] )*dPhi[ i2 ][ j2 ] ;
+                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][3]*dPhi[ j1 ][ i1 ] )*dPhi[ i2 ][ j2 ] +
+                       weights[i1]*weights[j2]*weights[i3]*(B[l][3]*dPhi[ i1 ][ j1 ] )*dPhi[ j2 ][ i2 ] ;
               }
             }
             // B13,B31 (B[][4])
@@ -217,8 +217,8 @@ public:
                 int j=j1+i2*(order+1)+i3*orderPow2;
                 int k=j1+i2*(order+1)+i3*orderPow2;
                 int l=j1+i2*(order+1)+j3*orderPow2;
-                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][4]*dPhi[ j1 ][ i1 ] )*dPhi[ j3 ][ i3 ] +
-                       weights[j1]*weights[i2]*weights[j3]*(B[l][4]*dPhi[ j1 ][ i1 ] )*dPhi[ i3 ][ j3 ] ;
+                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][4]*dPhi[ i1 ][ j1 ] )*dPhi[ i3 ][ j3 ] +
+                       weights[j1]*weights[i2]*weights[j3]*(B[l][4]*dPhi[ i1 ][ j1 ] )*dPhi[ j3 ][ i3 ] ;
               }
             }
             // B23,B32 (B[][5])
@@ -229,8 +229,8 @@ public:
                 int j=i1+j2*(order+1)+j3*orderPow2;
                 int k=i1+j2*(order+1)+i3*orderPow2;
                 int l=i1+i2*(order+1)+j3*orderPow2;
-                R[j]+=weights[i1]*weights[j2]*weights[i3]*(B[k][5]*dPhi[ i2 ][ i2 ] )*dPhi[ j3 ][ i3 ] +
-                       weights[i1]*weights[i2]*weights[j3]*(B[l][5]*dPhi[ j2 ][ i2 ]*dPhi[ i3 ][ j3 ]);
+                R[j]+=weights[i1]*weights[j2]*weights[i3]*(B[k][5]*dPhi[ i2 ][ i2 ] )*dPhi[ i3 ][ j3 ] +
+                       weights[i1]*weights[i2]*weights[j3]*(B[l][5]*dPhi[ i2 ][ j2 ]*dPhi[ j3 ][ i3 ]);
               }
             }
     
