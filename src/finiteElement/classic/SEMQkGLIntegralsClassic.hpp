@@ -145,19 +145,15 @@ public:
     
   // compute the matrix $R_{i,j}=\int_{K}{\nabla{\phi_i}.\nabla{\phi_j}dx}$
   // Marc Durufle Formulae
-<<<<<<< Updated upstream
   PROXY_HOST_DEVICE 
   static void gradPhiGradPhi( const int & nPointsPerElement,
-=======
-  PROXY_HOST_DEVICE static void gradPhiGradPhi( const int & nPointsPerElement,
->>>>>>> Stashed changes
-                                           const int & order,
-                                           float const (&weights)[ORDER + 1],
-                                           float const (&dPhi)[ORDER + 1][ORDER + 1],
-                                           float const B[][COL],
-                                           float const pnLocal[],
-                                           float R[],
-                                           float Y[] )
+                              const int & order,
+                              float const (&weights)[ORDER + 1],
+                              float const (&dPhi)[ORDER + 1][ORDER + 1],
+                              float const B[][COL],
+                              float const pnLocal[],
+                              float R[],
+                              float Y[] )
   {
       int orderPow2=(order+1)*(order+1);
       for( int i3=0; i3<order+1; i3++ )
@@ -253,27 +249,15 @@ public:
   // compute stiffnessVector.
   // returns mass matrix and stiffness vector local to an element
   PROXY_HOST_DEVICE 
-<<<<<<< Updated upstream
-  static void computeMassMatrixAndStiffnessVector(const int & elementNumber,
-                                                                      const int & nPointsPerElement,
-                                                                      ARRAY_REAL_VIEW const & nodesCoordsX,
-                                                                      ARRAY_REAL_VIEW const & nodesCoordsY,
-                                                                      ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                                                      PrecomputedData const & precomputedData,
-                                                                      float massMatrixLocal[],
-                                                                      float const pnLocal[],
-                                                                      float Y[] )
-=======
   static void computeMassMatrixAndStiffnessVector( const int & elementNumber,
-                                                              const int & nPointsPerElement,
-                                                              ARRAY_REAL_VIEW const & nodesCoordsX,
-                                                              ARRAY_REAL_VIEW const & nodesCoordsY,
-                                                              ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                                              PrecomputedData const & precomputedData,
-                                                              float massMatrixLocal[],
-                                                              float const pnLocal[],
-                                                              float Y[])
->>>>>>> Stashed changes
+                                                   const int & nPointsPerElement,
+                                                   ARRAY_REAL_VIEW const & nodesCoordsX,
+                                                   ARRAY_REAL_VIEW const & nodesCoordsY,
+                                                   ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                                   PrecomputedData const & precomputedData,
+                                                   float massMatrixLocal[],
+                                                   float const pnLocal[],
+                                                   float Y[])
   {
       float B[ROW][COL];
       float R[ROW];
