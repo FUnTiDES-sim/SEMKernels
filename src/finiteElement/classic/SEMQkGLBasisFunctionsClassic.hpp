@@ -3,7 +3,6 @@
 
 #include "dataType.hpp"
 #include "SEMmacros.hpp"
-#include "SEMdata.hpp"
 using namespace std;
 
 /**

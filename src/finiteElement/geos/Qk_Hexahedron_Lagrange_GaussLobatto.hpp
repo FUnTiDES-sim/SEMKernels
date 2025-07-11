@@ -57,6 +57,10 @@ public:
   /// The number of quadrature points per element.
   constexpr static int numQuadraturePoints = numNodes;
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
   struct PrecomputedData
   {};
 
@@ -64,7 +68,10 @@ public:
   static void init( PrecomputedData & )
   {}
 
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
   /**
    * @brief The linear index associated to the given one-dimensional indices in the three directions
    * @param qa The index in the first direction
@@ -784,6 +791,7 @@ public:
                                                     real_t ( &gradN )[numNodes][3] );
 
   PROXY_HOST_DEVICE
+<<<<<<< Updated upstream
   static void computeMassMatrixAndStiffnessVector( const int &elementNumber, 
                                             const int &nPointsPerElement,
                                             ARRAY_REAL_VIEW const &nodesCoordsX, 
@@ -793,6 +801,18 @@ public:
                                             float massMatrixLocal[],
                                             float pnLocal[], 
                                             float Y[]);
+=======
+  static void 
+  computeMassMatrixAndStiffnessVector( const int &elementNumber, 
+                                       const int &nPointsPerElement,
+                                       ARRAY_REAL_VIEW const &nodesCoordsX, 
+                                       ARRAY_REAL_VIEW const &nodesCoordsY,
+                                       ARRAY_REAL_VIEW const &nodesCoordsZ, 
+                                       PrecomputedData const & precomputedData, 
+                                       float massMatrixLocal[],
+                                       float pnLocal[], 
+                                       float Y[] );
+>>>>>>> Stashed changes
 
 
 private:
@@ -1696,8 +1716,12 @@ computeMassMatrixAndStiffnessVector( const int &elementNumber,
                                      ARRAY_REAL_VIEW const &nodesCoordsZ, 
                                      PrecomputedData const & precomputedData,
                                      float massMatrixLocal[],
+<<<<<<< Updated upstream
                                      float pnLocal[], 
                                      float Y[] )
+=======
+                                     float pnLocal[], float Y[] )
+>>>>>>> Stashed changes
 {
     real_t X[8][3];
     int I = 0;

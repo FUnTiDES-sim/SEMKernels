@@ -3,7 +3,6 @@
 
 #include "dataType.hpp"
 #include "SEMmacros.hpp"
-#include "SEMdata.hpp"
 #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctionsClassic.hpp>
 
 using namespace std;
@@ -146,8 +145,12 @@ public:
     
   // compute the matrix $R_{i,j}=\int_{K}{\nabla{\phi_i}.\nabla{\phi_j}dx}$
   // Marc Durufle Formulae
+<<<<<<< Updated upstream
   PROXY_HOST_DEVICE 
   static void gradPhiGradPhi( const int & nPointsPerElement,
+=======
+  PROXY_HOST_DEVICE static void gradPhiGradPhi( const int & nPointsPerElement,
+>>>>>>> Stashed changes
                                            const int & order,
                                            float const (&weights)[ORDER + 1],
                                            float const (&dPhi)[ORDER + 1][ORDER + 1],
@@ -250,6 +253,7 @@ public:
   // compute stiffnessVector.
   // returns mass matrix and stiffness vector local to an element
   PROXY_HOST_DEVICE 
+<<<<<<< Updated upstream
   static void computeMassMatrixAndStiffnessVector(const int & elementNumber,
                                                                       const int & nPointsPerElement,
                                                                       ARRAY_REAL_VIEW const & nodesCoordsX,
@@ -259,6 +263,17 @@ public:
                                                                       float massMatrixLocal[],
                                                                       float const pnLocal[],
                                                                       float Y[] )
+=======
+  static void computeMassMatrixAndStiffnessVector( const int & elementNumber,
+                                                              const int & nPointsPerElement,
+                                                              ARRAY_REAL_VIEW const & nodesCoordsX,
+                                                              ARRAY_REAL_VIEW const & nodesCoordsY,
+                                                              ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                                              PrecomputedData const & precomputedData,
+                                                              float massMatrixLocal[],
+                                                              float const pnLocal[],
+                                                              float Y[])
+>>>>>>> Stashed changes
   {
       float B[ROW][COL];
       float R[ROW];
