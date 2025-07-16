@@ -22,12 +22,9 @@ public:
   PROXY_HOST_DEVICE ~SEMQkGLIntegralsClassic(){};
 
   // compute B and M
-  PROXY_HOST_DEVICE void computeB( const int & elementNumber,
-                                     const int & order,
+  PROXY_HOST_DEVICE void computeB(   const int & order,
                                      VECTOR_DOUBLE_VIEW const & weights,
-                                     ARRAY_REAL_VIEW const & nodesCoordsX,
-                                     ARRAY_REAL_VIEW const & nodesCoordsY,
-                                     ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                     const float (*nodesCoords)[3],
                                      ARRAY_DOUBLE_VIEW const & dPhi,
                                      float massMatrixLocal[],
                                      float B[][COL] ) const
@@ -53,9 +50,9 @@ public:
             for( int j1=0; j1<order+1; j1++ )
             {
               int j=j1+i2*(order+1)+i3*(order+1)*(order+1);
-              float X=nodesCoordsX( elementNumber, j );
-              float Y=nodesCoordsY( elementNumber, j );
-              float Z=nodesCoordsZ( elementNumber, j );
+              float X=nodesCoords[j][0];
+              float Y=nodesCoords[j][1];
+              float Z=nodesCoords[j][2];
               jac00+=X*dPhi( j1, i1 );
               jac20+=Y*dPhi( j1, i1 );
               jac10+=Z*dPhi( j1, i1 );
@@ -63,9 +60,9 @@ public:
             for( int j2=0; j2<order+1; j2++ )
             {
               int j=i1+j2*(order+1)+i3*(order+1)*(order+1);
-              float X=nodesCoordsX( elementNumber, j );
-              float Y=nodesCoordsY( elementNumber, j );
-              float Z=nodesCoordsZ( elementNumber, j );
+              float X=nodesCoords[j][0];
+              float Y=nodesCoords[j][1];
+              float Z=nodesCoords[j][2];
               jac01+=X*dPhi( j2, i2 );
               jac21+=Y*dPhi( j2, i2 );
               jac11+=Z*dPhi( j2, i2 );
@@ -73,9 +70,9 @@ public:
             for( int j3=0; j3<order+1; j3++ )
             {
               int j=i1+i2*(order+1)+j3*(order+1)*(order+1);
-              float X=nodesCoordsX( elementNumber, j );
-              float Y=nodesCoordsY( elementNumber, j );
-              float Z=nodesCoordsZ( elementNumber, j );
+              float X=nodesCoords[j][0];
+              float Y=nodesCoords[j][1];
+              float Z=nodesCoords[j][2];
               jac02+=X*dPhi( j3, i3 );
               jac22+=Y*dPhi( j3, i3 );
               jac12+=Z*dPhi( j3, i3 );
@@ -227,22 +224,19 @@ public:
   
   // compute stiffnessVector.
   // returns mass matrix and stiffness vector local to an element
-  PROXY_HOST_DEVICE void computeMassMatrixAndStiffnessVector(const int & elementNumber,
-                                                                      const int & order,
-                                                                      const int & nPointsPerElement,
-                                                                      ARRAY_REAL_VIEW const & nodesCoordsX,
-                                                                      ARRAY_REAL_VIEW const & nodesCoordsY,
-                                                                      ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                                                      VECTOR_DOUBLE_VIEW const & weights,
-                                                                      ARRAY_DOUBLE_VIEW const & dPhi,
-                                                                      float massMatrixLocal[],
-                                                                      float const pnLocal[],
-                                                                      float Y[]) const
+  PROXY_HOST_DEVICE void computeMassMatrixAndStiffnessVector( const int & order,
+                                                              const int & nPointsPerElement,
+                                                              float const (*nodesCoords)[3],
+                                                              VECTOR_DOUBLE_VIEW const & weights,
+                                                              ARRAY_DOUBLE_VIEW const & dPhi,
+                                                              float massMatrixLocal[],
+                                                              float const pnLocal[],
+                                                              float Y[]) const
   {
       float B[ROW][COL];
       float R[ROW];
       // compute Jacobian, massMatrix and B
-      computeB( elementNumber, order, weights, nodesCoordsX,nodesCoordsY, nodesCoordsZ, dPhi, massMatrixLocal, B );
+      computeB( order, weights, nodesCoords, dPhi, massMatrixLocal, B );
       // compute stifness  matrix ( durufle's optimization)
       gradPhiGradPhi( nPointsPerElement, order, weights, dPhi, B, pnLocal, R, Y );
   }
