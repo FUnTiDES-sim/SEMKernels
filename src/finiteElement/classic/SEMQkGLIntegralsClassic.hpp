@@ -205,8 +205,8 @@ public:
                 int j=j1+j2*(order+1)+i3*orderPow2;
                 int k=j1+i2*(order+1)+i3*orderPow2;
                 int l=i1+j2*(order+1)+i3*orderPow2;
-                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][3]*dPhi[ j1 ][ i1 ] )*dPhi[ i2 ][ j2 ] +
-                       weights[i1]*weights[j2]*weights[i3]*(B[l][3]*dPhi[ i1 ][ j1 ] )*dPhi[ j2 ][ i2 ] ;
+                R[j]+= weights[j1]*weights[i2]*weights[i3]*( B[k][3]*dPhi[ j1 ][ i1 ]*dPhi[ i2 ][ j2 ] ) +
+                       weights[i1]*weights[j2]*weights[i3]*( B[l][3]*dPhi[ i1 ][ j1 ]*dPhi[ j2 ][ i2 ] ) ;
               }
             }
             // B13,B31 (B[][4])
@@ -217,8 +217,8 @@ public:
                 int j=j1+i2*(order+1)+i3*orderPow2;
                 int k=j1+i2*(order+1)+i3*orderPow2;
                 int l=j1+i2*(order+1)+j3*orderPow2;
-                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][4]*dPhi[ i1 ][ j1 ] )*dPhi[ i3 ][ j3 ] +
-                       weights[j1]*weights[i2]*weights[j3]*(B[l][4]*dPhi[ i1 ][ j1 ] )*dPhi[ j3 ][ i3 ] ;
+                R[j]+= weights[j1]*weights[i2]*weights[i3]*( B[k][4]*dPhi[ i1 ][ j1 ]*dPhi[ i3 ][ j3 ] ) +
+                       weights[j1]*weights[i2]*weights[j3]*( B[l][4]*dPhi[ i1 ][ j1 ]*dPhi[ j3 ][ i3 ] );
               }
             }
             // B23,B32 (B[][5])
@@ -229,7 +229,7 @@ public:
                 int j=i1+j2*(order+1)+j3*orderPow2;
                 int k=i1+j2*(order+1)+i3*orderPow2;
                 int l=i1+i2*(order+1)+j3*orderPow2;
-                R[j]+=weights[i1]*weights[j2]*weights[i3]*(B[k][5]*dPhi[ i2 ][ i2 ] )*dPhi[ i3 ][ j3 ] +
+                R[j]+= weights[i1]*weights[j2]*weights[i3]*(B[k][5]*dPhi[ i2 ][ i2 ]*dPhi[ i3 ][ j3 ]) +
                        weights[i1]*weights[i2]*weights[j3]*(B[l][5]*dPhi[ i2 ][ j2 ]*dPhi[ j3 ][ i3 ]);
               }
             }
