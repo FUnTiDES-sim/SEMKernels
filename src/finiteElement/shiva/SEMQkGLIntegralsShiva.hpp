@@ -22,8 +22,6 @@ using namespace shiva::geometry;
 using namespace shiva::geometry::utilities;
 using namespace shiva::discretizations::finiteElementMethod;
 
-using namespace std;
-
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
