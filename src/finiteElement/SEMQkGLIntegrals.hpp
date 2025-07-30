@@ -15,7 +15,7 @@ using real_t = float;
 #ifdef  USE_SEMGEOS 
     #include <fe/SEMKernels/src/finiteElement/geos/SEMQkGLIntegralsGeos.hpp>
     //using SEMQkGLIntegrals = SEMQkGLIntegralsGeos<SEMinfo::myOrderNumber, tfloat, gfloat>;
-    using SEMQkGLIntegrals = Q2_Hexahedron_Lagrange_GaussLobatto; 
+    using SEMQkGLIntegrals = Q3_Hexahedron_Lagrange_GaussLobatto;
 #endif // USE_SEMGEOS
 
 #ifdef USE_SHIVA

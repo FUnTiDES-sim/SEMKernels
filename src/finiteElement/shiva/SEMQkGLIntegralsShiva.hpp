@@ -157,16 +157,16 @@ public:
   }
 
 
-  template< typename ARRAY_REAL_VIEW, typename LOCAL_ARRAY >
+  // template< typename ARRAY_REAL_VIEW, typename LOCAL_ARRAY >
+  template< typename LOCAL_ARRAY >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void
   gatherCoordinates( const int & elementNumber,
-                     ARRAY_REAL_VIEW const & nodesCoordsX,
-                     ARRAY_REAL_VIEW const & nodesCoordsY,
-                     ARRAY_REAL_VIEW const & nodesCoordsZ,
+                     const float X[8][3],
                      LOCAL_ARRAY & cellData )
   {
+    int corner_id = 0;
     for ( int k = 0; k < 2; ++k )
     {
       for ( int j = 0; j < 2; ++j )
@@ -174,9 +174,10 @@ public:
         for ( int i = 0; i < 2; ++i )
         {
           int const l = linearIndex<1>( i, j, k );
-          cellData( i, j, k, 0 ) = nodesCoordsX( elementNumber, l );
-          cellData( i, j, k, 1 ) = nodesCoordsY( elementNumber, l );
-          cellData( i, j, k, 2 ) = nodesCoordsZ( elementNumber, l );
+          cellData( i, j, k, 0 ) = X[corner_id][0];
+          cellData( i, j, k, 1 ) = X[corner_id][1];
+          cellData( i, j, k, 2 ) = X[corner_id][2];
+          corner_id++;
         }
       }
     }
@@ -185,14 +186,12 @@ public:
   /**
    * @brief compute  mass Matrix stiffnessVector.
    */
-  template< typename ARRAY_REAL_VIEW >
+  // template< typename ARRAY_REAL_VIEW >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeMassMatrixAndStiffnessVector( const int & elementNumber,
                                             const int & nPointsPerElement,
-                                            ARRAY_REAL_VIEW const & nodesCoordsX,
-                                            ARRAY_REAL_VIEW const & nodesCoordsY,
-                                            ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                            const float X[8][3],
                                             float massMatrixLocal[],
                                             float pnLocal[],
                                             float Y[] )
@@ -201,9 +200,7 @@ public:
     typename TransformType::DataType & cellCoordData = trilinearCell.getData();
 
     gatherCoordinates( elementNumber,
-                       nodesCoordsX,
-                       nodesCoordsY,
-                       nodesCoordsZ,
+                       X,
                        cellCoordData );
 
     computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val )
