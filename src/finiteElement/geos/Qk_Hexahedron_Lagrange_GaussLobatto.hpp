@@ -39,6 +39,8 @@ class Qk_Hexahedron_Lagrange_GaussLobatto final
 {
 public:
 
+  constexpr static bool isClassic = false;
+
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
 

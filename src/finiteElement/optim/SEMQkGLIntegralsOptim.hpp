@@ -20,6 +20,7 @@ template< int ORDER,
 public:
   static constexpr int order = ORDER;
   constexpr static int numSupportPoints1d = ORDER + 1;
+  constexpr static bool isClassic = false;
 
   struct PrecomputedData
   {};

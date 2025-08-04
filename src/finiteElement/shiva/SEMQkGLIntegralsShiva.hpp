@@ -31,6 +31,7 @@ template< int ORDER,
 class SEMQkGLIntegralsShiva
 {
 public:
+  constexpr static bool isClassic = false;
 
   static constexpr int order = ORDER;
   static constexpr int numSupportPoints1d = ORDER + 1;

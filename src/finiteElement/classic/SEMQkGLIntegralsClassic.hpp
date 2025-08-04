@@ -17,6 +17,8 @@ private:
   SEMQkGLBasisFunctionsClassic GLBasis;
 
 public:
+  constexpr static bool isClassic = true;
+
   PROXY_HOST_DEVICE SEMQkGLIntegralsClassic(){};
   PROXY_HOST_DEVICE ~SEMQkGLIntegralsClassic(){};
 
