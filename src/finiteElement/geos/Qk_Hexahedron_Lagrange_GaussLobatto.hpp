@@ -1936,6 +1936,40 @@ using Q4_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto<
 using Q5_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto< LagrangeBasis5GL >;
 
 
+template< int ORDER >
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector;
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 1 >
+{
+  using type = Q1_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 2 >
+{
+  using type = Q2_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 3 >
+{
+  using type = Q3_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 4 >
+{
+  using type = Q4_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 5 >
+{
+  using type = Q5_Hexahedron_Lagrange_GaussLobatto;
+};
+
 #if __GNUC__
 #pragma GCC diagnostic pop
 #endif
