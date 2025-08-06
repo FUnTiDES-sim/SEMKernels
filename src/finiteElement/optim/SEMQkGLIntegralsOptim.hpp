@@ -20,10 +20,15 @@ template< int ORDER,
 public:
   static constexpr int order = ORDER;
   constexpr static int numSupportPoints1d = ORDER + 1;
+  constexpr static bool isClassic = false;
 
+  struct PrecomputedData
+  {};
 
-  void init()
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
   {}
+
   /////////////////////////////////////////////////////////////////////////////////////
   //  from GEOS implementation
   /////////////////////////////////////////////////////////////////////////////////////
@@ -207,6 +212,7 @@ public:
                                             ARRAY_REAL_VIEW const & nodesCoordsX,
                                             ARRAY_REAL_VIEW const & nodesCoordsY,
                                             ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                            PrecomputedData const & precomputedData,
                                             float massMatrixLocal[],
                                             float pnLocal[],
                                             float Y[] )

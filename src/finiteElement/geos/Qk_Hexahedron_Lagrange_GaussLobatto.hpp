@@ -25,7 +25,8 @@
 #include "LagrangeBasis3GL.hpp"
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
-#include "tensorops.hpp"
+//#include "tensorops.hpp"
+#include "common/mathUtilites.hpp"
 #include <dataType.hpp>
 
 /**
@@ -37,6 +38,8 @@ template< typename GL_BASIS >
 class Qk_Hexahedron_Lagrange_GaussLobatto final
 {
 public:
+
+  constexpr static bool isClassic = false;
 
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
@@ -55,6 +58,13 @@ public:
 
   /// The number of quadrature points per element.
   constexpr static int numQuadraturePoints = numNodes;
+
+  struct PrecomputedData
+  {};
+
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
+  {}
 
   /**
    * @brief The linear index associated to the given one-dimensional indices in the three directions
@@ -775,11 +785,16 @@ public:
                                                     real_t ( &gradN )[numNodes][3] );
 
   PROXY_HOST_DEVICE
-  void computeMassMatrixAndStiffnessVector(
-                          const int &elementNumber, const int &nPointsPerElement,
-                          ARRAY_REAL_VIEW const &nodesCoordsX, ARRAY_REAL_VIEW const &nodesCoordsY,
-                          ARRAY_REAL_VIEW const &nodesCoordsZ, float massMatrixLocal[],
-                          float pnLocal[], float Y[]) const;
+  static void 
+  computeMassMatrixAndStiffnessVector( const int &elementNumber, 
+                                       const int &nPointsPerElement,
+                                       ARRAY_REAL_VIEW const &nodesCoordsX, 
+                                       ARRAY_REAL_VIEW const &nodesCoordsY,
+                                       ARRAY_REAL_VIEW const &nodesCoordsZ, 
+                                       PrecomputedData const & precomputedData, 
+                                       float massMatrixLocal[],
+                                       float pnLocal[], 
+                                       float Y[] );
 
 
 private:
@@ -1184,7 +1199,7 @@ computeDampingTerm( int const q,
   B[0] = J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0];
   B[1] = J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1];
   B[2] = J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1];
-  return sqrt( std::abs( symDeterminant< 2 >( B ) ) )*w2D;
+  return sqrt( std::abs( symDeterminant( B ) ) )*w2D;
 }
 
 template< typename GL_BASIS >
@@ -1229,7 +1244,7 @@ computeBzMatrix( int const qa,
                  real_t (& B)[6] )
 {
   jacobianTransformation( qa, qb, qc, X, J );
-  real_t const detJ = determinant< 3 >( J );
+  real_t const detJ = determinant( J );
 
   real_t Jinv[3][3] = {{0}};
   invert3x3( Jinv, J );
@@ -1676,10 +1691,15 @@ gradient( int const q,
 template< typename GL_BASIS >
 PROXY_HOST_DEVICE
 void Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMassMatrixAndStiffnessVector(const int &elementNumber, const int &nPointsPerElement,
-                                    ARRAY_REAL_VIEW const &nodesCoordsX, ARRAY_REAL_VIEW const &nodesCoordsY,
-                                    ARRAY_REAL_VIEW const &nodesCoordsZ, float massMatrixLocal[],
-                                    float pnLocal[], float Y[]) const
+computeMassMatrixAndStiffnessVector( const int &elementNumber, 
+                                     const int &nPointsPerElement,
+                                     ARRAY_REAL_VIEW const &nodesCoordsX, 
+                                     ARRAY_REAL_VIEW const &nodesCoordsY,
+                                     ARRAY_REAL_VIEW const &nodesCoordsZ, 
+                                     PrecomputedData const & precomputedData,
+                                     float massMatrixLocal[],
+                                     float pnLocal[], 
+                                     float Y[] )
 {
     real_t X[8][3];
     int I = 0;
@@ -1915,6 +1935,40 @@ using Q4_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto<
  */
 using Q5_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto< LagrangeBasis5GL >;
 
+
+template< int ORDER >
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector;
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 1 >
+{
+  using type = Q1_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 2 >
+{
+  using type = Q2_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 3 >
+{
+  using type = Q3_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 4 >
+{
+  using type = Q4_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 5 >
+{
+  using type = Q5_Hexahedron_Lagrange_GaussLobatto;
+};
 
 #if __GNUC__
 #pragma GCC diagnostic pop

@@ -22,8 +22,6 @@ using namespace shiva::geometry;
 using namespace shiva::geometry::utilities;
 using namespace shiva::discretizations::finiteElementMethod;
 
-using namespace std;
-
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
@@ -33,6 +31,7 @@ template< int ORDER,
 class SEMQkGLIntegralsShiva
 {
 public:
+  constexpr static bool isClassic = false;
 
   static constexpr int order = ORDER;
   static constexpr int numSupportPoints1d = ORDER + 1;
@@ -47,11 +46,12 @@ public:
   using quadrature = QuadratureGaussLobatto< gfloat, numSupportPoints1d >;
   using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
+  struct PrecomputedData
+  {};
 
-
-  void init()
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
   {}
-
 
   template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
@@ -193,6 +193,7 @@ public:
                                             ARRAY_REAL_VIEW const & nodesCoordsX,
                                             ARRAY_REAL_VIEW const & nodesCoordsY,
                                             ARRAY_REAL_VIEW const & nodesCoordsZ,
+                                            PrecomputedData const & precomputedData,
                                             float massMatrixLocal[],
                                             float pnLocal[],
                                             float Y[] )

@@ -86,19 +86,19 @@ auto invert3x3(T (&Jinv)[3][3], T (&J)[3][3])
     return det;
 }
 
-template< int N, typename T >
-PROXY_HOST_DEVICE
-T determinant(const T (&A)[N][N]);
+// template< int N, typename T >
+// PROXY_HOST_DEVICE
+// T determinant(const T (&A)[N][N]);
 
-template<typename T>
-PROXY_HOST_DEVICE
-T determinant(const T (&A)[3][3])
-{
-  return
-      A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) -
-      A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) +
-      A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
-}
+// template<typename T>
+// PROXY_HOST_DEVICE
+// T determinant(const T (&A)[3][3])
+// {
+//   return
+//       A[0][0] * (A[1][1] * A[2][2] - A[1][2] * A[2][1]) -
+//       A[0][1] * (A[1][0] * A[2][2] - A[1][2] * A[2][0]) +
+//       A[0][2] * (A[1][0] * A[2][1] - A[1][1] * A[2][0]);
+// }
 
 template< int N, typename T >
 PROXY_HOST_DEVICE
