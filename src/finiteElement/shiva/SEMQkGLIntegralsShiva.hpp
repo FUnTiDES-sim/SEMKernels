@@ -22,8 +22,6 @@ using namespace shiva::geometry;
 using namespace shiva::geometry::utilities;
 using namespace shiva::discretizations::finiteElementMethod;
 
-using namespace std;
-
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
@@ -33,6 +31,7 @@ template< int ORDER,
 class SEMQkGLIntegralsShiva
 {
 public:
+  constexpr static bool isClassic = false;
 
   static constexpr int order = ORDER;
   static constexpr int numSupportPoints1d = ORDER + 1;
@@ -47,11 +46,12 @@ public:
   using quadrature = QuadratureGaussLobatto< gfloat, numSupportPoints1d >;
   using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
+  struct PrecomputedData
+  {};
 
-
-  void init()
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
   {}
-
 
   template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
@@ -65,7 +65,7 @@ public:
     constexpr gfloat w = quadrature::template weight< qa >() * quadrature::template weight< qb >() * quadrature::template weight< qc >();
     forSequence< numSupportPoints1d >( [&] ( auto const ici )
     {
-      constexpr int i = decltype(ici)::value;      
+      constexpr int i = decltype(ici)::value;
       constexpr int ibc = linearIndex<ORDER>( i, qb, qc );
       constexpr int aic = linearIndex<ORDER>( qa, i, qc );
       constexpr int abi = linearIndex<ORDER>( qa, qb, i );
@@ -93,15 +93,15 @@ public:
         constexpr gfloat w2 = w * gic * gjc;
         func( abi, abj, w2 * B[2] );
         // off-diagonal terms
-        // const gfloat w3 = w * gib * gjc;
-        // func( aic, abj, w3 * B[3] );
-        // func( abj, aic, w3 * B[3] );
-        // const gfloat w4 = w * gia * gjc;
-        // func( ibc, abj, w4 * B[4] );
-        // func( abj, ibc, w4 * B[4] );
-        // const gfloat w5 = w * gia * gjb;
-        // func( ibc, ajc, w5 * B[5] );
-        // func( ajc, ibc, w5 * B[5] );
+        const gfloat w3 = w * gib * gjc;
+        func( aic, abj, w3 * B[3] );
+        func( abj, aic, w3 * B[3] );
+        const gfloat w4 = w * gia * gjc;
+        func( ibc, abj, w4 * B[4] );
+        func( abj, ibc, w4 * B[4] );
+        const gfloat w5 = w * gia * gjb;
+        func( ibc, ajc, w5 * B[5] );
+        func( ajc, ibc, w5 * B[5] );
       } );
     } );
   }
@@ -132,7 +132,7 @@ public:
       shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
 
       tfloat const detJ = determinant( J );
-      
+
       // mass matrix
       constexpr int q = linearIndex<ORDER>( qc, qb, qa );
       constexpr tfloat w3D = quadrature::template weight< qa >() *
@@ -192,6 +192,7 @@ public:
   void computeMassMatrixAndStiffnessVector( const int & elementNumber,
                                             const int & nPointsPerElement,
                                             const float X[8][3],
+                                            PrecomputedData const & precomputedData,
                                             float massMatrixLocal[],
                                             float pnLocal[],
                                             float Y[] )
