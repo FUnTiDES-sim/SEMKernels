@@ -1,7 +1,6 @@
 #ifndef SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 #define SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 
-#include "dataType.hpp"
 #include "SEMmacros.hpp"
 #include "SEMdata.hpp"
 using namespace std;
@@ -13,13 +12,14 @@ class SEMQkGLBasisFunctionsClassic
 {
 private:
   int order;
-  struct SEMinfo infos;
 
 public:
   PROXY_HOST_DEVICE SEMQkGLBasisFunctionsClassic(){};
   PROXY_HOST_DEVICE ~SEMQkGLBasisFunctionsClassic(){};
 
-  static  void gaussLobattoQuadraturePoints( int order, VECTOR_REAL_VIEW const & quadraturePoints ) //const
+  template< typename TYPE >
+  PROXY_HOST_DEVICE
+  static void gaussLobattoQuadraturePoints( int order, TYPE & quadraturePoints ) //const
   {
    switch( order )
    {
@@ -63,7 +63,9 @@ public:
    }
   }
 
-  void gaussLobattoQuadratureWeights( int order, VECTOR_REAL_VIEW const & weights ) const
+  template< typename TYPE >
+  PROXY_HOST_DEVICE
+  static void gaussLobattoQuadratureWeights( int order, TYPE & weights )
   {
     if( order == 1 )
     {
@@ -101,7 +103,9 @@ public:
       weights[5]=0.06666667;
     }
   }
-  vector< double > shapeFunction1D( int order, double xi ) const
+
+  PROXY_HOST_DEVICE
+  static vector< double > shapeFunction1D( int order, double xi )
   {
     std::vector< double > shapeFunction( order+1 );
     if( order==1 )
@@ -161,10 +165,12 @@ public:
     }
     return shapeFunction;
   }
-  vector< double > derivativeShapeFunction1D( int order, double xi ) const
-  {
-    std::vector< double > derivativeShapeFunction( order+1 );
 
+
+  PROXY_HOST_DEVICE
+  static
+  void derivativeShapeFunction1D( int order, double xi, float * const derivativeShapeFunction )
+  {
     if( order == 1 )
     {
       derivativeShapeFunction[0]=-0.5;
@@ -290,22 +296,19 @@ public:
                                   + 0.778069933064125*(0.5*xi + 0.5)*(0.566554479308753*xi + 0.433445520691247)
                                   *(1.39905441140358*xi - 0.399054411403579)*(4.25632117622354*xi - 3.25632117622354);
     }
-    return derivativeShapeFunction  ;
   }
 
-  void getDerivativeBasisFunction1D( int order, VECTOR_REAL_VIEW const & quadraturePoints,
-                                     ARRAY_REAL_VIEW const & derivativeBasisFunction1D ) const
+  template< typename T1, typename T2 >
+  PROXY_HOST_DEVICE
+  static void getDerivativeBasisFunction1D( int order,
+                                            T1 const & quadraturePoints,
+                                            T2 & derivativeBasisFunction1D )
   {
     // loop over quadrature points
-    for( int i = 0; i < order+1; i++ )
+    for( int q = 0; q < order+1; q++ )
     {
-      std::vector< double > tmp( order+1 );
       //extract all basis functions  for current quadrature point
-      tmp=derivativeShapeFunction1D( order, quadraturePoints[i] );
-      for( int j=0; j<order+1; j++ )
-      {
-        derivativeBasisFunction1D( j, i )=tmp[j];
-      }
+      derivativeShapeFunction1D( order, quadraturePoints[q], derivativeBasisFunction1D[q] );
     }
   }
 };

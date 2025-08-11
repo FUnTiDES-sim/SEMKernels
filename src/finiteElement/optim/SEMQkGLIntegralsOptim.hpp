@@ -16,8 +16,15 @@ class SEMQkGLIntegralsOptim {
 public:
   static constexpr int order = ORDER;
   constexpr static int numSupportPoints1d = ORDER + 1;
+  constexpr static bool isClassic = false;
 
-  void init() {}
+  struct PrecomputedData
+  {};
+
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
+  {}
+
   /////////////////////////////////////////////////////////////////////////////////////
   //  from GEOS implementation
   /////////////////////////////////////////////////////////////////////////////////////
@@ -191,7 +198,9 @@ public:
   computeMassMatrixAndStiffnessVector(const int &elementNumber,
                                       const int &nPointsPerElement,
                                       const float X[8][3],
-                                      float massMatrixLocal[], float pnLocal[],
+                                      PrecomputedData const & precomputedData,
+                                      float massMatrixLocal[],
+                                      float pnLocal[],
                                       float Y[]) {
 
     for (int q = 0; q < nPointsPerElement; q++) {

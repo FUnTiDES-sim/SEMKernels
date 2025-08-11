@@ -25,7 +25,7 @@
 #include "LagrangeBasis3GL.hpp"
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
-#include "tensorops.hpp"
+#include "common/mathUtilites.hpp"
 #include <dataType.hpp>
 
 /**
@@ -36,6 +36,8 @@
  */
 template <typename GL_BASIS> class Qk_Hexahedron_Lagrange_GaussLobatto final {
 public:
+
+  constexpr static bool isClassic = false;
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
 
@@ -55,6 +57,14 @@ public:
 
   /// The number of quadrature points per element.
   constexpr static int numQuadraturePoints = numNodes;
+
+  struct PrecomputedData
+  {};
+
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & )
+  {}
+
 
   /**
    * @brief The linear index associated to the given one-dimensional indices in
@@ -731,11 +741,14 @@ public:
                                        real_t (&gradN)[numNodes][3]);
 
   PROXY_HOST_DEVICE
-  void computeMassMatrixAndStiffnessVector(const int &elementNumber,
-                                           const int &nPointsPerElement,
-                                           float (&X)[8][3],
-                                           float massMatrixLocal[],
-                                           float pnLocal[], float Y[]) const;
+  static void
+  computeMassMatrixAndStiffnessVector( const int &elementNumber,
+                                       const int &nPointsPerElement,
+                                       float (&X)[8][3],
+                                       PrecomputedData const & precomputedData,
+                                       float massMatrixLocal[],
+                                       float pnLocal[],
+                                       float Y[] );
 
 private:
   /// The length of one dimension of the parent element.
@@ -825,9 +838,9 @@ Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::supportLoop(int const q,
 }
 
 //*************************************************************************************************
-
 template <typename GL_BASIS>
-PROXY_HOST_DEVICE real_t
+PROXY_HOST_DEVICE
+real_t
 Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::calcGradN(
     int const q, real_t const (&X)[numNodes][3], real_t (&gradN)[numNodes][3]) {
   int qa, qb, qc;
@@ -852,10 +865,8 @@ Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::calcGradN(
 //*************************************************************************************************
 template <typename GL_BASIS>
 PROXY_HOST_DEVICE
-
-    // GEOS_FORCE_INLINE
-    real_t
-    Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::calcGradN(
+real_t
+Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::calcGradN(
         real_t const (&coords)[3], real_t const (&X)[numNodes][3],
         real_t (&gradN)[numNodes][3]) {
   real_t J[3][3] = {{0}};
@@ -1061,12 +1072,11 @@ Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeMassTerm(
 }
 
 template <typename GL_BASIS>
-
 PROXY_HOST_DEVICE
-    // GEOS_FORCE_INLINE
-    real_t
-    Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeDampingTerm(
-        int const q, real_t const (&X)[4][3]) {
+real_t
+Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::
+computeDampingTerm( int const q,
+                    real_t const (&X)[4][3]) {
   int qa, qb;
   GL_BASIS::TensorProduct2D::multiIndex(q, qa, qb);
   const real_t w2D = GL_BASIS::weight(qa) * GL_BASIS::weight(qb);
@@ -1081,13 +1091,16 @@ PROXY_HOST_DEVICE
 }
 
 template <typename GL_BASIS>
-
 PROXY_HOST_DEVICE
-    // GEOS_FORCE_INLINE
-    void
-    Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeBMatrix(
-        int const qa, int const qb, int const qc, real_t const (&X)[8][3],
-        real_t (&J)[3][3], real_t (&B)[6]) {
+void
+Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::
+computeBMatrix( int const qa,
+                int const qb,
+                int const qc,
+                real_t const (&X)[8][3],
+                real_t (&J)[3][3],
+                real_t (&B)[6])
+{
   jacobianTransformation(qa, qb, qc, X, J);
   real_t const detJ = determinant(J);
 
@@ -1104,14 +1117,18 @@ PROXY_HOST_DEVICE
 }
 
 template <typename GL_BASIS>
-
-// GEOS_FORCE_INLINE
-PROXY_HOST_DEVICE void
-Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeBzMatrix(
-    int const qa, int const qb, int const qc, real_t const (&X)[8][3],
-    real_t (&J)[3][3], real_t (&B)[6]) {
+PROXY_HOST_DEVICE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::
+computeBzMatrix( int const qa,
+                 int const qb,
+                 int const qc,
+                 real_t const (&X)[8][3],
+                 real_t (&J)[3][3],
+                 real_t (&B)[6])
+{
   jacobianTransformation(qa, qb, qc, X, J);
-  real_t const detJ = determinant<3>(J);
+  real_t const detJ = determinant(J);
 
   real_t Jinv[3][3] = {{0}};
   invert3x3(Jinv, J);
@@ -1126,12 +1143,16 @@ Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeBzMatrix(
 }
 
 template <typename GL_BASIS>
-
-// GEOS_FORCE_INLINE
-PROXY_HOST_DEVICE void
-Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeBxyMatrix(
-    int const qa, int const qb, int const qc, real_t const (&X)[8][3],
-    real_t (&J)[3][3], real_t (&B)[6]) {
+PROXY_HOST_DEVICE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::
+computeBxyMatrix( int const qa,
+                  int const qb,
+                  int const qc,
+                  real_t const (&X)[8][3],
+                  real_t (&J)[3][3],
+                  real_t (&B)[6])
+{
   jacobianTransformation(qa, qb, qc, X, J);
   real_t const detJ = determinant(J);
 
@@ -1149,8 +1170,6 @@ Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeBxyMatrix(
 
 template <typename GL_BASIS>
 template <typename FUNC>
-
-// GEOS_FORCE_INLINE
 PROXY_HOST_DEVICE void
 Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeGradPhiBGradPhi(
     int const qa, int const qb, int const qc, real_t const (&B)[6],
@@ -1511,10 +1530,11 @@ PROXY_HOST_DEVICE void Qk_Hexahedron_Lagrange_GaussLobatto<
     GL_BASIS>::computeMassMatrixAndStiffnessVector(const int &elementNumber,
                                                    const int &nPointsPerElement,
                                                    float (&X)[8][3],
+                                                   PrecomputedData const & precomputedData,
                                                    float massMatrixLocal[],
                                                    float pnLocal[],
-                                                   float Y[]) const {
-
+                                                   float Y[])
+{
   for (int q = 0; q < nPointsPerElement; q++) {
     Y[q] = 0;
   }
@@ -1542,6 +1562,46 @@ using Q4_Hexahedron_Lagrange_GaussLobatto =
 
 using Q5_Hexahedron_Lagrange_GaussLobatto =
     Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis5GL>;
+
+
+
+template< int ORDER >
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector;
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 1 >
+{
+  using type = Q1_Hexahedron_Lagrange_GaussLobatto;
+};
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 2 >
+{
+  using type = Q2_Hexahedron_Lagrange_GaussLobatto;
+};
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 3 >
+{
+  using type = Q3_Hexahedron_Lagrange_GaussLobatto;
+};
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 4 >
+{
+  using type = Q4_Hexahedron_Lagrange_GaussLobatto;
+};
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 5 >
+{
+  using type = Q5_Hexahedron_Lagrange_GaussLobatto;
+};
 
 #if __GNUC__
 #pragma GCC diagnostic pop

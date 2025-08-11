@@ -3,31 +3,55 @@
 
 #include "dataType.hpp"
 #include "SEMmacros.hpp"
-#include "SEMdata.hpp"
-#include "SEMQkGLBasisFunctions.hpp"
+#include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctionsClassic.hpp>
 using namespace std;
 
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
+template < int ORDER >
 class SEMQkGLIntegralsClassic
 {
 private:
-  int order;
-  struct SEMinfo infos;
-  SEMQkGLBasisFunctions GLBasis;
+  SEMQkGLBasisFunctionsClassic GLBasis;
 
 public:
+  constexpr static bool isClassic = true;
+
+  struct PrecomputedData
+  {
+    float quadraturePoints[ ORDER + 1 ];
+    float weights[ ORDER + 1 ];
+    float derivativeBasisFunction1D[ORDER + 1][ ORDER + 1 ];
+  };
+
+
+  PROXY_HOST_DEVICE
+  static void init( PrecomputedData & precomputedData )
+  {
+    // initialize quadrature points and weights
+    SEMQkGLBasisFunctionsClassic::gaussLobattoQuadraturePoints( ORDER, precomputedData.quadraturePoints );
+    SEMQkGLBasisFunctionsClassic::gaussLobattoQuadratureWeights( ORDER, precomputedData.weights );
+
+    // initialize derivative basis function
+    SEMQkGLBasisFunctionsClassic::getDerivativeBasisFunction1D( ORDER,
+                                                                precomputedData.quadraturePoints,
+                                                                precomputedData.derivativeBasisFunction1D );
+  }
+
   PROXY_HOST_DEVICE SEMQkGLIntegralsClassic(){};
   PROXY_HOST_DEVICE ~SEMQkGLIntegralsClassic(){};
 
   // compute B and M
-  PROXY_HOST_DEVICE void computeB(   const int & order,
-                                     VECTOR_DOUBLE_VIEW const & weights,
-                                     const float (*nodesCoords)[3],
-                                     ARRAY_DOUBLE_VIEW const & dPhi,
-                                     float massMatrixLocal[],
-                                     float B[][COL] ) const
+  PROXY_HOST_DEVICE
+  void static
+  computeB( const int & elementNumber,
+            const int & order,
+            float const (&weights)[ORDER + 1],
+            const float (*nodesCoords)[3],
+            float const (&dPhi)[ORDER + 1][ORDER + 1],
+            float massMatrixLocal[],
+            float B[][COL] )
   {
       for( int i3=0; i3<order+1; i3++ )
       {
@@ -53,9 +77,9 @@ public:
               float X=nodesCoords[j][0];
               float Y=nodesCoords[j][1];
               float Z=nodesCoords[j][2];
-              jac00+=X*dPhi( j1, i1 );
-              jac20+=Y*dPhi( j1, i1 );
-              jac10+=Z*dPhi( j1, i1 );
+              jac00+=X*dPhi[ i1 ][ j1 ];
+              jac20+=Y*dPhi[ i1 ][ j1 ];
+              jac10+=Z*dPhi[ i1 ][ j1 ];
               }
             for( int j2=0; j2<order+1; j2++ )
             {
@@ -63,9 +87,9 @@ public:
               float X=nodesCoords[j][0];
               float Y=nodesCoords[j][1];
               float Z=nodesCoords[j][2];
-              jac01+=X*dPhi( j2, i2 );
-              jac21+=Y*dPhi( j2, i2 );
-              jac11+=Z*dPhi( j2, i2 );
+              jac01+=X*dPhi[ i2 ][ j2 ];
+              jac21+=Y*dPhi[ i2 ][ j2 ];
+              jac11+=Z*dPhi[ i2 ][ j2 ];
             }
             for( int j3=0; j3<order+1; j3++ )
             {
@@ -73,9 +97,9 @@ public:
               float X=nodesCoords[j][0];
               float Y=nodesCoords[j][1];
               float Z=nodesCoords[j][2];
-              jac02+=X*dPhi( j3, i3 );
-              jac22+=Y*dPhi( j3, i3 );
-              jac12+=Z*dPhi( j3, i3 );
+              jac02+=X*dPhi[ i3 ][ j3 ];
+              jac22+=Y*dPhi[ i3 ][ j3 ];
+              jac12+=Z*dPhi[ i3 ][ j3 ];
             }
             // detJ
             float detJ=abs( jac00*(jac11*jac22-jac21*jac12)
@@ -122,14 +146,15 @@ public:
     
   // compute the matrix $R_{i,j}=\int_{K}{\nabla{\phi_i}.\nabla{\phi_j}dx}$
   // Marc Durufle Formulae
-  PROXY_HOST_DEVICE void gradPhiGradPhi( const int & nPointsPerElement,
-                                           const int & order,
-                                           VECTOR_DOUBLE_VIEW const & weights,
-                                           ARRAY_DOUBLE_VIEW const & dPhi,
-                                           float const B[][COL],
-                                           float const pnLocal[],
-                                           float R[],
-                                           float Y[] ) const
+  PROXY_HOST_DEVICE
+  static void gradPhiGradPhi( const int & nPointsPerElement,
+                              const int & order,
+                              float const (&weights)[ORDER + 1],
+                              float const (&dPhi)[ORDER + 1][ORDER + 1],
+                              float const B[][COL],
+                              float const pnLocal[],
+                              float R[],
+                              float Y[] )
   {
       int orderPow2=(order+1)*(order+1);
       for( int i3=0; i3<order+1; i3++ )
@@ -150,7 +175,7 @@ public:
               for( int l=0; l<order+1; l++ )
               {
                 int ll=l+i2*(order+1)+i3*orderPow2;
-                R[j]+=weights[l]*weights[i2]*weights[i3]*(B[ll][0]*dPhi( i1, l )*dPhi( j1, l ));
+                R[j]+=weights[l]*weights[i2]*weights[i3]*(B[ll][0]*dPhi[ l ][ i1 ]*dPhi[ l ][ j1 ]);
               }
             }
             //B22
@@ -160,7 +185,7 @@ public:
               for( int m=0; m<order+1; m++ )
               {
                 int mm=i1+m*(order+1)+i3*orderPow2;
-                R[j]+=weights[i1]*weights[m]*weights[i3]*(B[mm][1]*dPhi( i2, m )*dPhi( j2, m ));
+                R[j]+=weights[i1]*weights[m]*weights[i3]*(B[mm][1]*dPhi[ m ][ i2 ]*dPhi[ m ][ j2 ]);
               }
             }
             //B33
@@ -170,7 +195,7 @@ public:
               for( int n=0; n<order+1; n++ )
               {
                 int nn=i1+i2*(order+1)+n*orderPow2;
-                R[j]+=weights[i1]*weights[i2]*weights[n]*(B[nn][2]*dPhi( i3, n )*dPhi( j3, n ));
+                R[j]+=weights[i1]*weights[i2]*weights[n]*(B[nn][2]*dPhi[ n ][ i3 ]*dPhi[ n ][ j3 ]);
               }
             }
             // B12,B21 (B[][3])
@@ -181,8 +206,8 @@ public:
                 int j=j1+j2*(order+1)+i3*orderPow2;
                 int k=j1+i2*(order+1)+i3*orderPow2;
                 int l=i1+j2*(order+1)+i3*orderPow2;
-                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][3]*dPhi( i1, j1 )*dPhi( j2, i2 ))+
-                       weights[i1]*weights[j2]*weights[i3]*(B[l][3]*dPhi( j1, i1 )*dPhi( i2, j2 ));
+                R[j]+= weights[j1]*weights[i2]*weights[i3]*( B[k][3]*dPhi[ j1 ][ i1 ]*dPhi[ i2 ][ j2 ] ) +
+                       weights[i1]*weights[j2]*weights[i3]*( B[l][3]*dPhi[ i1 ][ j1 ]*dPhi[ j2 ][ i2 ] ) ;
               }
             }
             // B13,B31 (B[][4])
@@ -193,8 +218,8 @@ public:
                 int j=j1+i2*(order+1)+i3*orderPow2;
                 int k=j1+i2*(order+1)+i3*orderPow2;
                 int l=j1+i2*(order+1)+j3*orderPow2;
-                R[j]+=weights[j1]*weights[i2]*weights[i3]*(B[k][4]*dPhi( j1, i1 )*dPhi( j3, i3 ))+
-                       weights[j1]*weights[i2]*weights[j3]*(B[l][4]*dPhi( j1, i1 )*dPhi( i3, j3 ));
+                R[j]+= weights[j1]*weights[i2]*weights[i3]*( B[k][4]*dPhi[ i1 ][ j1 ]*dPhi[ i3 ][ j3 ] ) +
+                       weights[j1]*weights[i2]*weights[j3]*( B[l][4]*dPhi[ i1 ][ j1 ]*dPhi[ j3 ][ i3 ] );
               }
             }
             // B23,B32 (B[][5])
@@ -205,8 +230,8 @@ public:
                 int j=i1+j2*(order+1)+j3*orderPow2;
                 int k=i1+j2*(order+1)+i3*orderPow2;
                 int l=i1+i2*(order+1)+j3*orderPow2;
-                R[j]+=weights[i1]*weights[j2]*weights[i3]*(B[k][5]*dPhi( i2, i2 )*dPhi( j3, i3 ))+
-                       weights[i1]*weights[i2]*weights[j3]*(B[l][5]*dPhi( j2, i2 )*dPhi( i3, j3 ));
+                R[j]+= weights[i1]*weights[j2]*weights[i3]*(B[k][5]*dPhi[ i2 ][ i2 ]*dPhi[ i3 ][ j3 ]) +
+                       weights[i1]*weights[i2]*weights[j3]*(B[l][5]*dPhi[ i2 ][ j2 ]*dPhi[ j3 ][ i3 ]);
               }
             }
     
@@ -224,21 +249,35 @@ public:
   
   // compute stiffnessVector.
   // returns mass matrix and stiffness vector local to an element
-  PROXY_HOST_DEVICE void computeMassMatrixAndStiffnessVector( const int & order,
-                                                              const int & nPointsPerElement,
-                                                              float const (*nodesCoords)[3],
-                                                              VECTOR_DOUBLE_VIEW const & weights,
-                                                              ARRAY_DOUBLE_VIEW const & dPhi,
-                                                              float massMatrixLocal[],
-                                                              float const pnLocal[],
-                                                              float Y[]) const
+  PROXY_HOST_DEVICE
+  static void computeMassMatrixAndStiffnessVector( const int & elementNumber,
+                                                   const int & nPointsPerElement,
+                                                   float const (*nodesCoords)[3],
+                                                   PrecomputedData const & precomputedData,
+                                                   float massMatrixLocal[],
+                                                   float const pnLocal[],
+                                                   float Y[])
   {
       float B[ROW][COL];
       float R[ROW];
       // compute Jacobian, massMatrix and B
-      computeB( order, weights, nodesCoords, dPhi, massMatrixLocal, B );
+      computeB( elementNumber,
+                ORDER,
+                precomputedData.weights,
+                nodesCoords,
+                precomputedData.derivativeBasisFunction1D,
+                massMatrixLocal,
+                B );
+
       // compute stifness  matrix ( durufle's optimization)
-      gradPhiGradPhi( nPointsPerElement, order, weights, dPhi, B, pnLocal, R, Y );
+      gradPhiGradPhi( nPointsPerElement,
+                      ORDER,
+                      precomputedData.weights,
+                      precomputedData.derivativeBasisFunction1D,
+                      B,
+                      pnLocal,
+                      R,
+                      Y );
   }
   
   /////////////////////////////////////////////////////////////////////////////////////
