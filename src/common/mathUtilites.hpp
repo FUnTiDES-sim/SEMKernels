@@ -116,6 +116,60 @@ auto invert3x3( T (&Jinv)[3][3] )
   return invert3x3( Jinv, J );
 }
 
+template<typename T>
+PROXY_HOST_DEVICE
+T symDeterminant( T (&B)[3] )
+{
+  return B[0] * B[1] - B[2] * B[2];
+}
+
+template<typename T>
+PROXY_HOST_DEVICE
+T symDeterminant( T (&B)[6] )
+{
+  return B[ 0 ] * B[ 1 ] * B[ 2 ] +
+         B[ 5 ] * B[ 4 ] * B[ 3 ] * 2 -
+         B[ 0 ] * B[ 3 ] * B[ 3 ] -
+         B[ 1 ] * B[ 4 ] * B[ 4 ] -
+         B[ 2 ] * B[ 5 ] * B[ 5 ];
+}
+
+template <typename T>
+PROXY_HOST_DEVICE
+auto invert3x3(T (&Jinv)[3][3], T const (&J)[3][3])
+{
+  Jinv[ 0 ][ 0 ] = J[ 1 ][ 1 ] * J[ 2 ][ 2 ] - J[ 1 ][ 2 ] * J[ 2 ][ 1 ];
+  Jinv[ 0 ][ 1 ] = J[ 0 ][ 2 ] * J[ 2 ][ 1 ] - J[ 0 ][ 1 ] * J[ 2 ][ 2 ];
+  Jinv[ 0 ][ 2 ] = J[ 0 ][ 1 ] * J[ 1 ][ 2 ] - J[ 0 ][ 2 ] * J[ 1 ][ 1 ];  
+  T const det = J[ 0 ][ 0 ] * Jinv[ 0 ][ 0 ] +
+                J[ 1 ][ 0 ] * Jinv[ 0 ][ 1 ] +
+                J[ 2 ][ 0 ] * Jinv[ 0 ][ 2 ];
+
+  T const invDet = T(1) / det;
+
+  Jinv[ 0 ][ 0 ] *= invDet;
+  Jinv[ 0 ][ 1 ] *= invDet;
+  Jinv[ 0 ][ 2 ] *= invDet;
+  Jinv[ 1 ][ 0 ] = ( J[ 1 ][ 2 ] * J[ 2 ][ 0 ] - J[ 1 ][ 0 ] * J[ 2 ][ 2 ] ) * invDet;
+  Jinv[ 1 ][ 1 ] = ( J[ 0 ][ 0 ] * J[ 2 ][ 2 ] - J[ 0 ][ 2 ] * J[ 2 ][ 0 ] ) * invDet;
+  Jinv[ 1 ][ 2 ] = ( J[ 0 ][ 2 ] * J[ 1 ][ 0 ] - J[ 0 ][ 0 ] * J[ 1 ][ 2 ] ) * invDet;
+  Jinv[ 2 ][ 0 ] = ( J[ 1 ][ 0 ] * J[ 2 ][ 1 ] - J[ 1 ][ 1 ] * J[ 2 ][ 0 ] ) * invDet;
+  Jinv[ 2 ][ 1 ] = ( J[ 0 ][ 1 ] * J[ 2 ][ 0 ] - J[ 0 ][ 0 ] * J[ 2 ][ 1 ] ) * invDet;
+  Jinv[ 2 ][ 2 ] = ( J[ 0 ][ 0 ] * J[ 1 ][ 1 ] - J[ 0 ][ 1 ] * J[ 1 ][ 0 ] ) * invDet;
+
+  return det;
+}
+
+template <typename T>
+PROXY_HOST_DEVICE
+auto invert3x3( T (&Jinv)[3][3] )
+{
+  T const J[3][3] = { { Jinv[0][0], Jinv[0][1], Jinv[0][2] },
+                      { Jinv[1][0], Jinv[1][1], Jinv[1][2] },
+                      { Jinv[2][0], Jinv[2][1], Jinv[2][2] } };
+  return invert3x3( Jinv, J );
+}
+
 /**
  * @brief Invert the symmetric matrix @p srcSymMatrix and store the result in @p dstSymMatrix.
  * @param dstSymMatrix The 3x3 symmetric matrix to write the inverse to.

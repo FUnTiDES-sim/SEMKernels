@@ -17,12 +17,16 @@ public:
   static constexpr int order = ORDER;
   constexpr static int numSupportPoints1d = ORDER + 1;
   constexpr static bool isClassic = false;
+  constexpr static bool isClassic = false;
 
+  struct PrecomputedData
+  {};
   struct PrecomputedData
   {};
 
   PROXY_HOST_DEVICE
-  static void init( PrecomputedData & )
+  static PROXY_HOST_DEVICE
+  static void init( PrecomputedData &  PrecomputedData & )
   {}
 
   /////////////////////////////////////////////////////////////////////////////////////
@@ -146,23 +150,25 @@ public:
         GRADIENT_FLOAT const w2 = w * gic * gjc;
         func(abi, abj, w2 * B[2]);
         // off-diagonal terms
-        // GRADIENT_FLOAT const w3 = w * gib * gjc;
-        // func( aic, abj, w3 * B[3] );
-        // func( abj, aic, w3 * B[3] );
-        // GRADIENT_FLOAT const w4 = w * gia * gjc;
-        // func( ibc, abj, w4 * B[4] );
-        // func( abj, ibc, w4 * B[4] );
-        // GRADIENT_FLOAT const w5 = w * gia * gjb;
-        // func( ibc, ajc, w5 * B[5] );
-        // func( ajc, ibc, w5 * B[5] );
+        GRADIENT_FLOAT const w3 = w * gib * gjc;
+        func( aic, abj, w3 * B[3] );
+        func( abj, aic, w3 * B[3] );
+        GRADIENT_FLOAT const w4 = w * gia * gjc;
+        func( ibc, abj, w4 * B[4] );
+        func( abj, ibc, w4 * B[4] );
+        GRADIENT_FLOAT const w5 = w * gia * gjb;
+        func( ibc, ajc, w5 * B[5] );
+        func( ajc, ibc, w5 * B[5] );
       }
     }
   }
 
   template <typename COORDS_TYPE, typename FUNC>
   static constexpr inline SEMKERNELS_HOST_DEVICE void
-  computeStiffnessAndMassTerm(int const q, COORDS_TYPE const &X, float mass[],
-                              FUNC &&func) {
+  computeStiffnessAndMassTerm(int const q, 
+                              COORDS_TYPE const &X, float mass[],
+                              FUNC &&func) 
+  {
     auto const [qa, qb, qc] = tripleIndex<ORDER>(q);
 
     TRANSFORM_FLOAT J[3][3] = {{0}};

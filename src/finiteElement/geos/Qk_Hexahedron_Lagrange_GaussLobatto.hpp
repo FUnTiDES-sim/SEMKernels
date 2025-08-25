@@ -25,6 +25,7 @@
 #include "LagrangeBasis3GL.hpp"
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
+//#include "common/mathUtilites.hpp"
 #include "common/mathUtilites.hpp"
 #include <dataType.hpp>
 
@@ -38,6 +39,7 @@ template <typename GL_BASIS> class Qk_Hexahedron_Lagrange_GaussLobatto final {
 public:
 
   constexpr static bool isClassic = false;
+
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
 
@@ -64,7 +66,6 @@ public:
   PROXY_HOST_DEVICE
   static void init( PrecomputedData & )
   {}
-
 
   /**
    * @brief The linear index associated to the given one-dimensional indices in
@@ -1084,10 +1085,10 @@ computeDampingTerm( int const q,
   real_t J[3][2] = {{0}};
   jacobianTransformation2d(qa, qb, X, J);
   // compute J^T.J, using Voigt notation for B
-  B[0] = J[0][0] * J[0][0] + J[1][0] * J[1][0] + J[2][0] * J[2][0];
-  B[1] = J[0][1] * J[0][1] + J[1][1] * J[1][1] + J[2][1] * J[2][1];
-  B[2] = J[0][0] * J[0][1] + J[1][0] * J[1][1] + J[2][0] * J[2][1];
-  return sqrt(std::abs(symDeterminant(B))) * w2D;
+  B[0] = J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0];
+  B[1] = J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1];
+  B[2] = J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1];
+  return sqrt( std::abs( symDeterminant( B ) ) )*w2D;
 }
 
 template <typename GL_BASIS>
@@ -1127,8 +1128,8 @@ computeBzMatrix( int const qa,
                  real_t (&J)[3][3],
                  real_t (&B)[6])
 {
-  jacobianTransformation(qa, qb, qc, X, J);
-  real_t const detJ = determinant(J);
+  jacobianTransformation( qa, qb, qc, X, J );
+  real_t const detJ = determinant( J );
 
   real_t Jinv[3][3] = {{0}};
   invert3x3(Jinv, J);
@@ -1596,6 +1597,40 @@ struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 4 >
   using type = Q4_Hexahedron_Lagrange_GaussLobatto;
 };
 
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 5 >
+{
+  using type = Q5_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template< int ORDER >
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector;
+
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 1 >
+{
+  using type = Q1_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 2 >
+{
+  using type = Q2_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 3 >
+{
+  using type = Q3_Hexahedron_Lagrange_GaussLobatto;
+};
+
+template<>
+struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 4 >
+{
+  using type = Q4_Hexahedron_Lagrange_GaussLobatto;
+};
 
 template<>
 struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 5 >

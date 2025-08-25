@@ -2,7 +2,6 @@
 #define SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 
 #include "SEMmacros.hpp"
-#include "SEMdata.hpp"
 using namespace std;
 
 /**
