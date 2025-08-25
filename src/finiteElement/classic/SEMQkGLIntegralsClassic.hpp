@@ -14,7 +14,6 @@ class SEMQkGLIntegralsClassic
 {
 private:
   SEMQkGLBasisFunctionsClassic GLBasis;
-  SEMQkGLBasisFunctionsClassic GLBasis;
 
 public:
   constexpr static bool isClassic = true;
@@ -40,31 +39,8 @@ public:
                                                                 precomputedData.derivativeBasisFunction1D );
   }
 
-  constexpr static bool isClassic = true;
-
   PROXY_HOST_DEVICE SEMQkGLIntegralsClassic(){};
   PROXY_HOST_DEVICE ~SEMQkGLIntegralsClassic(){};
-
-  struct PrecomputedData
-  {
-    float quadraturePoints[ ORDER + 1 ];
-    float weights[ ORDER + 1 ];
-    float derivativeBasisFunction1D[ORDER + 1][ ORDER + 1 ];
-  };
-
-  PROXY_HOST_DEVICE
-  static void init( PrecomputedData & precomputedData )
-  {
-    // initialize quadrature points and weights
-    SEMQkGLBasisFunctionsClassic::gaussLobattoQuadraturePoints( ORDER, precomputedData.quadraturePoints );
-
-    SEMQkGLBasisFunctionsClassic::gaussLobattoQuadratureWeights( ORDER, precomputedData.weights );
-
-    // initialize derivative basis function
-    SEMQkGLBasisFunctionsClassic::getDerivativeBasisFunction1D( ORDER,
-                                                                precomputedData.quadraturePoints,
-                                                                precomputedData.derivativeBasisFunction1D );
-  }
 
   // compute B and M
   PROXY_HOST_DEVICE

@@ -16,6 +16,7 @@ public:
   PROXY_HOST_DEVICE SEMQkGLBasisFunctionsClassic(){};
   PROXY_HOST_DEVICE ~SEMQkGLBasisFunctionsClassic(){};
 
+  
   template< typename TYPE >
   PROXY_HOST_DEVICE
   static void gaussLobattoQuadraturePoints( int order, TYPE & quadraturePoints ) //const
@@ -167,7 +168,7 @@ public:
 
 
   PROXY_HOST_DEVICE
-  static
+  static  
   void derivativeShapeFunction1D( int order, double xi, float * const derivativeShapeFunction )
   {
     if( order == 1 )
