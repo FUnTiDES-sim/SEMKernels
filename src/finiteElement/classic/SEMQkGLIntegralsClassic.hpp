@@ -46,20 +46,19 @@ public:
   PROXY_HOST_DEVICE
   void static
   computeB( const int & elementNumber,
-            const int & order,
             float const (&weights)[ORDER + 1],
             const float (*nodesCoords)[3],
             float const (&dPhi)[ORDER + 1][ORDER + 1],
             float massMatrixLocal[],
             float B[][COL] )
   {
-      for( int i3=0; i3<order+1; i3++ )
+      for( int i3=0; i3<ORDER+1; i3++ )
       {
-        for( int i2=0; i2<order+1; i2++ )
+        for( int i2=0; i2<ORDER+1; i2++ )
         {
-          for( int i1=0; i1<order+1; i1++ )
+          for( int i1=0; i1<ORDER+1; i1++ )
           {
-            int i=i1+i2*(order+1)+i3*(order+1)*(order+1);
+            int i=i1+i2*(ORDER+1)+i3*(ORDER+1)*(ORDER+1);
             // compute jacobian matrix
             float jac00=0;
             float jac01=0;
@@ -71,9 +70,9 @@ public:
             float jac21=0;
             float jac22=0;
    
-            for( int j1=0; j1<order+1; j1++ )
+            for( int j1=0; j1<ORDER+1; j1++ )
             {
-              int j=j1+i2*(order+1)+i3*(order+1)*(order+1);
+              int j=j1+i2*(ORDER+1)+i3*(ORDER+1)*(ORDER+1);
               float X=nodesCoords[j][0];
               float Y=nodesCoords[j][1];
               float Z=nodesCoords[j][2];
@@ -81,9 +80,9 @@ public:
               jac20+=Y*dPhi[ i1 ][ j1 ];
               jac10+=Z*dPhi[ i1 ][ j1 ];
               }
-            for( int j2=0; j2<order+1; j2++ )
+            for( int j2=0; j2<ORDER+1; j2++ )
             {
-              int j=i1+j2*(order+1)+i3*(order+1)*(order+1);
+              int j=i1+j2*(ORDER+1)+i3*(ORDER+1)*(ORDER+1);
               float X=nodesCoords[j][0];
               float Y=nodesCoords[j][1];
               float Z=nodesCoords[j][2];
@@ -91,9 +90,9 @@ public:
               jac21+=Y*dPhi[ i2 ][ j2 ];
               jac11+=Z*dPhi[ i2 ][ j2 ];
             }
-            for( int j3=0; j3<order+1; j3++ )
+            for( int j3=0; j3<ORDER+1; j3++ )
             {
-              int j=i1+i2*(order+1)+j3*(order+1)*(order+1);
+              int j=i1+i2*(ORDER+1)+j3*(ORDER+1)*(ORDER+1);
               float X=nodesCoords[j][0];
               float Y=nodesCoords[j][1];
               float Z=nodesCoords[j][2];
@@ -148,7 +147,6 @@ public:
   // Marc Durufle Formulae
   PROXY_HOST_DEVICE
   static void gradPhiGradPhi( const int & nPointsPerElement,
-                              const int & order,
                               float const (&weights)[ORDER + 1],
                               float const (&dPhi)[ORDER + 1][ORDER + 1],
                               float const B[][COL],
@@ -156,12 +154,12 @@ public:
                               float R[],
                               float Y[] )
   {
-      int orderPow2=(order+1)*(order+1);
-      for( int i3=0; i3<order+1; i3++ )
+      constexpr int orderPow2=(ORDER+1)*(ORDER+1);
+      for( int i3=0; i3<ORDER+1; i3++ )
       {
-        for( int i2=0; i2<order+1; i2++ )
+        for( int i2=0; i2<ORDER+1; i2++ )
         {
-          for( int i1=0; i1<order+1; i1++ )
+          for( int i1=0; i1<ORDER+1; i1++ )
           {
             for( int j=0; j<nPointsPerElement; j++ )
             {
@@ -169,73 +167,73 @@ public:
             }
    
             //B11
-            for( int j1=0; j1<order+1; j1++ )
+            for( int j1=0; j1<ORDER+1; j1++ )
             {
-              int j=j1+i2*(order+1)+i3*orderPow2;
-              for( int l=0; l<order+1; l++ )
+              int j=j1+i2*(ORDER+1)+i3*orderPow2;
+              for( int l=0; l<ORDER+1; l++ )
               {
-                int ll=l+i2*(order+1)+i3*orderPow2;
+                int ll=l+i2*(ORDER+1)+i3*orderPow2;
                 R[j]+=weights[l]*weights[i2]*weights[i3]*(B[ll][0]*dPhi[ l ][ i1 ]*dPhi[ l ][ j1 ]);
               }
             }
             //B22
-            for( int j2=0; j2<order+1; j2++ )
+            for( int j2=0; j2<ORDER+1; j2++ )
             {
-              int j=i1+j2*(order+1)+i3*orderPow2;
-              for( int m=0; m<order+1; m++ )
+              int j=i1+j2*(ORDER+1)+i3*orderPow2;
+              for( int m=0; m<ORDER+1; m++ )
               {
-                int mm=i1+m*(order+1)+i3*orderPow2;
+                int mm=i1+m*(ORDER+1)+i3*orderPow2;
                 R[j]+=weights[i1]*weights[m]*weights[i3]*(B[mm][1]*dPhi[ m ][ i2 ]*dPhi[ m ][ j2 ]);
               }
             }
             //B33
-            for( int j3=0; j3<order+1; j3++ )
+            for( int j3=0; j3<ORDER+1; j3++ )
             {
-              int j=i1+i2*(order+1)+j3*orderPow2;
-              for( int n=0; n<order+1; n++ )
+              int j=i1+i2*(ORDER+1)+j3*orderPow2;
+              for( int n=0; n<ORDER+1; n++ )
               {
-                int nn=i1+i2*(order+1)+n*orderPow2;
+                int nn=i1+i2*(ORDER+1)+n*orderPow2;
                 R[j]+=weights[i1]*weights[i2]*weights[n]*(B[nn][2]*dPhi[ n ][ i3 ]*dPhi[ n ][ j3 ]);
               }
             }
             // B12,B21 (B[][3])
-            for( int j2=0; j2<order+1; j2++ )
+            for( int j2=0; j2<ORDER+1; j2++ )
             {
-              for( int j1=0; j1<order+1; j1++ )
+              for( int j1=0; j1<ORDER+1; j1++ )
               {
-                int j=j1+j2*(order+1)+i3*orderPow2;
-                int k=j1+i2*(order+1)+i3*orderPow2;
-                int l=i1+j2*(order+1)+i3*orderPow2;
+                int j=j1+j2*(ORDER+1)+i3*orderPow2;
+                int k=j1+i2*(ORDER+1)+i3*orderPow2;
+                int l=i1+j2*(ORDER+1)+i3*orderPow2;
                 R[j]+= weights[j1]*weights[i2]*weights[i3]*( B[k][3]*dPhi[ j1 ][ i1 ]*dPhi[ i2 ][ j2 ] ) +
                        weights[i1]*weights[j2]*weights[i3]*( B[l][3]*dPhi[ i1 ][ j1 ]*dPhi[ j2 ][ i2 ] ) ;
               }
             }
             // B13,B31 (B[][4])
-            for( int j3=0; j3<order+1; j3++ )
+            for( int j3=0; j3<ORDER+1; j3++ )
             {
-              for( int j1=0; j1<order+1; j1++ )
+              for( int j1=0; j1<ORDER+1; j1++ )
               {
-                int j=j1+i2*(order+1)+i3*orderPow2;
-                int k=j1+i2*(order+1)+i3*orderPow2;
-                int l=j1+i2*(order+1)+j3*orderPow2;
+                int j=j1+i2*(ORDER+1)+i3*orderPow2;
+                int k=j1+i2*(ORDER+1)+i3*orderPow2;
+                int l=j1+i2*(ORDER+1)+j3*orderPow2;
                 R[j]+= weights[j1]*weights[i2]*weights[i3]*( B[k][4]*dPhi[ i1 ][ j1 ]*dPhi[ i3 ][ j3 ] ) +
                        weights[j1]*weights[i2]*weights[j3]*( B[l][4]*dPhi[ i1 ][ j1 ]*dPhi[ j3 ][ i3 ] );
               }
             }
             // B23,B32 (B[][5])
-            for( int j3=0; j3<order+1; j3++ )
+            for( int j3=0; j3<ORDER+1; j3++ )
             {
-              for( int j2=0; j2<order+1; j2++ )
+              for( int j2=0; j2<ORDER+1; j2++ )
               {
-                int j=i1+j2*(order+1)+j3*orderPow2;
-                int k=i1+j2*(order+1)+i3*orderPow2;
-                int l=i1+i2*(order+1)+j3*orderPow2;
+                int j=i1+j2*(ORDER+1)+j3*orderPow2;
+                int k=i1+j2*(ORDER+1)+i3*orderPow2;
+                int l=i1+i2*(ORDER+1)+j3*orderPow2;
                 R[j]+= weights[i1]*weights[j2]*weights[i3]*(B[k][5]*dPhi[ i2 ][ i2 ]*dPhi[ i3 ][ j3 ]) +
                        weights[i1]*weights[i2]*weights[j3]*(B[l][5]*dPhi[ i2 ][ j2 ]*dPhi[ j3 ][ i3 ]);
               }
             }
     
-            int i=i1+i2*(order+1)+i3*orderPow2;
+            int i=i1+i2*(ORDER+1)+i3*orderPow2;
             Y[i]=0;
             for( int j=0; j<nPointsPerElement; j++ )
             {
@@ -252,7 +250,7 @@ public:
   PROXY_HOST_DEVICE
   static void computeMassMatrixAndStiffnessVector( const int & elementNumber,
                                                    const int & nPointsPerElement,
-                                                   float const (*nodesCoords)[3],
+                                                   float const cornersCoords[8][3],
                                                    PrecomputedData const & precomputedData,
                                                    float massMatrixLocal[],
                                                    float const pnLocal[],
@@ -260,9 +258,12 @@ public:
   {
       float B[ROW][COL];
       float R[ROW];
+      // interpolate GLL nodes
+      constexpr int total_points = getNumGLLPoints();
+      float nodesCoords[total_points][3];
+      generateSpectralElement(cornersCoords, nodesCoords);
       // compute Jacobian, massMatrix and B
       computeB( elementNumber,
-                ORDER,
                 precomputedData.weights,
                 nodesCoords,
                 precomputedData.derivativeBasisFunction1D,
@@ -271,7 +272,6 @@ public:
 
       // compute stifness  matrix ( durufle's optimization)
       gradPhiGradPhi( nPointsPerElement,
-                      ORDER,
                       precomputedData.weights,
                       precomputedData.derivativeBasisFunction1D,
                       B,
@@ -280,10 +280,63 @@ public:
                       Y );
   }
   
-  /////////////////////////////////////////////////////////////////////////////////////
-  //  end from first implementation
-  /////////////////////////////////////////////////////////////////////////////////////
-  
+  // Function takes [8][3] input and [gllpoints][3] output
+  static constexpr void generateSpectralElement(const float corners[8][3], float points[][3]) {
+      static_assert(ORDER >= 1 && ORDER <= 5, "ORDER must be between 1 and 5");
+      constexpr int n = ORDER + 1;
+
+      // Standard GLL points in [-1,1] reference coordinates
+      constexpr float sqrt5 = 2.2360679774997897f;
+      constexpr float gll_1d[6][6] = {
+          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // ORDER 0 (unused)
+          {-1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // ORDER 1
+          {-1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},  // ORDER 2
+          {-1.0f, -1.0f/sqrt5, 1.0f/sqrt5, 1.0f, 0.0f, 0.0f},  // ORDER 3
+          {-1.0f, -0.654653670707977f, 0.0f, 0.654653670707977f, 1.0f, 0.0f},  // ORDER 4
+          {-1.0f, -0.765055323929465f, -0.285231516480645f, 0.285231516480645f, 0.765055323929465f, 1.0f}  // ORDER 5
+      };
+
+      int point_idx = 0;
+      for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+          for (int k = 0; k < n; k++) {
+            // GLL coordinates in [-1,1] reference space
+            float xi = gll_1d[ORDER][i];
+            float eta = gll_1d[ORDER][j];
+            float zeta = gll_1d[ORDER][k];
+
+            // Convert from [-1,1] to [0,1] for interpolation
+            float u = (xi + 1.0f) * 0.5f;
+            float v = (eta + 1.0f) * 0.5f;
+            float w = (zeta + 1.0f) * 0.5f;
+
+            // Trilinear interpolation for each coordinate (x, y, z)
+            for (int coord = 0; coord < 3; coord++) {
+              // Bottom face interpolation (w=0)
+              float bottom = corners[0][coord] * (1-u) * (1-v) +  // corner 0
+                corners[1][coord] * u * (1-v) +        // corner 1
+                corners[2][coord] * u * v +            // corner 2
+                corners[3][coord] * (1-u) * v;         // corner 3
+
+              // Top face interpolation (w=1)
+              float top = corners[4][coord] * (1-u) * (1-v) +     // corner 4
+                corners[5][coord] * u * (1-v) +          // corner 5
+                corners[6][coord] * u * v +              // corner 6
+                corners[7][coord] * (1-u) * v;           // corner 7
+
+              // Linear interpolation between bottom and top faces
+              points[point_idx][coord] = bottom * (1-w) + top * w;
+            }
+            point_idx++;
+          }
+        }
+      }
+  }
+
+  static constexpr int getNumGLLPoints() {
+    return (ORDER + 1) * (ORDER + 1) * (ORDER + 1);
+  }
+
 };
   
 #endif //SEMQKGLINTEGRALSCLASSIC_HPP_
