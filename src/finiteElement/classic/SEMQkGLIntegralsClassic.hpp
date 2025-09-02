@@ -261,7 +261,7 @@ public:
       // interpolate GLL nodes
       constexpr int total_points = getNumGLLPoints();
       float nodesCoords[total_points][3];
-      generateSpectralElement(cornersCoords, nodesCoords);
+      generateElementCoordinates(cornersCoords, nodesCoords);
       // compute Jacobian, massMatrix and B
       computeB( elementNumber,
                 precomputedData.weights,
@@ -280,63 +280,64 @@ public:
                       Y );
   }
   
-  // Function takes [8][3] input and [gllpoints][3] output
-  static constexpr void generateSpectralElement(const float corners[8][3], float points[][3]) {
-      static_assert(ORDER >= 1 && ORDER <= 5, "ORDER must be between 1 and 5");
-      constexpr int n = ORDER + 1;
-
-      // Standard GLL points in [-1,1] reference coordinates
-      constexpr float sqrt5 = 2.2360679774997897f;
-      constexpr float gll_1d[6][6] = {
-          {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // ORDER 0 (unused)
-          {-1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // ORDER 1
-          {-1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},  // ORDER 2
-          {-1.0f, -1.0f/sqrt5, 1.0f/sqrt5, 1.0f, 0.0f, 0.0f},  // ORDER 3
-          {-1.0f, -0.654653670707977f, 0.0f, 0.654653670707977f, 1.0f, 0.0f},  // ORDER 4
-          {-1.0f, -0.765055323929465f, -0.285231516480645f, 0.285231516480645f, 0.765055323929465f, 1.0f}  // ORDER 5
-      };
-
-      int point_idx = 0;
-      for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-          for (int k = 0; k < n; k++) {
-            // GLL coordinates in [-1,1] reference space
-            float xi = gll_1d[ORDER][i];
-            float eta = gll_1d[ORDER][j];
-            float zeta = gll_1d[ORDER][k];
-
-            // Convert from [-1,1] to [0,1] for interpolation
-            float u = (xi + 1.0f) * 0.5f;
-            float v = (eta + 1.0f) * 0.5f;
-            float w = (zeta + 1.0f) * 0.5f;
-
-            // Trilinear interpolation for each coordinate (x, y, z)
-            for (int coord = 0; coord < 3; coord++) {
-              // Bottom face interpolation (w=0)
-              float bottom = corners[0][coord] * (1-u) * (1-v) +  // corner 0
-                corners[1][coord] * u * (1-v) +        // corner 1
-                corners[2][coord] * u * v +            // corner 2
-                corners[3][coord] * (1-u) * v;         // corner 3
-
-              // Top face interpolation (w=1)
-              float top = corners[4][coord] * (1-u) * (1-v) +     // corner 4
-                corners[5][coord] * u * (1-v) +          // corner 5
-                corners[6][coord] * u * v +              // corner 6
-                corners[7][coord] * (1-u) * v;           // corner 7
-
-              // Linear interpolation between bottom and top faces
-              points[point_idx][coord] = bottom * (1-w) + top * w;
-            }
-            point_idx++;
-          }
-        }
-      }
-  }
-
-  static constexpr int getNumGLLPoints() {
+    static constexpr int getNumGLLPoints() {
     return (ORDER + 1) * (ORDER + 1) * (ORDER + 1);
   }
 
+
+  // Function takes [8][3] input and [gllpoints][3] output
+  PROXY_HOST_DEVICE
+  static constexpr void generateElementCoordinates(const float corners[8][3], float points[][3]) {
+    static_assert(ORDER >= 1 && ORDER <= 5, "ORDER must be between 1 and 5");
+    constexpr int n = ORDER + 1;
+
+    constexpr float sqrt5 = 2.2360679774997897f;
+    constexpr float gll_1d[6][6] = {
+        {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // ORDER 0 (unused)
+        {-1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f},  // ORDER 1
+        {-1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f},  // ORDER 2
+        {-1.0f, -1.0f/sqrt5, 1.0f/sqrt5, 1.0f, 0.0f, 0.0f},  // ORDER 3
+        {-1.0f, -0.654653670707977f, 0.0f, 0.654653670707977f, 1.0f, 0.0f},  // ORDER 4
+        {-1.0f, -0.765055323929465f, -0.285231516480645f, 0.285231516480645f, 0.765055323929465f, 1.0f}  // ORDER 5
+    };
+
+    constexpr int mapping[8] = {0, 1, 3, 2, 4, 5, 7, 6};
+
+    float reordered_corners[8][3];
+    for(int i = 0; i < 8; i++) {
+        for(int coord = 0; coord < 3; coord++) {
+            reordered_corners[i][coord] = corners[mapping[i]][coord];
+        }
+    }
+
+    int point_idx = 0;
+    for (int i3 = 0; i3 < n; i3++) {
+      for (int i2 = 0; i2 < n; i2++) {
+        for (int i1 = 0; i1 < n; i1++) {
+          float xi = gll_1d[ORDER][i1];
+          float eta = gll_1d[ORDER][i2];
+          float zeta = gll_1d[ORDER][i3];
+
+          float u = xi;
+          float v = eta;
+          float w = zeta;
+
+          for (int coord = 0; coord < 3; coord++) {
+            points[point_idx][coord] =
+              reordered_corners[0][coord] * (1-u) * (1-v) * (1-w) * 0.125f +  // (-1,-1,-1)
+              reordered_corners[1][coord] * (1+u) * (1-v) * (1-w) * 0.125f +  // (+1,-1,-1)
+              reordered_corners[2][coord] * (1+u) * (1+v) * (1-w) * 0.125f +  // (+1,+1,-1)
+              reordered_corners[3][coord] * (1-u) * (1+v) * (1-w) * 0.125f +  // (-1,+1,-1)
+              reordered_corners[4][coord] * (1-u) * (1-v) * (1+w) * 0.125f +  // (-1,-1,+1)
+              reordered_corners[5][coord] * (1+u) * (1-v) * (1+w) * 0.125f +  // (+1,-1,+1)
+              reordered_corners[6][coord] * (1+u) * (1+v) * (1+w) * 0.125f +  // (+1,+1,+1)
+              reordered_corners[7][coord] * (1-u) * (1+v) * (1+w) * 0.125f;   // (-1,+1,+1)
+          }
+          point_idx++;
+        }
+      }
+    }
+  }
 };
   
 #endif //SEMQKGLINTEGRALSCLASSIC_HPP_
