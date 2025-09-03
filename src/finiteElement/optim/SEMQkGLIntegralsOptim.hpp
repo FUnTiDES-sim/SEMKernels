@@ -100,8 +100,8 @@ public:
       for ( int j = 0; j < 3; j++ )
       {
         JACOBIAN_TYPE jacCoeff = jacobianCoefficient1D( qa, 0, ka, j ) *
-                          jacobianCoefficient1D( qb, 1, kb, j ) *
-                          jacobianCoefficient1D( qc, 2, kc, j );
+                                 jacobianCoefficient1D( qb, 1, kb, j ) *
+                                 jacobianCoefficient1D( qc, 2, kc, j );
         for ( int i = 0; i < 3; i++ )
         {
           J[i][j] +=  jacCoeff * X[k][i];
@@ -150,15 +150,15 @@ public:
         GRADIENT_FLOAT const w2 = w * gic * gjc;
         func( abi, abj, w2 * B[2] );
         // off-diagonal terms
-        GRADIENT_FLOAT const w3 = w * gib * gjc;
-        func( aic, abj, w3 * B[3] );
-        func( abj, aic, w3 * B[3] );
-        GRADIENT_FLOAT const w4 = w * gia * gjc;
-        func( ibc, abj, w4 * B[4] );
-        func( abj, ibc, w4 * B[4] );
-        GRADIENT_FLOAT const w5 = w * gia * gjb;
-        func( ibc, ajc, w5 * B[5] );
-        func( ajc, ibc, w5 * B[5] );
+        // GRADIENT_FLOAT const w3 = w * gib * gjc;
+        // func( aic, abj, w3 * B[3] );
+        // func( abj, aic, w3 * B[3] );
+        // GRADIENT_FLOAT const w4 = w * gia * gjc;
+        // func( ibc, abj, w4 * B[4] );
+        // func( abj, ibc, w4 * B[4] );
+        // GRADIENT_FLOAT const w5 = w * gia * gjb;
+        // func( ibc, ajc, w5 * B[5] );
+        // func( ajc, ibc, w5 * B[5] );
       }
     }
   }
@@ -204,52 +204,30 @@ public:
   /**
    * @brief compute  mass Matrix stiffnessVector.
    */
-  template< typename ARRAY_REAL_VIEW >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  void computeMassMatrixAndStiffnessVector( const int & elementNumber,
-                                            const int & nPointsPerElement,
-                                            ARRAY_REAL_VIEW const & nodesCoordsX,
-                                            ARRAY_REAL_VIEW const & nodesCoordsY,
-                                            ARRAY_REAL_VIEW const & nodesCoordsZ,
-                                            PrecomputedData const & precomputedData,
-                                            float massMatrixLocal[],
-                                            float pnLocal[],
-                                            float Y[] )
-  {
-    TRANSFORM_FLOAT X[8][3]{ {0} };
-    int I = 0;
-    for ( int k = 0; k < 2; ++k )
-    {
-      for ( int j = 0; j < 2; ++j )
-      {
-        for ( int i = 0; i < 2; ++i )
-        {
-          int const l = linearIndex<1>( i, j, k );
-          X[I][0] = nodesCoordsX( elementNumber, l );
-          X[I][1] = nodesCoordsY( elementNumber, l );
-          X[I][2] = nodesCoordsZ( elementNumber, l );
-          I++;
-        }
-      }
-    }
-    for ( int q = 0; q < nPointsPerElement; q++ )
-    {
+  // template <typename ARRAY_REAL_VIEW>
+  static constexpr inline SEMKERNELS_HOST_DEVICE void
+  computeMassMatrixAndStiffnessVector(const int &elementNumber,
+                                      const int &nPointsPerElement,
+                                      const float X[8][3],
+                                      PrecomputedData const & precomputedData,
+                                      float massMatrixLocal[],
+                                      float pnLocal[],
+                                      float Y[]) {
+
+    for (int q = 0; q < nPointsPerElement; q++) {
       Y[q] = 0;
     }
-    for ( int q = 0; q < nPointsPerElement; q++ )
-    {
-      computeStiffnessAndMassTerm( q, X, massMatrixLocal, [&] ( const int i, const int j, const GRADIENT_FLOAT val )
+    for (int q = 0; q < nPointsPerElement; q++) {
+      computeStiffnessAndMassTerm( q, X, massMatrixLocal, [&](const int i, const int j, const GRADIENT_FLOAT val)
       {
         GRADIENT_FLOAT localIncrement = val * pnLocal[j];
-        Y[i] = Y[i] + val * pnLocal[j];
-      } );
+        Y[i] = Y[i] + localIncrement;
+      });
     }
   }
   /////////////////////////////////////////////////////////////////////////////////////
   //  end from GEOS implementation
   /////////////////////////////////////////////////////////////////////////////////////
-
 };
 
-#endif //SEMQKGLINTEGRALS_HPP_
+#endif // SEMQKGLINTEGRALS_HPP_

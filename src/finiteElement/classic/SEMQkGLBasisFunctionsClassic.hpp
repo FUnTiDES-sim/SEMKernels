@@ -1,7 +1,6 @@
 #ifndef SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 #define SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 
-#include "dataType.hpp"
 #include "SEMmacros.hpp"
 using namespace std;
 
@@ -301,7 +300,8 @@ public:
 
   template< typename T1, typename T2 >
   PROXY_HOST_DEVICE
-  static void getDerivativeBasisFunction1D( int order, T1 const & quadraturePoints,
+  static void getDerivativeBasisFunction1D( int order,
+                                            T1 const & quadraturePoints,
                                             T2 & derivativeBasisFunction1D )
   {
     // loop over quadrature points
