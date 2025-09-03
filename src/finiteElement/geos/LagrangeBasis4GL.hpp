@@ -51,12 +51,12 @@ public:
     {
       case 0:
       case 4:
-        return 1.0/10.0;
+        return 1.0 / 10.0;
       case 1:
       case 3:
-        return 49.0/90.0;
+        return 49.0 / 90.0;
       default:
-        return 32.0/45.0;
+        return 32.0 / 45.0;
     }
   }
 
@@ -70,7 +70,7 @@ public:
   //Switch case
   constexpr static double parentSupportCoord( const int supportPointIndex )
   {
-    double result=0.0;
+    double result = 0.0;
 
     switch( supportPointIndex )
     {
@@ -107,7 +107,7 @@ public:
   constexpr static double value( const int index,
                                  const double xi )
   {
-    double result=0.0;
+    double result = 0.0;
 
     switch( index )
     {
@@ -142,7 +142,7 @@ public:
   //MODFI4 : Implemented new base functions and their derivative for Q3
   constexpr static double value0( const double xi )
   {
-    return (1.0/8.0)*(-1.0+xi)*xi*(-3.0+7.0*xi*xi);
+    return (1.0 / 8.0) * (-1.0 + xi) * xi * (-3.0 + 7.0 * xi * xi);
   }
 
   /**
@@ -152,7 +152,7 @@ public:
    */
   constexpr static double value1( const double xi )
   {
-    return (49.0/24.0)*(sqrt3_7-xi)*xi*(-1.0+xi*xi);
+    return (49.0 / 24.0) * (sqrt3_7 - xi) * xi * (-1.0 + xi * xi);
   }
 
   /**
@@ -162,7 +162,7 @@ public:
    */
   constexpr static double value2( const double xi )
   {
-    return (1.0/3.0)*(3.0-10.0*xi*xi+7.0*xi*xi*xi*xi);
+    return (1.0 / 3.0) * (3.0 - 10.0 * xi * xi + 7.0 * xi * xi * xi * xi);
   }
 
   /**
@@ -172,7 +172,7 @@ public:
    */
   constexpr static double value3( const double xi )
   {
-    return -(49.0/24.0)*(sqrt3_7+xi)*xi*(-1.0+xi*xi);
+    return -(49.0 / 24.0) * (sqrt3_7 + xi) * xi * (-1.0 + xi * xi);
   }
 
   /**
@@ -182,7 +182,7 @@ public:
    */
   constexpr static double value4( const double xi )
   {
-    return (1.0/8.0)*(1.0+xi)*xi*(-3.0+7.0*xi*xi);
+    return (1.0 / 8.0) * (1.0 + xi) * xi * (-3.0 + 7.0 * xi * xi);
   }
 
 
@@ -196,7 +196,7 @@ public:
   constexpr static double gradient( const int index,
                                     const double xi )
   {
-    double result=0.0;
+    double result = 0.0;
 
     switch( index )
     {
@@ -230,7 +230,7 @@ public:
    */
   constexpr static double gradient0( const double xi )
   {
-    return (1.0/8.0)*(3.0+xi*(-6.0+7.0*xi*(-3.0+4.0*xi)));
+    return (1.0 / 8.0) * (3.0 + xi * (-6.0 + 7.0 * xi * (-3.0 + 4.0 * xi)));
   }
 
   /**
@@ -241,7 +241,7 @@ public:
    */
   constexpr static double gradient1( const double xi )
   {
-    return (49.0/24.0)*(-sqrt3_7+xi*(2.0+3.0*sqrt3_7*xi-4.0*xi*xi));
+    return (49.0 / 24.0) * (-sqrt3_7 + xi * (2.0 + 3.0 * sqrt3_7 * xi - 4.0 * xi * xi));
   }
 
   /**
@@ -252,7 +252,7 @@ public:
    */
   constexpr static double gradient2( const double xi )
   {
-    return (4.0/3.0)*xi*(-5.0+7.0*xi*xi);
+    return (4.0 / 3.0) * xi * (-5.0 + 7.0 * xi * xi);
   }
 
   /**
@@ -263,7 +263,7 @@ public:
    */
   constexpr static double gradient3( const double xi )
   {
-    return (49.0/24.0)*(sqrt3_7+xi*(2.0-3.0*sqrt3_7*xi-4.0*xi*xi));
+    return (49.0 / 24.0) * (sqrt3_7 + xi * (2.0 - 3.0 * sqrt3_7 * xi - 4.0 * xi * xi));
   }
 
   /**
@@ -274,7 +274,7 @@ public:
    */
   constexpr static double gradient4( const double xi )
   {
-    return (1.0/8.0)*(-3.0+xi*(-6.0+7.0*xi*(3.0+4.0*xi)));
+    return (1.0 / 8.0) * (-3.0 + xi * (-6.0 + 7.0 * xi * (3.0 + 4.0 * xi)));
   }
 
   /**
@@ -390,9 +390,9 @@ public:
                                       int & i1 )
     {
 
-      i1 = linearIndex/5;
+      i1 = linearIndex / 5;
 
-      i0 = linearIndex%5;
+      i0 = linearIndex % 5;
 
     }
 
@@ -407,9 +407,9 @@ public:
     static void value( const double (& coords)[2],
                        double (& N)[numSupportPoints] )
     {
-      for( int a=0; a<5; ++a )
+      for( int a = 0; a < 5; ++a )
       {
-        for( int b=0; b<5; ++b )
+        for( int b = 0; b < 5; ++b )
         {
           const int lindex = LagrangeBasis4GL::TensorProduct2D::linearIndex( a, b );
           N[ lindex ] = LagrangeBasis4GL::value( a, coords[0] ) *
@@ -490,11 +490,11 @@ public:
                                       int & i2 )
     {
 
-      i2 = linearIndex/25;
+      i2 = linearIndex / 25;
 
-      i1 = (linearIndex%25)/5;
+      i1 = (linearIndex % 25) / 5;
 
-      i0 = (linearIndex%25)%5;
+      i0 = (linearIndex % 25) % 5;
 
     }
 
@@ -509,11 +509,11 @@ public:
     static void value( const double (& coords)[3],
                        double (& N)[numSupportPoints] )
     {
-      for( int a=0; a<5; ++a )
+      for( int a = 0; a < 5; ++a )
       {
-        for( int b=0; b<5; ++b )
+        for( int b = 0; b < 5; ++b )
         {
-          for( int c=0; c<5; ++c )
+          for( int c = 0; c < 5; ++c )
           {
             const int lindex = LagrangeBasis4GL::TensorProduct3D::linearIndex( a, b, c );
             N[ lindex ] = LagrangeBasis4GL::value( a, coords[0] ) *

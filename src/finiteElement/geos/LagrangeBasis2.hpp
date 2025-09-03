@@ -31,7 +31,8 @@
  *  Coordinate:   -1             0             1
  *
  */
-class LagrangeBasis2 {
+class LagrangeBasis2
+{
 public:
   /// The number of support points for the basis
   constexpr static int numSupportPoints = 3;
@@ -42,13 +43,15 @@ public:
    * @return The value of the weight
    */
   PROXY_HOST_DEVICE
-  constexpr static real_t weight(const int q) {
-    switch (q) {
-    case 0:
-    case 2:
-      return 1.0 / 3.0;
-    default:
-      return 4.0 / 3.0;
+  constexpr static real_t weight( const int q )
+  {
+    switch ( q )
+    {
+      case 0:
+      case 2:
+        return 1.0 / 3.0;
+      default:
+        return 4.0 / 3.0;
     }
   }
 
@@ -59,16 +62,18 @@ public:
    * @return parent coordinate in the xi0 direction.
    */
   PROXY_HOST_DEVICE
-  constexpr static double parentSupportCoord(const int supportPointIndex) {
-    switch (supportPointIndex) {
-    case 0:
-      return -1.0;
-      break;
-    case 2:
-      return 1.0;
-    case 1:
-    default:
-      return 0.0;
+  constexpr static double parentSupportCoord( const int supportPointIndex )
+  {
+    switch ( supportPointIndex )
+    {
+      case 0:
+        return -1.0;
+        break;
+      case 2:
+        return 1.0;
+      case 1:
+      default:
+        return 0.0;
     }
   }
 
@@ -80,16 +85,18 @@ public:
    * @return The value of basis function.
    */
   PROXY_HOST_DEVICE
-  constexpr static double value(const int index, const double xi) {
+  constexpr static double value( const int index, const double xi )
+  {
 
-    switch (index) {
-    case 0:
-      return value0(xi);
-    case 2:
-      return value2(xi);
-    case 1:
-    default:
-      return value1(xi);
+    switch ( index )
+    {
+      case 0:
+        return value0( xi );
+      case 2:
+        return value2( xi );
+      case 1:
+      default:
+        return value1( xi );
     }
   }
 
@@ -99,7 +106,8 @@ public:
    * @return The value of the basis.
    */
   PROXY_HOST_DEVICE
-  constexpr static double value0(const double xi) {
+  constexpr static double value0( const double xi )
+  {
     const double xi_div2 = 0.5 * xi;
     return -xi_div2 + xi_div2 * xi;
   }
@@ -110,7 +118,7 @@ public:
    * @return The value of the basis.
    */
   PROXY_HOST_DEVICE
-  constexpr static double value1(const double xi) { return 1.0 - xi * xi; }
+  constexpr static double value1( const double xi ) { return 1.0 - xi * xi; }
 
   /**
    * @brief The value of the basis function for support point 2.
@@ -118,7 +126,8 @@ public:
    * @return The value of the basis.
    */
   PROXY_HOST_DEVICE
-  constexpr static double value2(const double xi) {
+  constexpr static double value2( const double xi )
+  {
     const double xi_div2 = 0.5 * xi;
     return xi_div2 + xi_div2 * xi;
   }
@@ -130,7 +139,7 @@ public:
    * @return The gradient of basis function
    */
   PROXY_HOST_DEVICE
-  constexpr static double gradient0(const double xi) { return -0.5 + xi; }
+  constexpr static double gradient0( const double xi ) { return -0.5 + xi; }
 
   /**
    * @brief The gradient of the basis function for support point 1 evaluated at
@@ -139,7 +148,7 @@ public:
    * @return The gradient of basis function
    */
   PROXY_HOST_DEVICE
-  constexpr static double gradient1(const double xi) { return -2 * xi; }
+  constexpr static double gradient1( const double xi ) { return -2 * xi; }
 
   /**
    * @brief The gradient of the basis function for support point 1 evaluated at
@@ -148,7 +157,7 @@ public:
    * @return The gradient of basis function
    */
   PROXY_HOST_DEVICE
-  constexpr static double gradient2(const double xi) { return 0.5 + xi; }
+  constexpr static double gradient2( const double xi ) { return 0.5 + xi; }
 
   /**
    * @brief The gradient of the basis function for a support point evaluated at
@@ -158,15 +167,17 @@ public:
    * @return The value of basis function.
    */
   PROXY_HOST_DEVICE
-  constexpr static double gradient(const int index, const double xi) {
-    switch (index) {
-    case 0:
-      return gradient0(xi);
-    case 2:
-      return gradient2(xi);
-    case 1:
-    default:
-      return gradient1(xi);
+  constexpr static double gradient( const int index, const double xi )
+  {
+    switch ( index )
+    {
+      case 0:
+        return gradient0( xi );
+      case 2:
+        return gradient2( xi );
+      case 1:
+      default:
+        return gradient1( xi );
     }
   }
 
@@ -178,16 +189,18 @@ public:
    * @return The gradient of basis function.
    */
   PROXY_HOST_DEVICE
-  constexpr static double gradientAt(const int q, const int p) {
-    switch (q) {
-    case 0:
-      return p == 0 ? -1.5 : -0.5;
-    case 1:
-      return p == 0 ? 2.0 : 0.0;
-    case 2:
-      return p == 0 ? -0.5 : 0.5;
-    default:
-      return 0;
+  constexpr static double gradientAt( const int q, const int p )
+  {
+    switch ( q )
+    {
+      case 0:
+        return p == 0 ? -1.5 : -0.5;
+      case 1:
+        return p == 0 ? 2.0 : 0.0;
+      case 2:
+        return p == 0 ? -0.5 : 0.5;
+      default:
+        return 0;
     }
   }
 
@@ -213,7 +226,8 @@ public:
    *
    *
    */
-  struct TensorProduct2D {
+  struct TensorProduct2D
+  {
 
     /// The number of support points in the basis.
     constexpr static int numSupportPoints = 9;
@@ -226,7 +240,8 @@ public:
      * @return The linear index of the support/quadrature point (0-8)
      */
     PROXY_HOST_DEVICE
-    constexpr static int linearIndex(const int i, const int j) {
+    constexpr static int linearIndex( const int i, const int j )
+    {
       return i + 3 * j;
     }
 
@@ -238,7 +253,8 @@ public:
      * @param i1 The Cartesian index of the support point in the xi1 direction.
      */
     PROXY_HOST_DEVICE
-    constexpr static void multiIndex(const int linearIndex, int &i0, int &i1) {
+    constexpr static void multiIndex( const int linearIndex, int &i0, int &i1 )
+    {
 
       i1 = ((linearIndex * 22) >> 6);
       // i1 = a/3;
@@ -256,13 +272,16 @@ public:
      * point.
      */
     PROXY_HOST_DEVICE
-    static void value(double const (&coords)[2],
-                      double (&N)[numSupportPoints]) {
-      for (int a = 0; a < 3; ++a) {
-        for (int b = 0; b < 3; ++b) {
-          const int lindex = LagrangeBasis2::TensorProduct2D::linearIndex(a, b);
-          N[lindex] = LagrangeBasis2::value(a, coords[0]) *
-                      LagrangeBasis2::value(b, coords[1]);
+    static void value( double const (&coords)[2],
+                       double (&N)[numSupportPoints] )
+    {
+      for ( int a = 0; a < 3; ++a )
+      {
+        for ( int b = 0; b < 3; ++b )
+        {
+          const int lindex = LagrangeBasis2::TensorProduct2D::linearIndex( a, b );
+          N[lindex] = LagrangeBasis2::value( a, coords[0] ) *
+                      LagrangeBasis2::value( b, coords[1] );
         }
       }
     }
@@ -305,7 +324,8 @@ public:
    *                                                                 |____________________|
    *
    */
-  struct TensorProduct3D {
+  struct TensorProduct3D
+  {
 
     /// The number of support points in the basis.
     constexpr static int numSupportPoints = 27;
@@ -318,7 +338,8 @@ public:
      * @param k The index in the xi2 direction (0,1)
      * @return The linear index of the support/quadrature point (0-26)
      */
-    constexpr static int linearIndex(const int i, const int j, const int k) {
+    constexpr static int linearIndex( const int i, const int j, const int k )
+    {
       return i + 3 * j + 9 * k;
     }
 
@@ -330,8 +351,9 @@ public:
      * @param i1 The Cartesian index of the support point in the xi1 direction.
      * @param i2 The Cartesian index of the support point in the xi2 direction.
      */
-    constexpr static void multiIndex(const int linearIndex, int &i0, int &i1,
-                                     int &i2) {
+    constexpr static void multiIndex( const int linearIndex, int &i0, int &i1,
+                                      int &i2 )
+    {
       i2 = (linearIndex * 29) >> 8;
       // i2 = a/9;
 
@@ -350,16 +372,20 @@ public:
      * @param N Array to hold the value of the basis functions at each support
      * point.
      */
-    static void value(const double (&coords)[3],
-                      double (&N)[numSupportPoints]) {
-      for (int a = 0; a < 3; ++a) {
-        for (int b = 0; b < 3; ++b) {
-          for (int c = 0; c < 3; ++c) {
+    static void value( const double (&coords)[3],
+                       double (&N)[numSupportPoints] )
+    {
+      for ( int a = 0; a < 3; ++a )
+      {
+        for ( int b = 0; b < 3; ++b )
+        {
+          for ( int c = 0; c < 3; ++c )
+          {
             const int lindex =
-                LagrangeBasis2::TensorProduct3D::linearIndex(a, b, c);
-            N[lindex] = LagrangeBasis2::value(a, coords[0]) *
-                        LagrangeBasis2::value(b, coords[1]) *
-                        LagrangeBasis2::value(c, coords[2]);
+              LagrangeBasis2::TensorProduct3D::linearIndex( a, b, c );
+            N[lindex] = LagrangeBasis2::value( a, coords[0] ) *
+                        LagrangeBasis2::value( b, coords[1] ) *
+                        LagrangeBasis2::value( c, coords[2] );
           }
         }
       }

@@ -153,7 +153,7 @@ public:
    */
   constexpr static double gradientBubble( const double xi )
   {
-    return -2.0*xi;
+    return -2.0 * xi;
   }
 
   /**
@@ -230,9 +230,9 @@ public:
     static void value( double const (&coords)[2],
                        double (& N)[numSupportPoints] )
     {
-      for( int a=0; a<2; ++a )
+      for( int a = 0; a < 2; ++a )
       {
-        for( int b=0; b<2; ++b )
+        for( int b = 0; b < 2; ++b )
         {
           const int lindex = LagrangeBasis1::TensorProduct2D::linearIndex( a, b );
           N[ lindex ] = LagrangeBasis1::value( a, coords[0] ) *
@@ -349,11 +349,11 @@ public:
     static void value( double const (&coords)[3],
                        double (& N)[numSupportPoints] )
     {
-      for( int a=0; a<2; ++a )
+      for( int a = 0; a < 2; ++a )
       {
-        for( int b=0; b<2; ++b )
+        for( int b = 0; b < 2; ++b )
         {
-          for( int c=0; c<2; ++c )
+          for( int c = 0; c < 2; ++c )
           {
             const int lindex = LagrangeBasis1::TensorProduct3D::linearIndex( a, b, c );
             N[ lindex ] = LagrangeBasis1::value( a, coords[0] ) *

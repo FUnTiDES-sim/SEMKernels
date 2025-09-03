@@ -37,11 +37,11 @@ public:
   constexpr static FLOAT_TYPE parentSupportCoord( const int supportPointIndex )
   {
     FLOAT_TYPE result = 0.0;
-    if constexpr ( order==1 )
+    if constexpr ( order == 1 )
     {
       return -1.0 + 2.0 * (supportPointIndex & 1);
     }
-    else if constexpr ( order==2 )
+    else if constexpr ( order == 2 )
     {
       switch ( supportPointIndex )
       {
@@ -55,7 +55,7 @@ public:
           return -1e99;
       }
     }
-    else if constexpr ( order==3 )
+    else if constexpr ( order == 3 )
     {
       switch ( supportPointIndex )
       {
@@ -131,7 +131,7 @@ public:
    * @return The derivative value
    */
   SEMKERNELS_HOST_DEVICE
-  constexpr static FLOAT_TYPE basisGradientAt( const int , const int q, const int p )
+  constexpr static FLOAT_TYPE basisGradientAt( const int, const int q, const int p )
   {
     if ( p <= halfNodes )
     {

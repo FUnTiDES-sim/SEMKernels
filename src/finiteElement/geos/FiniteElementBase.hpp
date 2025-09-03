@@ -894,7 +894,7 @@ void FiniteElementBase::symmetricGradient( GRADIENT_TYPE const & gradN,
   gradVar[4] = gradN[0][2] * var[0][0] + gradN[0][0] * var[0][2];
   gradVar[5] = gradN[0][1] * var[0][0] + gradN[0][0] * var[0][1];
 
-  for( int a=1; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 1; a < NUM_SUPPORT_POINTS; ++a )
   {
     gradVar[0] = gradVar[0] + gradN[a][0] * var[ a ][0];
     gradVar[1] = gradVar[1] + gradN[a][1] * var[ a ][1];
@@ -914,7 +914,7 @@ real64 FiniteElementBase::symmetricGradientTrace( GRADIENT_TYPE const & gradN,
 {
   real64 result = gradN[0][0] * var[0][0] + gradN[0][1] * var[0][1] + gradN[0][2] * var[0][2];
 
-  for( int a=1; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 1; a < NUM_SUPPORT_POINTS; ++a )
   {
     result = result + gradN[a][0] * var[a][0] + gradN[a][1] * var[a][1] + gradN[a][2] * var[a][2];
   }
@@ -961,7 +961,7 @@ void FiniteElementBase::valueAndGradient( real64 const (&N)[NUM_SUPPORT_POINTS],
     gradVar[i] = var[0] * gradN[0][i];
   }
 
-  for( int a=1; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 1; a < NUM_SUPPORT_POINTS; ++a )
   {
     value = value + N[a] * var[a];
     for( int i = 0; i < 3; ++i )
@@ -981,7 +981,7 @@ void FiniteElementBase::plusGradNajAij( GRADIENT_TYPE const & gradN,
                                         real64 const (&var_detJxW)[6],
                                         real64 (& R)[NUM_SUPPORT_POINTS][3] )
 {
-  for( int a=0; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 0; a < NUM_SUPPORT_POINTS; ++a )
   {
     R[a][0] = R[a][0] + var_detJxW[0] * gradN[a][0] + var_detJxW[5] * gradN[a][1] + var_detJxW[4] * gradN[a][2];
     R[a][1] = R[a][1] + var_detJxW[5] * gradN[a][0] + var_detJxW[1] * gradN[a][1] + var_detJxW[3] * gradN[a][2];
@@ -998,7 +998,7 @@ void FiniteElementBase::plusGradNajAij( GRADIENT_TYPE const & gradN,
                                         real64 const (&var_detJxW)[3][3],
                                         real64 (& R)[NUM_SUPPORT_POINTS][3] )
 {
-  for( int a=0; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 0; a < NUM_SUPPORT_POINTS; ++a )
   {
     LvArray::tensorOps::Ri_add_AijBj< 3, 3 >( R[a], var_detJxW, gradN[a] );
   }
@@ -1011,7 +1011,7 @@ void FiniteElementBase::plusNaFi( real64 const (&N)[NUM_SUPPORT_POINTS],
                                   real64 const (&var_detJxW)[3],
                                   real64 ( & R )[NUM_SUPPORT_POINTS][3] )
 {
-  for( int a=0; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 0; a < NUM_SUPPORT_POINTS; ++a )
   {
     LvArray::tensorOps::scaledAdd< 3 >( R[a], var_detJxW, N[a] );
   }
@@ -1028,7 +1028,7 @@ void FiniteElementBase::plusGradNajAijPlusNaFi( GRADIENT_TYPE const & gradN,
                                                 real64 const (&forcingTerm_detJxW)[3],
                                                 real64 (& R)[NUM_SUPPORT_POINTS][3] )
 {
-  for( int a=0; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 0; a < NUM_SUPPORT_POINTS; ++a )
   {
     R[a][0] = R[a][0] + var_detJxW[0] * gradN[a][0] + var_detJxW[5] * gradN[a][1] + var_detJxW[4] * gradN[a][2] + forcingTerm_detJxW[0] * N[a];
     R[a][1] = R[a][1] + var_detJxW[5] * gradN[a][0] + var_detJxW[1] * gradN[a][1] + var_detJxW[3] * gradN[a][2] + forcingTerm_detJxW[1] * N[a];
@@ -1046,7 +1046,7 @@ void FiniteElementBase::plusGradNajAijPlusNaFi( GRADIENT_TYPE const & gradN,
                                                 real64 const (&forcingTerm_detJxW)[3],
                                                 real64 (& R)[NUM_SUPPORT_POINTS][3] )
 {
-  for( int a=0; a<NUM_SUPPORT_POINTS; ++a )
+  for( int a = 0; a < NUM_SUPPORT_POINTS; ++a )
   {
     R[a][0] = R[a][0] + var_detJxW[0][0] * gradN[a][0] + var_detJxW[0][1] * gradN[a][1] + var_detJxW[0][2] * gradN[a][2] + forcingTerm_detJxW[0] * N[a];
     R[a][1] = R[a][1] + var_detJxW[1][0] * gradN[a][0] + var_detJxW[1][1] * gradN[a][1] + var_detJxW[1][2] * gradN[a][2] + forcingTerm_detJxW[1] * N[a];
@@ -1061,12 +1061,12 @@ void FiniteElementBase::plusGradNajAijPlusNaFi( GRADIENT_TYPE const & gradN,
 
 /// Macro to simplify name resolution in derived classes.
 #define USING_FINITEELEMENTBASE                       \
-  using FiniteElementBase::value;                     \
-  using FiniteElementBase::symmetricGradient;         \
-  using FiniteElementBase::gradient;                  \
-  using FiniteElementBase::valueAndGradient;          \
-  using FiniteElementBase::plusGradNajAij;           \
-  using FiniteElementBase::plusNaFi;                 \
-  using FiniteElementBase::plusGradNajAijPlusNaFi;
+        using FiniteElementBase::value;                     \
+        using FiniteElementBase::symmetricGradient;         \
+        using FiniteElementBase::gradient;                  \
+        using FiniteElementBase::valueAndGradient;          \
+        using FiniteElementBase::plusGradNajAij;           \
+        using FiniteElementBase::plusNaFi;                 \
+        using FiniteElementBase::plusGradNajAijPlusNaFi;
 
 #endif //GEOS_FINITEELEMENT_ELEMENTFORMULATIONS_FINITEELEMENTBASE_HPP_

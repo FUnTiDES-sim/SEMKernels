@@ -9,9 +9,9 @@ static constexpr inline
 SEMKERNELS_HOST_DEVICE
 T determinant( T const (&m)[3][3] )
 {
-  return  + m[0][0] * ( m[1][1] * m[2][2] - m[2][1] * m[1][2] )
-          - m[0][1] * ( m[1][0] * m[2][2] - m[2][0] * m[1][2] )
-          + m[0][2] * ( m[1][0] * m[2][1] - m[2][0] * m[1][1] );
+  return +m[0][0] * ( m[1][1] * m[2][2] - m[2][1] * m[1][2] )
+         - m[0][1] * ( m[1][0] * m[2][2] - m[2][0] * m[1][2] )
+         + m[0][2] * ( m[1][0] * m[2][1] - m[2][0] * m[1][1] );
 }
 
 template< typename T >
@@ -19,9 +19,9 @@ static constexpr inline
 SEMKERNELS_HOST_DEVICE
 typename T::value_type determinant( T const & m )
 {
-  return  + m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
-          - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
-          + m( 0, 2 ) * ( m( 1, 0 ) * m( 2, 1 ) - m( 2, 0 ) * m( 1, 1 ) );
+  return +m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
+         - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
+         + m( 0, 2 ) * ( m( 1, 0 ) * m( 2, 1 ) - m( 2, 0 ) * m( 1, 1 ) );
 }
 
 
@@ -35,7 +35,7 @@ typename T::value_type determinant( T const & m )
  * @param k The index in the xi2 direction (0,r)
  * @return The linear index of the support/quadrature point (0-(r+1)^3)
  */
-template< int ORDER>
+template< int ORDER >
 static constexpr inline
 SEMKERNELS_HOST_DEVICE
 int linearIndex( const int i, const int j, const int k )
@@ -43,33 +43,33 @@ int linearIndex( const int i, const int j, const int k )
   return i + (ORDER + 1) * j + (ORDER + 1) * (ORDER + 1) * k;
 }
 
-  /**
-   * @brief Calculate the Cartesian/TensorProduct index given the linear index
-   *   of a support point.
-   * @param linearIndex The linear index of support point
-   * @param r order of polynomial approximation
-   * @param i0 The Cartesian index of the support point in the xi0 direction.
-   * @param i1 The Cartesian index of the support point in the xi1 direction.
-   * @param i2 The Cartesian index of the support point in the xi2 direction.
-   */
-  template< int ORDER >
-  static constexpr inline 
-  SEMKERNELS_HOST_DEVICE
-  std::tuple<int,int,int> tripleIndex( int const linearIndex )
-  { 
-    return { ( linearIndex % ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) % ( ORDER + 1 ) ,
-             ( linearIndex % ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) / ( ORDER + 1 ) ,
-             ( linearIndex / ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) };
+/**
+ * @brief Calculate the Cartesian/TensorProduct index given the linear index
+ *   of a support point.
+ * @param linearIndex The linear index of support point
+ * @param r order of polynomial approximation
+ * @param i0 The Cartesian index of the support point in the xi0 direction.
+ * @param i1 The Cartesian index of the support point in the xi1 direction.
+ * @param i2 The Cartesian index of the support point in the xi2 direction.
+ */
+template< int ORDER >
+static constexpr inline
+SEMKERNELS_HOST_DEVICE
+std::tuple< int, int, int > tripleIndex( int const linearIndex )
+{
+  return { ( linearIndex % ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) % ( ORDER + 1 ),
+           ( linearIndex % ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) / ( ORDER + 1 ),
+           ( linearIndex / ( ( ORDER + 1 ) * ( ORDER + 1 ) ) ) };
 }
 
-template<typename T>
+template< typename T >
 PROXY_HOST_DEVICE
 T symDeterminant( T (&B)[3] )
 {
   return B[0] * B[1] - B[2] * B[2];
 }
 
-template<typename T>
+template< typename T >
 PROXY_HOST_DEVICE
 T symDeterminant( T (&B)[6] )
 {
@@ -80,9 +80,9 @@ T symDeterminant( T (&B)[6] )
          B[ 2 ] * B[ 5 ] * B[ 5 ];
 }
 
-template <typename T>
+template< typename T >
 PROXY_HOST_DEVICE
-auto invert3x3(T (&Jinv)[3][3], T const (&J)[3][3])
+auto invert3x3( T (&Jinv)[3][3], T const (&J)[3][3] )
 {
   Jinv[ 0 ][ 0 ] = J[ 1 ][ 1 ] * J[ 2 ][ 2 ] - J[ 1 ][ 2 ] * J[ 2 ][ 1 ];
   Jinv[ 0 ][ 1 ] = J[ 0 ][ 2 ] * J[ 2 ][ 1 ] - J[ 0 ][ 1 ] * J[ 2 ][ 2 ];
@@ -91,7 +91,7 @@ auto invert3x3(T (&Jinv)[3][3], T const (&J)[3][3])
                 J[ 1 ][ 0 ] * Jinv[ 0 ][ 1 ] +
                 J[ 2 ][ 0 ] * Jinv[ 0 ][ 2 ];
 
-  T const invDet = T(1) / det;
+  T const invDet = T( 1 ) / det;
 
   Jinv[ 0 ][ 0 ] *= invDet;
   Jinv[ 0 ][ 1 ] *= invDet;
@@ -106,13 +106,13 @@ auto invert3x3(T (&Jinv)[3][3], T const (&J)[3][3])
   return det;
 }
 
-template <typename T>
+template< typename T >
 PROXY_HOST_DEVICE
 auto invert3x3( T (&Jinv)[3][3] )
 {
   T const J[3][3] = { { Jinv[0][0], Jinv[0][1], Jinv[0][2] },
-                      { Jinv[1][0], Jinv[1][1], Jinv[1][2] },
-                      { Jinv[2][0], Jinv[2][1], Jinv[2][2] } };
+    { Jinv[1][0], Jinv[1][1], Jinv[1][2] },
+    { Jinv[2][0], Jinv[2][1], Jinv[2][2] } };
   return invert3x3( Jinv, J );
 }
 
