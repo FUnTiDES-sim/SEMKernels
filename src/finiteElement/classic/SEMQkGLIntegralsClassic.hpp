@@ -303,7 +303,7 @@ public:
 
     constexpr int mapping[8] = {0, 1, 3, 2, 4, 5, 7, 6};
 
-    float reordered_corners[8][3];
+    float reordered_corners[8][3] = {0};
     for(int i = 0; i < 8; i++) {
         for(int coord = 0; coord < 3; coord++) {
             reordered_corners[i][coord] = corners[mapping[i]][coord];
