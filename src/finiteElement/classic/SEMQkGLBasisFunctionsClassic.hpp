@@ -7,10 +7,10 @@ using namespace std;
 /**
  * This class is the basis class for the hexahedron finite element cells with shape functions defined on Gauss-Lobatto quadrature points.
  */
+template< int ORDER >
 class SEMQkGLBasisFunctionsClassic
 {
 private:
-  int order;
 
 public:
   PROXY_HOST_DEVICE SEMQkGLBasisFunctionsClassic(){};
@@ -19,35 +19,38 @@ public:
   
   template< typename TYPE >
   PROXY_HOST_DEVICE
-  static void gaussLobattoQuadraturePoints( int order, TYPE & quadraturePoints ) //const
+  static void gaussLobattoQuadraturePoints( TYPE & quadraturePoints ) //const
   {
-   switch( order )
-   {
-     case 1:
+    if constexpr ( ORDER==1)
+    {
        quadraturePoints[0]=-1.;
        quadraturePoints[1]=1.;
-       break;
-     case 2:
+    }
+    else if constexpr ( ORDER==2)
+    {
        quadraturePoints[0]=-1.;
        quadraturePoints[1]=0.;
        quadraturePoints[2]=1.;
-       break;
-     case 3:
+    }
+    else if constexpr ( ORDER==3)
+    {
        static constexpr double sqrt5 = 2.2360679774997897;
        quadraturePoints[0] = -1.0;
        quadraturePoints[1] = -1./sqrt5;
        quadraturePoints[2] = 1./sqrt5;
        quadraturePoints[3] = 1.;
-       break;
-     case 4:
+    }
+    else if constexpr ( ORDER==4)
+    {
        static constexpr double sqrt3_7 = 0.6546536707079771;
        quadraturePoints[0] = -1.0;
        quadraturePoints[1] = -sqrt3_7;
        quadraturePoints[2] = 0.0;
        quadraturePoints[3] = sqrt3_7;
        quadraturePoints[4] = 1.0;
-       break;
-     case 5:
+    }
+    else if constexpr ( ORDER==5)
+    {
        static constexpr double sqrt__7_plus_2sqrt7__ = 3.50592393273573196;
        static constexpr double sqrt__7_mins_2sqrt7__ = 1.30709501485960033;
        static constexpr double sqrt_inv21 = 0.218217890235992381;
@@ -57,35 +60,32 @@ public:
        quadraturePoints[3] = sqrt_inv21*sqrt__7_mins_2sqrt7__;
        quadraturePoints[4] = sqrt_inv21*sqrt__7_plus_2sqrt7__;
        quadraturePoints[5] = 1.0;
-       break;
-     default:
-       break;
-   }
+    }
   }
 
   template< typename TYPE >
   PROXY_HOST_DEVICE
-  static void gaussLobattoQuadratureWeights( int order, TYPE & weights )
+  static void gaussLobattoQuadratureWeights( TYPE & weights )
   {
-    if( order == 1 )
+    if constexpr ( ORDER == 1 )
     {
       weights[0]=1.0;
       weights[1]=1.0;
     }
-    if( order == 2 )
+    if constexpr ( ORDER == 2 )
     {
       weights[0]=0.33333333;
       weights[1]=1.33333333;
       weights[2]= 0.33333333;
     }
-    if( order == 3 )
+    if constexpr ( ORDER == 3 )
     {
       weights[0]=0.16666667;
       weights[1]=0.83333333;
       weights[2]=0.83333333;
       weights[3]=0.16666667;
     }
-    if( order == 4 )
+    if constexpr ( ORDER == 4 )
     {
       weights[0]=0.1;
       weights[1]=0.54444444;
@@ -93,7 +93,7 @@ public:
       weights[3]=0.54444444;
       weights[4]=0.1;
     }
-    if( order == 5 )
+    if constexpr ( ORDER == 5 )
     {
       weights[0]=0.06666667;
       weights[1]=0.37847496;
@@ -105,21 +105,21 @@ public:
   }
 
   PROXY_HOST_DEVICE
-  static vector< double > shapeFunction1D( int order, double xi )
+  static vector< double > shapeFunction1D( double xi )
   {
-    std::vector< double > shapeFunction( order+1 );
-    if( order==1 )
+    std::vector< double > shapeFunction( ORDER+1 );
+    if constexpr ( ORDER==1 )
     {
       shapeFunction[0]=0.5*(1.0-xi);
       shapeFunction[1]=0.5*(1.0+xi);
     }
-    if( order==2 )
+    if constexpr ( ORDER==2 )
     {
       shapeFunction[0]= -1.0*xi*(0.5 - 0.5*xi);
       shapeFunction[1]=(1.0 - 1.0*xi)*(1.0*xi + 1.0);
       shapeFunction[2]= 1.0*xi*(0.5*xi + 0.5);
     }
-    if( order==3 )
+    if constexpr ( ORDER==3 )
     {
       shapeFunction[0]=(0.309016994374947 - 0.690983005625053*xi)*(0.5 - 0.5*xi)
                         *(-1.80901699437495*xi - 0.809016994374947);
@@ -130,7 +130,7 @@ public:
       shapeFunction[3]=(0.5*xi + 0.5)*(0.690983005625053*xi + 0.309016994374947)
                         *(1.80901699437495*xi - 0.809016994374947);
     }
-    if( order==4 )
+    if constexpr ( ORDER==4 )
     {
       shapeFunction[0]=1.0*xi*(0.39564392373896 - 0.60435607626104*xi)*(0.5 - 0.5*xi)
                         *(-2.89564392373896*xi - 1.89564392373896);
@@ -142,7 +142,7 @@ public:
       shapeFunction[4]= 1.0*xi*(0.5*xi + 0.5)*(0.60435607626104*xi + 0.39564392373896)
                       *(2.89564392373896*xi - 1.89564392373896);
     }
-    if( order==5 )
+    if constexpr ( ORDER==5 )
     {
       shapeFunction[0]=(0.221930066935875 - 0.778069933064125*xi)*(0.433445520691247 - 0.566554479308753*xi)
                         *(0.5 - 0.5*xi)*(-4.25632117622354*xi - 3.25632117622354)
@@ -169,20 +169,20 @@ public:
 
   PROXY_HOST_DEVICE
   static  
-  void derivativeShapeFunction1D( int order, double xi, float * const derivativeShapeFunction )
+  void derivativeShapeFunction1D( double xi, float * const derivativeShapeFunction )
   {
-    if( order == 1 )
+    if constexpr ( ORDER == 1 )
     {
       derivativeShapeFunction[0]=-0.5;
       derivativeShapeFunction[1]=0.5;
     }
-    if( order == 2 )
+    if constexpr ( ORDER == 2 )
     {
       derivativeShapeFunction[0]=1.0*xi - 0.5;
       derivativeShapeFunction[1]=-2.0*xi;
       derivativeShapeFunction[2]=1.0*xi + 0.5;
     }
-    if( order == 3 )
+    if constexpr ( ORDER == 3 )
     {
       derivativeShapeFunction[0]=-1.80901699437495*(0.309016994374947 - 0.690983005625053*xi)*(0.5 - 0.5*xi)
                                   + (-1.80901699437495*xi - 0.809016994374947)*(0.345491502812526*xi - 0.345491502812526)
@@ -200,7 +200,7 @@ public:
                                   (0.345491502812526*xi + 0.345491502812526)*(1.80901699437495*xi - 0.809016994374947) +
                                   1.80901699437495*(0.5*xi + 0.5)*(0.690983005625053*xi + 0.309016994374947);
     }
-    if( order == 4 )
+    if constexpr ( ORDER == 4 )
     {
       derivativeShapeFunction[0]=2.89564392373896*xi*(0.39564392373896 - 0.60435607626104*xi)*(0.5 - 0.5*xi) +
                                   0.5*xi*(0.39564392373896 - 0.60435607626104*xi)*(-2.89564392373896*xi - 1.89564392373896)
@@ -229,7 +229,7 @@ public:
                                   + 0.5*xi*(0.60435607626104*xi + 0.39564392373896)*(2.89564392373896*xi - 1.89564392373896)
                                   + (0.5*xi + 0.5)*(0.60435607626104*xi + 0.39564392373896)*(2.89564392373896*xi - 1.89564392373896);
     }
-    if( order == 5 )
+    if constexpr ( ORDER == 5 )
     {
       derivativeShapeFunction[0]=-1.39905441140358*(0.221930066935875 - 0.778069933064125*xi)*(0.433445520691247 - 0.566554479308753*xi)
                                   *(0.5 - 0.5*xi)*(-4.25632117622354*xi - 3.25632117622354)
@@ -300,15 +300,14 @@ public:
 
   template< typename T1, typename T2 >
   PROXY_HOST_DEVICE
-  static void getDerivativeBasisFunction1D( int order,
-                                            T1 const & quadraturePoints,
+  static void getDerivativeBasisFunction1D( T1 const & quadraturePoints,
                                             T2 & derivativeBasisFunction1D )
   {
     // loop over quadrature points
-    for( int q = 0; q < order+1; q++ )
+    for( int q = 0; q < ORDER+1; q++ )
     {
       //extract all basis functions  for current quadrature point
-      derivativeShapeFunction1D( order, quadraturePoints[q], derivativeBasisFunction1D[q] );
+      derivativeShapeFunction1D( quadraturePoints[q], derivativeBasisFunction1D[q] );
     }
   }
 };

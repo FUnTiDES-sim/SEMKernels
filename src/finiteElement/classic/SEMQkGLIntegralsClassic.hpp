@@ -13,7 +13,7 @@ template < int ORDER >
 class SEMQkGLIntegralsClassic
 {
 private:
-  SEMQkGLBasisFunctionsClassic GLBasis;
+  SEMQkGLBasisFunctionsClassic<ORDER> GLBasis;
 
 public:
   constexpr static bool isClassic = true;
@@ -30,13 +30,12 @@ public:
   static void init( PrecomputedData & precomputedData )
   {
     // initialize quadrature points and weights
-    SEMQkGLBasisFunctionsClassic::gaussLobattoQuadraturePoints( ORDER, precomputedData.quadraturePoints );
-    SEMQkGLBasisFunctionsClassic::gaussLobattoQuadratureWeights( ORDER, precomputedData.weights );
+    SEMQkGLBasisFunctionsClassic<ORDER>::gaussLobattoQuadraturePoints( precomputedData.quadraturePoints );
+    SEMQkGLBasisFunctionsClassic<ORDER>::gaussLobattoQuadratureWeights( precomputedData.weights );
 
     // initialize derivative basis function
-    SEMQkGLBasisFunctionsClassic::getDerivativeBasisFunction1D( ORDER,
-                                                                precomputedData.quadraturePoints,
-                                                                precomputedData.derivativeBasisFunction1D );
+    SEMQkGLBasisFunctionsClassic<ORDER>::getDerivativeBasisFunction1D( precomputedData.quadraturePoints,
+                                                                       precomputedData.derivativeBasisFunction1D );
   }
 
   PROXY_HOST_DEVICE SEMQkGLIntegralsClassic(){};
