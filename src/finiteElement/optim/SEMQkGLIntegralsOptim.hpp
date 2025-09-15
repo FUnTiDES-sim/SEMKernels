@@ -3,7 +3,7 @@
 
 #include "SEMQkGLBasisFunctionsOptim.hpp"
 #include "common/mathUtilites.hpp"
-#include "common/CArray.hpp"
+#include "shiva/common/CArray.hpp"
 
 
 #include<stdio.h>

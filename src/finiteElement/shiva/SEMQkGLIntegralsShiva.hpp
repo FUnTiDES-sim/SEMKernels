@@ -3,16 +3,16 @@
 #include "common/macros.hpp"
 #include "common/mathUtilites.hpp"
 
-#include "functions/bases/LagrangeBasis.hpp"
-#include "functions/quadrature/Quadrature.hpp"
-#include "functions/spacing/Spacing.hpp"
-#include "geometry/shapes/NCube.hpp"
-#include "geometry/shapes/InterpolatedShape.hpp"
-#include "geometry/mapping/LinearTransform.hpp"
-#include "common/ShivaMacros.hpp"
-#include "common/pmpl.hpp"
-#include "common/types.hpp"
-#include "discretizations/finiteElementMethod/parentElements/ParentElement.hpp"
+#include "shiva/functions/bases/LagrangeBasis.hpp"
+#include "shiva/functions/quadrature/Quadrature.hpp"
+#include "shiva/functions/spacing/Spacing.hpp"
+#include "shiva/geometry/shapes/NCube.hpp"
+#include "shiva/geometry/shapes/InterpolatedShape.hpp"
+#include "shiva/geometry/mapping/LinearTransform.hpp"
+#include "shiva/common/ShivaMacros.hpp"
+#include "shiva/common/pmpl.hpp"
+#include "shiva/common/types.hpp"
+#include "shiva/discretizations/finiteElementMethod/parentElements/ParentElement.hpp"
 
 #include <stdio.h>
 
