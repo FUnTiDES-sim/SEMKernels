@@ -1681,6 +1681,7 @@ gradient( int const q,
   }, invJ, var, grad );
 }
 
+template<typename VpFunc, typename RhoFunc, typename Elem2NodesFunc>
 template <typename GL_BASIS>
 PROXY_HOST_DEVICE void Qk_Hexahedron_Lagrange_GaussLobatto<
     GL_BASIS>::computeMassMatrixAndStiffnessVector(const int &elementNumber,
@@ -1689,7 +1690,10 @@ PROXY_HOST_DEVICE void Qk_Hexahedron_Lagrange_GaussLobatto<
                                                    PrecomputedData const & precomputedData,
                                                    float massMatrixLocal[],
                                                    float pnLocal[],
-                                                   float Y[])
+                                                   float Y[],
+                                                   VpFunc && getVp,
+                                                   RhoFunc && getRho,
+                                                   Elem2NodesFunc && elem2nodes)
 {
   for (int q = 0; q < nPointsPerElement; q++) {
     Y[q] = 0;
@@ -1702,6 +1706,24 @@ PROXY_HOST_DEVICE void Qk_Hexahedron_Lagrange_GaussLobatto<
       Y[i] += localIncrement;
     });
   }
+
+  int q = 0;
+  for (int k = 0; k < ORDER+1; k++) {
+    for (int j = 0; j < ORDER+1; j++) {
+      for (int i = 0; i < ORDER+1; i++) {
+        int node = elem2nodes(elementNumber, i, j, k);
+        float rho = getRho(node);
+        float vp = getVp(node);
+        massMatrixLocal[q] = computeMassTerm(q, X) / (rho * vp * vp);
+        computeStiffnessTerm(q, X, [&](const int iy, const int jy, const real_t val) {
+          float localIncrement = val * pnLocal[jy] / rho;
+          Y[iy] += localIncrement;
+        });
+        q++;
+      }
+    }
+  }
+
 }
 
 using Q1_Hexahedron_Lagrange_GaussLobatto =

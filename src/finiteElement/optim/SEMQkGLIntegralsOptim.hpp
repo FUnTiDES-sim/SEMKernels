@@ -116,6 +116,7 @@ public:
   void computeGradPhiBGradPhi( int const qa,
                                int const qb,
                                int const qc,
+                               int const idx,
                                TRANSFORM_FLOAT const (&B)[6],
                                FUNC && func )
   {
@@ -144,11 +145,11 @@ public:
 
         // diagonal terms
         GRADIENT_FLOAT const w0 = w * gia * gja;
-        func( ibc, jbc, w0 * B[0] );
+        func( ibc, jbc, w0 * B[0], idx );
         GRADIENT_FLOAT const w1 = w * gib * gjb;
-        func( aic, ajc, w1 * B[1] );
+        func( aic, ajc, w1 * B[1], idx );
         GRADIENT_FLOAT const w2 = w * gic * gjc;
-        func( abi, abj, w2 * B[2] );
+        func( abi, abj, w2 * B[2], idx );
         // off-diagonal terms
         // GRADIENT_FLOAT const w3 = w * gib * gjc;
         // func( aic, abj, w3 * B[3] );
@@ -165,15 +166,21 @@ public:
 
 
   template< typename COORDS_TYPE, 
-            typename FUNC >
+            typename FUNC, typename VpFunc, typename RhoFunc, typename Elem2NodesFunc >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeStiffnessAndMassTerm( int const q,
                              COORDS_TYPE const & X,
                              float mass[],
-                             FUNC && func )
+                             FUNC && func,
+                             const int & elementNumber,
+                             VpFunc && getVp,
+                             RhoFunc && getRho,
+                             Elem2NodesFunc && elem2nodes )
   {
     auto const [ qa, qb, qc ] = tripleIndex<ORDER>( q );
+
+    const int idx = elem2nodes(elementNumber, qc, qb, qa);
 
     TRANSFORM_FLOAT J[3][3] = { {0} };
     jacobianTransformation( qa, qb, qc, X, J );
@@ -184,7 +191,7 @@ public:
                                 SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::weight( qb ) * 
                                 SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::weight( qc );
 
-    mass[q] = w3D * detJ;
+    mass[q] = w3D * detJ / (getVp[idx] * getVp[idx] * getRho[idx]);
 
     TRANSFORM_FLOAT B[6] = {0};
     computeB( J, B );
@@ -197,7 +204,7 @@ public:
 
 //    printf( "B(%d,%d,%d): %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
 
-    computeGradPhiBGradPhi( qa, qb, qc, B, func );
+    computeGradPhiBGradPhi( qa, qb, qc, idx, B, func );
   }
 
 
@@ -205,6 +212,7 @@ public:
    * @brief compute  mass Matrix stiffnessVector.
    */
   // template <typename ARRAY_REAL_VIEW>
+  template<typename VpFunc, typename RhoFunc, typename Elem2NodesFunc>
   static constexpr inline SEMKERNELS_HOST_DEVICE void
   computeMassMatrixAndStiffnessVector(const int &elementNumber,
                                       const int &nPointsPerElement,
@@ -212,17 +220,24 @@ public:
                                       PrecomputedData const & precomputedData,
                                       float massMatrixLocal[],
                                       float pnLocal[],
-                                      float Y[]) {
+                                      float Y[]
+                                      VpFunc && getVp,
+                                      RhoFunc && getRho,
+                                      Elem2NodesFunc && elem2nodes) {
 
     for (int q = 0; q < nPointsPerElement; q++) {
       Y[q] = 0;
     }
     for (int q = 0; q < nPointsPerElement; q++) {
-      computeStiffnessAndMassTerm( q, X, massMatrixLocal, [&](const int i, const int j, const GRADIENT_FLOAT val)
+      computeStiffnessAndMassTerm( q, X, massMatrixLocal, [&](const int i, const int j, const GRADIENT_FLOAT val, const int idx)
       {
-        GRADIENT_FLOAT localIncrement = val * pnLocal[j];
+        GRADIENT_FLOAT localIncrement = val * pnLocal[j] / getRho(idx);
         Y[i] = Y[i] + localIncrement;
-      });
+      },
+      elementNumber,
+      getVp,
+      getRho,
+      elem2nodes );
     }
   }
   /////////////////////////////////////////////////////////////////////////////////////
