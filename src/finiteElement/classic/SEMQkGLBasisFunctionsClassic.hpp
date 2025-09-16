@@ -1,8 +1,8 @@
 #ifndef SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 #define SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 
-#include "dataType.hpp"
-#include "SEMmacros.hpp"
+#include <data_type.h>
+#include <sem_macros.h>
 using namespace std;
 
 /**
