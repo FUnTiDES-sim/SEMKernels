@@ -4,12 +4,12 @@
  *
  * Copyright (c) 2016-2024 Lawrence Livermore National Security LLC
  * Copyright (c) 2018-2024 TotalEnergies
- * Copyright (c) 2018-2024 The Board of Trustees of the Leland Stanford Junior University
- * Copyright (c) 2023-2024 Chevron
- * Copyright (c) 2019-     GEOS/GEOSX Contributors
- * All rights reserved
+ * Copyright (c) 2018-2024 The Board of Trustees of the Leland Stanford Junior
+ * University Copyright (c) 2023-2024 Chevron Copyright (c) 2019-     GEOS/GEOSX
+ * Contributors All rights reserved
  *
- * See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS files for details.
+ * See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS
+ * files for details.
  * ------------------------------------------------------------------------------------------------------------
  */
 
@@ -25,14 +25,14 @@
 #include "LagrangeBasis3GL.hpp"
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
-//#include "tensorops.hpp"
 #include "common/mathUtilites.hpp"
 #include <dataType.hpp>
 
 /**
  * This class is the basis class for the hexahedron finite element cells with
  * shape functions defined on Gauss-Lobatto quadrature points.
- * All the degree-specific versions (Q1, Q2, Q3, ...) are defined at the end of this file.
+ * All the degree-specific versions (Q1, Q2, Q3, ...) are defined at the end of
+ * this file.
  */
 template< typename GL_BASIS >
 class Qk_Hexahedron_Lagrange_GaussLobatto final
@@ -144,10 +144,7 @@ public:
   }
 
   PROXY_HOST_DEVICE
-  virtual int getMaxSupportPoints() const
-  {
-    return maxSupportPoints;
-  }
+  virtual int getMaxSupportPoints() const { return maxSupportPoints; }
 
   /**
    * @brief Get the number of support points.
@@ -293,7 +290,7 @@ public:
   PROXY_HOST_DEVICE
   static real_t calcGradN( real_t const (&coords)[3],
                            real_t const (&X)[numNodes][3],
-                           real_t ( &gradN )[numNodes][3] );
+                           real_t (&gradN)[numNodes][3] );
 
   /**
    * @brief Calculate the shape functions derivatives wrt the physical
@@ -323,7 +320,7 @@ public:
   PROXY_HOST_DEVICE
   static real_t calcGradNWithCorners( int const q,
                                       real_t const (&X)[8][3],
-                                      real_t ( &gradN )[numNodes][3] );
+                                      real_t (&gradN)[numNodes][3] );
   /**
    * @brief Calculate the shape functions derivatives wrt the physical
    *   coordinates at a single point.
@@ -335,9 +332,9 @@ public:
    */
 
   PROXY_HOST_DEVICE
-  static real_t calcGradNWithCorners( real_t const (&coords)[3],
-                                      real_t const (&X)[8][3],
-                                      real_t ( &gradN )[numNodes][3] );
+  static real_t calcGradNWithCorners(real_t const (&coords)[3],
+                                     real_t const (&X)[8][3],
+                                     real_t (&gradN)[numNodes][3] );
 
   /**
    * @brief Calculate the shape functions derivatives wrt the physical
@@ -434,7 +431,7 @@ public:
   static void symmetricGradient( int const q,
                                  real_t const (&invJ)[3][3],
                                  real_t const (&var)[numNodes][3],
-                                 real_t ( &grad )[6] );
+                                 real_t (&grad)[6] );
 
 
 
@@ -457,7 +454,7 @@ public:
   static void gradient( int const q,
                         real_t const (&invJ)[3][3],
                         real_t const (&var)[numNodes][3],
-                        real_t ( &grad )[3][3] );
+                        real_t (&grad)[3][3] );
 
 
   /**
@@ -479,7 +476,7 @@ public:
   static void plusGradNajAij( int const q,
                               real_t const (&invJ)[3][3],
                               real_t const (&var)[6],
-                              real_t ( &R )[numNodes][3] );
+                              real_t (&R)[numNodes][3] );
 
 
 
@@ -523,7 +520,7 @@ public:
   PROXY_HOST_DEVICE
   static void jacobianTransformationWithCorners( real_t const (&coords)[3],
                                                  real_t const (&X)[8][3],
-                                                 real_t ( &J )[3][3] );
+                                                 real_t (&J)[3][3] );
 
   /**
    * @brief performs a trilinear interpolation to determine the real-world coordinates of a
@@ -539,7 +536,7 @@ public:
                                real_t const beta,
                                real_t const gamma,
                                real_t const (&X)[8][3],
-                               real_t ( &coords )[3] );
+                               real_t (&coords)[3] );
 
   /**
    * @brief computes the real-world coordinates of the support nodes
@@ -548,7 +545,7 @@ public:
    */
   PROXY_HOST_DEVICE
   static void computeLocalCoords( real_t const (&Xmesh)[8][3],
-                                  real_t const (&X)[numNodes][3] );
+                                  real_t const (&X)[numNodes][3]);
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
@@ -622,8 +619,8 @@ public:
                                 int const qb,
                                 int const qc,
                                 real_t const (&X)[8][3],
-                                real_t ( &J )[3][3],
-                                real_t ( &B )[6] );
+                                real_t (&J)[3][3],
+                                real_t (&B)[6] );
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexed by q to the
@@ -785,17 +782,14 @@ public:
                                                     real_t ( &gradN )[numNodes][3] );
 
   PROXY_HOST_DEVICE
-  static void 
-  computeMassMatrixAndStiffnessVector( const int &elementNumber, 
+  static void
+  computeMassMatrixAndStiffnessVector( const int &elementNumber,
                                        const int &nPointsPerElement,
-                                       ARRAY_REAL_VIEW const &nodesCoordsX, 
-                                       ARRAY_REAL_VIEW const &nodesCoordsY,
-                                       ARRAY_REAL_VIEW const &nodesCoordsZ, 
-                                       PrecomputedData const & precomputedData, 
+                                       float (&X)[8][3],
+                                       PrecomputedData const & precomputedData,
                                        float massMatrixLocal[],
-                                       float pnLocal[], 
+                                       float pnLocal[],
                                        float Y[] );
-
 
 private:
   /// The length of one dimension of the parent element.
@@ -906,7 +900,7 @@ template< typename GL_BASIS >
 real_t
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::calcGradN( int const q,
                                                             real_t const (&X)[numNodes][3],
-                                                            real_t (& gradN)[numNodes][3] )
+                                                            real_t (&gradN)[numNodes][3] )
 {
   int qa, qb, qc;
   GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
@@ -1240,8 +1234,8 @@ computeBzMatrix( int const qa,
                  int const qb,
                  int const qc,
                  real_t const (&X)[8][3],
-                 real_t (& J)[3][3],
-                 real_t (& B)[6] )
+                 real_t (&J)[3][3],
+                 real_t (&B)[6] )
 {
   jacobianTransformation( qa, qb, qc, X, J );
   real_t const detJ = determinant( J );
@@ -1268,8 +1262,8 @@ computeBxyMatrix( int const qa,
                   int const qb,
                   int const qc,
                   real_t const (&X)[8][3],
-                  real_t (& J)[3][3],
-                  real_t (& B)[6] )
+                  real_t (&J)[3][3],
+                  real_t (&B)[6] )
 {
   jacobianTransformation( qa, qb, qc, X, J );
   real_t const detJ = determinant( J );
@@ -1324,15 +1318,15 @@ computeGradPhiBGradPhi( int const qa,
       const real_t w2 = w * gic * gjc;
       func( abi, abj, w2 * B[2] );
       // off-diagonal terms
-      const real_t w3 = w * gib * gjc;
-      func( aic, abj, w3 * B[3] );
-      func( abj, aic, w3 * B[3] );
-      const real_t w4 = w * gia * gjc;
-      func( ibc, abj, w4 * B[4] );
-      func( abj, ibc, w4 * B[4] );
-      const real_t w5 = w * gia * gjb;
-      func( ibc, ajc, w5 * B[5] );
-      func( ajc, ibc, w5 * B[5] );
+      // const real_t w3 = w * gib * gjc;
+      // func( aic, abj, w3 * B[3] );
+      // func( abj, aic, w3 * B[3] );
+      // const real_t w4 = w * gia * gjc;
+      // func( ibc, abj, w4 * B[4] );
+      // func( abj, ibc, w4 * B[4] );
+      // const real_t w5 = w * gia * gjb;
+      // func( ibc, ajc, w5 * B[5] );
+      // func( ajc, ibc, w5 * B[5] );
     }
   }
 }
@@ -1471,7 +1465,6 @@ computeFirstOrderStiffnessTermX( int const q,
     auto val = w * basisGradientAt( i1, qa );
     func( GL_BASIS::TensorProduct3D::linearIndex( i1, qb, qc ), q, detJ*J[0][0]*val, detJ*J[0][1]*val, detJ*J[0][2]*val );
   }
-
 }
 
 template< typename GL_BASIS >
@@ -1688,252 +1681,44 @@ gradient( int const q,
   }, invJ, var, grad );
 }
 
-template< typename GL_BASIS >
-PROXY_HOST_DEVICE
-void Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMassMatrixAndStiffnessVector( const int &elementNumber, 
-                                     const int &nPointsPerElement,
-                                     ARRAY_REAL_VIEW const &nodesCoordsX, 
-                                     ARRAY_REAL_VIEW const &nodesCoordsY,
-                                     ARRAY_REAL_VIEW const &nodesCoordsZ, 
-                                     PrecomputedData const & precomputedData,
-                                     float massMatrixLocal[],
-                                     float pnLocal[], 
-                                     float Y[] )
+template <typename GL_BASIS>
+PROXY_HOST_DEVICE void Qk_Hexahedron_Lagrange_GaussLobatto<
+    GL_BASIS>::computeMassMatrixAndStiffnessVector(const int &elementNumber,
+                                                   const int &nPointsPerElement,
+                                                   float (&X)[8][3],
+                                                   PrecomputedData const & precomputedData,
+                                                   float massMatrixLocal[],
+                                                   float pnLocal[],
+                                                   float Y[])
 {
-    real_t X[8][3];
-    int I = 0;
+  for (int q = 0; q < nPointsPerElement; q++) {
+    Y[q] = 0;
+  }
 
-    for (int k = 0; k < 2; k++) {
-      for (int j = 0; j < 2; j++) {
-        for (int i = 0; i < 2; i++) {
-          int l = i + j * 2 + k * 4;
-          X[I][0] = nodesCoordsX(elementNumber, l);
-          X[I][1] = nodesCoordsZ(elementNumber, l);
-          X[I][2] = nodesCoordsY(elementNumber, l);
-          I++;
-        }
-      }
-    }
-
-    for (int q = 0; q < nPointsPerElement; q++) {
-      Y[q] = 0;
-    }
-
-    for (int q = 0; q < nPointsPerElement; q++) {
-      massMatrixLocal[q] = computeMassTerm(q, X);
-      computeStiffnessTerm(
-          q, X, [&](const int i, const int j, const real_t val) {
-            float localIncrement = val * pnLocal[j];
-            Y[i] += localIncrement;
-          });
-    }
+  for (int q = 0; q < nPointsPerElement; q++) {
+    massMatrixLocal[q] = computeMassTerm(q, X);
+    computeStiffnessTerm(q, X, [&](const int i, const int j, const real_t val) {
+      float localIncrement = val * pnLocal[j];
+      Y[i] += localIncrement;
+    });
+  }
 }
 
-/**
- * This class contains the kernel accessible functions specific to the standard
- * Trilinear Hexahedron finite element with a Gaussian quadrature rule. It is
- * assumed that the indexing for the quadrature points mirrors that of the
- * nodes. Also note that the assumed node ordering is not the standard
- * right-hand-rule used in the literature. Here we use a Cartesian aligned
- * numbering in order to simplify the mapping to the parent coordinates and
- * tensor product indices.
- *
- *                  6                   7                       ____________________
- *                   o-----------------o                       |Node   xi0  xi1  xi2|
- *                  /.                /|                       |=====  ===  ===  ===|
- *                 / .               / |                       | 0     -1   -1   -1 |
- *              4 o-----------------o 5|                       | 1      1   -1   -1 |
- *                |  .              |  |                       | 2     -1    1   -1 |
- *                |  .              |  |                       | 3      1    1   -1 |
- *                |  .              |  |                       | 4     -1   -1    1 |
- *                |  .              |  |                       | 5      1   -1    1 |
- *                |2 o..............|..o 3       xi2           | 6     -1    1    1 |
- *                | ,               | /          |             | 7      1    1    1 |
- *                |,                |/           | / xi1       |____________________|
- *                o-----------------o            |/
- *               0                   1           ------ xi0
- *
- *
- */
-using Q1_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto< LagrangeBasis1 >;
-/**
- * This class contains the kernel accessible functions specific to the standard
- * Trilinear Hexahedron finite element with a Gaussian quadrature rule. It is
- * assumed that the indexing for the quadrature points mirrors that of the
- * nodes. Also note that the assumed node ordering is not the standard
- * right-hand-rule used in the literature. Here we use a Cartesian aligned
- * numbering in order to simplify the mapping to the parent coordinates and
- * tensor product indices.
- *
- *                                                                  ____________________
- *                                                                 |Node   xi0  xi1  xi2|
- *                                                                 |=====  ===  ===  ===|
- *                                                                 |  0    -1   -1   -1 |
- *                                                                 |  1     0   -1   -1 |
- *                                                                 |  2     1   -1   -1 |
- *              24              25               26                |  3    -1    0   -1 |
- *                o--------------o--------------o                  |  4     0    0   -1 |
- *               /.                            /|                  |  5     1    0   -1 |
- *              / .                           / |                  |  6    -1    1   -1 |
- *          21 o  .           o 22        23 o  |                  |  7     0    1   -1 |
- *            /   .                         /   |                  |  8     1    1   -1 |
- *           /    .         19             /    |                  |  9    -1   -1    0 |
- *       18 o--------------o--------------o 20  |                  | 10     0   -1    0 |
- *          |     o              o        |     o                  | 11     1   -1    0 |
- *          |     .15             16      |     |17                | 12    -1    0    0 |
- *          |     .                       |     |                  | 13     0    0    0 |
- *          |  o  .           o           |  o  |                  | 14     1    0    0 |
- *          |   12.            13         |   14|                  | 15    -1    1    0 |
- *          |     .                       |     |                  | 16     0    1    0 |
- *        9 o     .        o 10           o 11  |                  | 17     1    1    0 |
- *          |     o..............o........|.....o                  | 18    -1   -1    1 |
- *          |    , 6              7       |    / 8                 | 19     0   -1    1 |
- *          |   ,                         |   /                    | 20     1   -1    1 |
- *          |  o              o           |  o         xi2         | 21    -1    0    1 |
- *          | , 3              4          | / 5        |           | 22     0    0    1 |
- *          |,                            |/           | / xi1     | 23     1    0    1 |
- *          o--------------o--------------o            |/          | 24    -1    1    1 |
- *         0                1              2           o----- xi0  | 25     0    1    1 |
- *                                                                 | 26     1    1    1 |
- *                                                                 |____________________|
- *
- */
-using Q2_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto< LagrangeBasis2 >;
-/**
- * This class contains the kernel accessible functions specific to the standard
- * Trilinear Hexahedron finite element with a Gaussian quadrature rule. It is
- * assumed that the indexing for the quadrature points mirrors that of the
- * nodes. Also note that the assumed node ordering is not the standard
- * right-hand-rule used in the literature. Here we use a Cartesian aligned
- * numbering in order to simplify the mapping to the parent coordinates and
- * tensor product indices.
- *
- *
- *                                                                  _____________________________________
- *                                                                 |Node      xi0         xi1         xi2|
- *                                                                 |=====     ===         ===         ===|
- *                                                                 |  0       -1          -1          -1 |
- *                                                                 |  1   -1/sqrt(5)      -1          -1 |
- *                                                                 |  2    1/sqrt(5)      -1          -1 |
- *              60       61         62        63                   |  3        1          -1          -1 |
- *                o---------o---------o---------o                  |  4       -1      -1/sqrt(5)      -1 |
- *            56 /.     57        58        59 /|                  |  5   -1/sqrt(5)  -1/sqrt(5)      -1 |
- *              o .       o         o         o |                  |  6    1/sqrt(5)  -1/sqrt(5)      -1 |
- *          52 /  .   53        54        55 /  |                  |  7        1      -1/sqrt(5)      -1 |
- *            o   .     o         o         o   |                  |  8       -1       1/sqrt(5)      -1 |
- *        48 /    o 49      o 50      o 51 /    o                  |  9   -1/sqrt(5)   1/sqrt(5)      -1 |
- *          o---------o---------o---------o     |                  | 10    1/sqrt(5)   1/sqrt(5)      -1 |
- *          |   o .       o         o     |   o |                  | 11        1       1/sqrt(5)      -1 |
- *          |     .                       |     |                  | 12       -1           1          -1 |
- *          | o   o     o   o     o   o   | o   o                  | 13   -1/sqrt(5)       1          -1 |
- *          |     .                       |     |                  | 14    1/sqrt(5)       1          -1 |
- *          o   o .   o   o     o   o     o   o |                  | 15        1           1          -1 |
- *          |     .                       |     |                  | ..       ..          ..          .. |
- *          | o   .     o         o       | o   |                  | ..       ..          ..          .. |
- *          |     o.........o.........o...|.....o                  | 55        1      -1/sqrt(5)       1 |
- *          o    ,12  o     13  o     14  o    /15                 | 56       -1       1/sqrt(5)       1 |
- *          |   o         o         o     |   o                    | 57   -1/sqrt(5)   1/sqrt(5)       1 |
- *          |  ,8         9         10    |  /11       xi2         | 58    1/sqrt(5)   1/sqrt(5)       1 |
- *          | o         o         o       | o          |           | 59        1       1/sqrt(5)       1 |
- *          |,4         5         6       |/7          | / xi1     | 60       -1           1           1 |
- *          o---------o---------o---------o            |/          | 61   -1/sqrt(5)       1           1 |
- *         0         1         2         3             o----- xi0  | 62    1/sqrt(5)       1           1 |
- *                                                                 | 63        1           1           1 |
- *                                                                 |_____________________________________|
- *
- */
-using Q3_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto< LagrangeBasis3GL >;
-/**
- * This class contains the kernel accessible functions specific to the standard
- * Trilinear Hexahedron finite element with a Gaussian quadrature rule. It is
- * assumed that the indexing for the quadrature points mirrors that of the
- * nodes. Also note that the assumed node ordering is not the standard
- * right-hand-rule used in the literature. Here we use a Cartesian aligned
- * numbering in order to simplify the mapping to the parent coordinates and
- * tensor product indices.
- *                                                                  _____________________________________
- *                120      121     122     123       124           |Node      xi0         xi1         xi2 |
- *                  o-------o-------o-------o-------o              |=====     ===         ===         === |
- *                 /.                              /|              |   0       -1          -1          -1 |
- *            115 o .  116o    117o    118o    119o |              |   1   -sqrt(3/7)      -1          -1 |
- *               /  o                            /  o              |   2        0          -1          -1 |
- *          110 o   .111o    112o    113o    114o   |              |   3    sqrt(3/7)      -1          -1 |
- *             /  o .                          /  o |              |   4        1          -1          -1 |
- *        105 o     . o106    o107    o108 109o     |              |   5       -1      -sqrt(3/7)      -1 |
- *           /  o   o      102     103    104/  o   o              |   6   -sqrt(3/7)  -sqrt(3/7)      -1 |
- *      100 o-------o-------o-------o-------o       |              |   7        0      -sqrt(3/7)      -1 |
- *          | o   o . 101                   | o   o |              |   8    sqrt(3/7)  -sqrt(3/7)      -1 |
- *          |       .                       |       |              |   9        1      -sqrt(3/7)      -1 |
- *          o   o   o       o       o       o   o   o              |  10       -1           0          -1 |
- *          |       .                       |       |              |  11   -sqrt(3/7)       0          -1 |
- *          | o   o .20     21      22    23| o   o |24            |  12        0           0          -1 |
- *          |       o.......o.......o.......|.......o              |  13    sqrt(3/7)       0          -1 |
- *          o   o  ,o       o       o       o   o  /               |  14        1           0          -1 |
- *          |     o       o       o       o |     o                |  ..       ..          ..          .. |
- *          | o  ,15      13      17      18| o  /19               |  ..       ..          ..          .. |
- *          |   o       o       o       o   |   o                  |  ..       ..          ..          .. |
- *          o  ,10  o   11  o   12  o   13  o  /14     xi2         | 121        -1          1           1 |
- *          | o       o       o       o     | o        |           | 122    -sqrt(3/7)      1           1 |
- *          |,5       6       7       8     |/9        | / xi1     | 123         0          1           1 |
- *          o-------o-------o-------o-------o          |/          | 124     sqrt(3/7)      1           1 |
- *         0        1       2       3        4         o----- xi0  | 125         1          1           1 |
- *                                                                 |______________________________________|
- *
- */
-using Q4_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto< LagrangeBasis4GL >;
-/**
- * This class contains the kernel accessible functions specific to the standard
- * Trilinear Hexahedron finite element with a Gauss Lobatto quadrature rule. It is
- * assumed that the indexing for the quadrature points mirrors that of the
- * nodes. Also note that the assumed node ordering is not the standard
- * right-hand-rule used in the literature. Here we use a Cartesian aligned
- * numbering in order to simplify the mapping to the parent coordinates and
- * tensor product indices.
- *
- *
- *                210      211      212      213      214      215    _______________________________________________________
- *                   o--------o--------o--------o--------o--------o  |Node      xi0                        xi1            xi2|
- *                  /.                                           /|  |=====     ===                        ===            ===|
- *            204  / .  205      206      207      208      209 / |  |  0       -1                         -1             -1 |
- *                o  .     o        o        o        o        o  |  |  1   -sqrt(1/21(7+/sqrt(7))         -1             -1 |
- *               /   o                                        /   |  |  2    -sqrt(1/21(7-/sqrt(7))        -1             -1 |
- *         198  /    .199     200      201      202      203 /    o  |  3    sqrt(1/21(7-/sqrt(7))         -1             -1 |
- *             o     .  o        o        o        o        o     |  |  4    sqrt(1/21(7+/sqrt(7))         -1             -1 |
- *            /      .                                     /      |  |  5        1                         -1             -1 |
- *      192  /   193 o     194      195      196      197 /    o  |  |  6       -1                 -sqrt(1/21(7+/sqrt(7)) -1 |
- *          o        o        o        o        o        o        o  |  7   -sqrt(1/21(7+/sqrt(7)) -sqrt(1/21(7+/sqrt(7)) -1 |
- *         /         .                                  /         |  |  8   -sqrt(1/21(7-/sqrt(7)) -sqrt(1/21(7+/sqrt(7)) -1 |
- *    186 /    187   .  188      189      190      191 /    o     |  |  9    sqrt(1/21(7-/sqrt(7)) -sqrt(1/21(7+/sqrt(7)) -1 |
- *       o        o  o     o        o        o        o        o  |  | 10    sqrt(1/21(7+/sqrt(7)) -sqrt(1/21(7+/sqrt(7)) -1 |
- *      /            .                               /            o  | 11        1                 -sqrt(1/21(7+/sqrt(7)) -1 |
- * 180 /    181      . 182    183      184      185 /    o        |  | ..       ..                         ..             .. |
- *    o--------o--------o--------o--------o--------o        o     |  | ..       ..                         ..             .. |
- *    |           o  .                             |           o  |  | 204      -1                  sqrt(1/21(7+/sqrt(7)) 1  |
- *    |  o           o        o        o        o  |  o  o        o  | 205  -sqrt(1/21(7+/sqrt(7))  sqrt(1/21(7+/sqrt(7)) 1  |
- *    |     o        .                             |     o        |  | 206  -sqrt(1/21(7-/sqrt(7))  sqrt(1/21(7-/sqrt(7)) 1  |
- *    |        o     .                             |        o     |  | 207  sqrt(1/21(7+/sqrt(7))   sqrt(1/21(7-/sqrt(7)) 1  |
- *    o           o  .                             o           o  |  | 208  sqrt(1/21(7-/sqrt(7))   sqrt(1/21(7+/sqrt(7)) 1  |
- *    |  o           .                             |  o           |  | 209       1                  sqrt(1/21(7+/sqrt( *  1  |
- *    |     o        o--------o--------o--------o--|-----o--------o  | 210      -1                          1             1  |
- *    |        o    ,30       31      32        33 |     34 o    /35 | 211  -sqrt(1/21(7+/sqrt(7))          1             1  |
- *    o            ,                               o            /    | 212  -sqrt(1/21(7-/sqrt(7))          1             1  |
- *    |  o        o        o         o       o     |  o        o     | 213   sqrt(1/21(7-/sqrt(7))          1             1  |
- *    |     o    ,24       25        26      27    |  28 o    /29    | 214   sqrt(1/21(7+/sqrt(7))          1             1  |
- *    |         ,                                  |         /       | 215       1                          1             1  |
- *    o        o        o         o       o     22 o        o *      |_______________________________________________________|
- *    |  o    ,18       19        20      21       |  o    /23
- *    |      ,                                     |      /
- *    |     o        o         o       o        o  |     o
- *    o    ,12       13        14      15       16 o    /17
- *    |   ,                                        |   /
- *    |  o        o        o        o        o     |  o               xi2
- *    | ,6        7        8        9        10    | /11               |
- *    |,                                           |/                  | / xi1
- *    o--------o--------o--------o--------o--------o                   |/
- *    0        1        2        3        4        5                   o----- xi0
- */
-using Q5_Hexahedron_Lagrange_GaussLobatto = Qk_Hexahedron_Lagrange_GaussLobatto< LagrangeBasis5GL >;
+using Q1_Hexahedron_Lagrange_GaussLobatto =
+    Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis1>;
+
+using Q2_Hexahedron_Lagrange_GaussLobatto =
+    Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis2>;
+
+using Q3_Hexahedron_Lagrange_GaussLobatto =
+    Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis3GL>;
+
+using Q4_Hexahedron_Lagrange_GaussLobatto =
+    Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis4GL>;
+
+using Q5_Hexahedron_Lagrange_GaussLobatto =
+    Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis5GL>;
+
 
 
 template< int ORDER >
@@ -1946,11 +1731,13 @@ struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 1 >
   using type = Q1_Hexahedron_Lagrange_GaussLobatto;
 };
 
+
 template<>
 struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 2 >
 {
   using type = Q2_Hexahedron_Lagrange_GaussLobatto;
 };
+
 
 template<>
 struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 3 >
@@ -1958,11 +1745,13 @@ struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 3 >
   using type = Q3_Hexahedron_Lagrange_GaussLobatto;
 };
 
+
 template<>
 struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 4 >
 {
   using type = Q4_Hexahedron_Lagrange_GaussLobatto;
 };
+
 
 template<>
 struct Qk_Hexahedron_Lagrange_GaussLobatto_Selector< 5 >
