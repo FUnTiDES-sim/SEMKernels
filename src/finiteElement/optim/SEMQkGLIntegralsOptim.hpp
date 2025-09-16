@@ -191,7 +191,7 @@ public:
                                 SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::weight( qb ) * 
                                 SEMQkGLBasisFunctionsOptim<ORDER, TRANSFORM_FLOAT>::weight( qc );
 
-    mass[q] = w3D * detJ / (getVp[idx] * getVp[idx] * getRho[idx]);
+    mass[q] = w3D * detJ / (getVp(idx) * getVp(idx) * getRho(idx));
 
     TRANSFORM_FLOAT B[6] = {0};
     computeB( J, B );
@@ -220,7 +220,7 @@ public:
                                       PrecomputedData const & precomputedData,
                                       float massMatrixLocal[],
                                       float pnLocal[],
-                                      float Y[]
+                                      float Y[],
                                       VpFunc && getVp,
                                       RhoFunc && getRho,
                                       Elem2NodesFunc && elem2nodes) {

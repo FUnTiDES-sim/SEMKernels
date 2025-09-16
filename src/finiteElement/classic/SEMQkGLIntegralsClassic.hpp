@@ -159,6 +159,7 @@ public:
                               float const pnLocal[],
                               float R[],
                               float Y[],
+                              const int & elementNumber,
                               RhoFunc && getRho,
                               Elem2NodesFunc && elem2nodes )
   {
@@ -295,6 +296,7 @@ public:
                       pnLocal,
                       R,
                       Y,
+                      elementNumber,
                       getRho,
                       elem2nodes
                      );

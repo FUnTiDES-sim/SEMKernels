@@ -53,10 +53,11 @@ public:
   static void init( PrecomputedData & )
   {}
 
-  template< int qa, int qb, int qc, int idx, typename FUNC >
+  template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeGradPhiBGradPhi( tfloat const (&B)[6],
+                               int idx,
                                FUNC && func )
   {
     constexpr gfloat qcoords[3] = { quadrature::template coordinate< qa >(),
@@ -144,7 +145,7 @@ public:
       constexpr tfloat w3D = quadrature::template weight< qa >() *
                              quadrature::template weight< qb >() *
                              quadrature::template weight< qc >();
-      massMatrix[q] = w3D * detJ / (getVp[idx] * getVp[idx] * getRho[idx]);
+      massMatrix[q] = w3D * detJ / (getVp(idx) * getVp(idx) * getRho(idx));
 
       tfloat B[6] = {0};
       computeB( J, B );
@@ -160,7 +161,7 @@ public:
       }
 
       // compute gradPhiI*B*gradPhiJ and stiffness vector
-      computeGradPhiBGradPhi< qa, qb, qc, idx >( B, func );
+      computeGradPhiBGradPhi< qa, qb, qc>( B, idx, func );
     } );
   }
 
