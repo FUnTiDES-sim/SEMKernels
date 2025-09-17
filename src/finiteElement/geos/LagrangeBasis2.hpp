@@ -19,7 +19,7 @@
  * @file LagrangeBasis2.hpp
  */
 
-#include <dataType.hpp>
+#include <data_type.h>
 // #include "common/DataTypes.hpp"
 
 /**
