@@ -1,8 +1,6 @@
 #ifndef SEMQKGLBASISFUNCTIONS_HPP_
 #define SEMQKGLBASISFUNCTIONS_HPP_
 
-// #include "dataType.hpp"
-// #include "SEMmacros.hpp"
 #include "common/macros.hpp"
 
 /**

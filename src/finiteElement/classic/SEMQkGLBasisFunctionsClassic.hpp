@@ -1,7 +1,7 @@
 #ifndef SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 #define SEMQKGLBASISFUNCTIONSCLASSIC_HPP_
 
-#include "SEMmacros.hpp"
+#include <sem_macros.h>
 using namespace std;
 
 /**

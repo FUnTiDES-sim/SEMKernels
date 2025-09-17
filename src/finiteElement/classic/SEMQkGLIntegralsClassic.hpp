@@ -1,8 +1,8 @@
 #ifndef SEMQKGLINTEGRALSCLASSIC_HPP_
 #define SEMQKGLINTEGRALSCLASSIC_HPP_
 
-#include "dataType.hpp"
-#include "SEMmacros.hpp"
+#include <data_type.h>
+#include <sem_macros.h>
 #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctionsClassic.hpp>
 using namespace std;
 

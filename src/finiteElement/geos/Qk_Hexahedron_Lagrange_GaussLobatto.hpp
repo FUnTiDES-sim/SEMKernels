@@ -26,7 +26,7 @@
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
 #include "common/mathUtilites.hpp"
-#include <dataType.hpp>
+#include <data_type.h>
 
 /**
  * This class is the basis class for the hexahedron finite element cells with
