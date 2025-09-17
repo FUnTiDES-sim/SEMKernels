@@ -57,6 +57,7 @@ public:
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeGradPhiBGradPhi( tfloat const (&B)[6],
+                               int idx,
                                FUNC && func )
   {
     constexpr gfloat qcoords[3] = { quadrature::template coordinate< qa >(),
@@ -87,11 +88,11 @@ public:
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
         // diagonal terms
         constexpr gfloat w0 = w * gia * gja;
-        func( ibc, jbc, w0 * B[0] );
+        func( ibc, jbc, w0 * B[0], idx );
         constexpr gfloat w1 = w * gib * gjb;
-        func( aic, ajc, w1 * B[1] );
+        func( aic, ajc, w1 * B[1], idx );
         constexpr gfloat w2 = w * gic * gjc;
-        func( abi, abj, w2 * B[2] );
+        func( abi, abj, w2 * B[2], idx );
         // off-diagonal terms
         // const gfloat w3 = w * gib * gjc;
         // func( aic, abj, w3 * B[3] );
@@ -108,12 +109,16 @@ public:
 
 
 
-  template< typename FUNC >
+  template< typename FUNC, typename VpFunc, typename RhoFunc, typename Elem2NodesFunc >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeStiffnessAndMassTerm( TransformType const & trilinearCell,
                              float massMatrix[],
-                             FUNC && func )
+                             FUNC && func,
+                             const int & elementNumber,
+                             VpFunc && getVp,
+                             RhoFunc && getRho,
+                             Elem2NodesFunc && elem2nodes )
   {
 
     // this is a compile time quadrature loop over each tensor direction
@@ -133,12 +138,14 @@ public:
 
       tfloat const detJ = determinant( J );
       
+      const int idx = elem2nodes(elementNumber, qc, qb, qa);
+
       // mass matrix
       constexpr int q = linearIndex<ORDER>( qc, qb, qa );
       constexpr tfloat w3D = quadrature::template weight< qa >() *
                              quadrature::template weight< qb >() *
                              quadrature::template weight< qc >();
-      massMatrix[q] = w3D * detJ;
+      massMatrix[q] = w3D * detJ / (getVp(idx) * getVp(idx) * getRho(idx));
 
       tfloat B[6] = {0};
       computeB( J, B );
@@ -146,13 +153,15 @@ public:
 //      printf( "B(%d,%d,%d) = | %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e |\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
 
       // compute detJ*J^{-1}J^{-T}
+
+      // detJ /= getRho[idx] // Could be done like that also
       for( int i = 0; i < 6; ++i )
       {
        B[i] *= detJ;
       }
 
       // compute gradPhiI*B*gradPhiJ and stiffness vector
-      computeGradPhiBGradPhi< qa, qb, qc >( B, func );
+      computeGradPhiBGradPhi< qa, qb, qc>( B, idx, func );
     } );
   }
 
@@ -173,7 +182,7 @@ public:
       {
         for ( int i = 0; i < 2; ++i )
         {
-          int const l = linearIndex<1>( i, j, k );
+          int const l = linearIndex<1>( i, j, k ); // VMG: what is this for? 
           cellData( i, j, k, 0 ) = X[corner_id][0];
           cellData( i, j, k, 1 ) = X[corner_id][1];
           cellData( i, j, k, 2 ) = X[corner_id][2];
@@ -187,6 +196,7 @@ public:
    * @brief compute  mass Matrix stiffnessVector.
    */
   // template< typename ARRAY_REAL_VIEW >
+  template<typename VpFunc, typename RhoFunc, typename Elem2NodesFunc>
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeMassMatrixAndStiffnessVector( const int & elementNumber,
@@ -195,7 +205,10 @@ public:
                                             PrecomputedData const & precomputedData,
                                             float massMatrixLocal[],
                                             float pnLocal[],
-                                            float Y[] )
+                                            float Y[],
+                                            VpFunc && getVp,
+                                            RhoFunc && getRho,
+                                            Elem2NodesFunc && elem2nodes )
   {
     TransformType trilinearCell;
     typename TransformType::DataType & cellCoordData = trilinearCell.getData();
@@ -204,10 +217,14 @@ public:
                        X,
                        cellCoordData );
 
-    computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val )
+    computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val, const int idx )
     {
-      Y[i] = Y[i] + val * pnLocal[j];
-    } );
+      Y[i] = Y[i] + val * pnLocal[j] / getRho(idx);
+    },
+    elementNumber,
+    getVp,
+    getRho,
+    elem2nodes );
   }
 
 };
