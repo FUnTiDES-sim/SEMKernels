@@ -1730,30 +1730,6 @@ void Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeMassMatrixAndStiffnes
 
 }
 
-template <typename GL_BASIS>
-PROXY_HOST_DEVICE 
-void Qk_Hexahedron_Lagrange_GaussLobatto<GL_BASIS>::computeMassMatrixAndStiffnessVector(
-      const int &elementNumber,
-      const int &nPointsPerElement,
-      float (&X)[8][3],
-      PrecomputedData const & precomputedData,
-      float massMatrixLocal[],
-      float pnLocal[],
-      float Y[])
-{
-  for (int q = 0; q < nPointsPerElement; q++) {
-    Y[q] = 0;
-  }
-
-  for (int q = 0; q < nPointsPerElement; q++) {
-    massMatrixLocal[q] = computeMassTerm(q, X);
-    computeStiffnessTerm(q, X, [&](const int i, const int j, const real_t val) {
-      float localIncrement = val * pnLocal[j];
-      Y[i] += localIncrement;
-    });
-  }
-}
-
 using Q1_Hexahedron_Lagrange_GaussLobatto =
     Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis1>;
 
