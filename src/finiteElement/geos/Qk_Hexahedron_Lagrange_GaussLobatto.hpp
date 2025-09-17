@@ -164,8 +164,8 @@ public:
    * @param[out] N The shape function values.
    */
   PROXY_HOST_DEVICE
-  static void calcN( real_t const (&coords)[3],
-                     real_t (& N)[numNodes] )
+  static void calcN( double const (&coords)[3],
+                     double (& N)[numNodes] )
   {
     GL_BASIS::TensorProduct3D::value( coords, N );
   }
@@ -1160,7 +1160,7 @@ jacobianTransformation2d( int const qa,
 
 template< typename GL_BASIS >
 
-  PROXY_HOST_DEVICE
+PROXY_HOST_DEVICE
 real_t
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeMassTerm( int const q,
