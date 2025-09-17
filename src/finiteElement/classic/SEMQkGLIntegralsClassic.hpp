@@ -1,8 +1,8 @@
 #ifndef SEMQKGLINTEGRALSCLASSIC_HPP_
 #define SEMQKGLINTEGRALSCLASSIC_HPP_
 
-#include "dataType.hpp"
-#include "SEMmacros.hpp"
+#include <data_type.h>
+#include <sem_macros.h>
 #include <fe/SEMKernels/src/finiteElement/classic/SEMQkGLBasisFunctionsClassic.hpp>
 using namespace std;
 
@@ -43,6 +43,7 @@ public:
   PROXY_HOST_DEVICE ~SEMQkGLIntegralsClassic(){};
 
   // compute B and M
+  template<typename VpFunc, typename RhoFunc, typename Elem2NodesFunc>
   PROXY_HOST_DEVICE
   void static
   computeB( const int & elementNumber,
@@ -50,7 +51,10 @@ public:
             const float (*nodesCoords)[3],
             float const (&dPhi)[ORDER + 1][ORDER + 1],
             float massMatrixLocal[],
-            float B[][COL] )
+            float B[][COL],
+            VpFunc && getVp,
+            RhoFunc && getRho,
+            Elem2NodesFunc && elem2nodes)
   {
       for( int i3=0; i3<ORDER+1; i3++ )
       {
@@ -137,7 +141,8 @@ public:
             B[i][5]=(invJac10*transpInvJac02+invJac11*transpInvJac12+invJac12*transpInvJac22)*detJM1;    //B23,B32
     
             //M
-            massMatrixLocal[i]=weights[i1]*weights[i2]*weights[i3]*detJ;
+            int idx=elem2nodes(elementNumber, i1, i2, i3 );
+            massMatrixLocal[i]=(weights[i1]*weights[i2]*weights[i3]*detJ)/(getVp(idx)*getVp(idx)*getRho(idx));
           }
          }
        }
@@ -145,6 +150,7 @@ public:
     
   // compute the matrix $R_{i,j}=\int_{K}{\nabla{\phi_i}.\nabla{\phi_j}dx}$
   // Marc Durufle Formulae
+  template<typename RhoFunc, typename Elem2NodesFunc>
   PROXY_HOST_DEVICE
   static void gradPhiGradPhi( const int & nPointsPerElement,
                               float const (&weights)[ORDER + 1],
@@ -152,7 +158,10 @@ public:
                               float const B[][COL],
                               float const pnLocal[],
                               float R[],
-                              float Y[] )
+                              float Y[],
+                              const int & elementNumber,
+                              RhoFunc && getRho,
+                              Elem2NodesFunc && elem2nodes )
   {
       constexpr int orderPow2=(ORDER+1)*(ORDER+1);
       for( int i3=0; i3<ORDER+1; i3++ )
@@ -234,10 +243,11 @@ public:
             }
     
             int i=i1+i2*(ORDER+1)+i3*orderPow2;
+            int idx = elem2nodes(elementNumber, i1, i2, i3);
             Y[i]=0;
             for( int j=0; j<nPointsPerElement; j++ )
             {
-              Y[i]+=R[j]*pnLocal[j];
+              Y[i]+=R[j]*pnLocal[j] / getRho(idx);
             }
   
           }
@@ -247,6 +257,7 @@ public:
   
   // compute stiffnessVector.
   // returns mass matrix and stiffness vector local to an element
+  template<typename VpFunc, typename RhoFunc, typename Elem2NodesFunc>
   PROXY_HOST_DEVICE
   static void computeMassMatrixAndStiffnessVector( const int & elementNumber,
                                                    const int & nPointsPerElement,
@@ -254,7 +265,10 @@ public:
                                                    PrecomputedData const & precomputedData,
                                                    float massMatrixLocal[],
                                                    float const pnLocal[],
-                                                   float Y[])
+                                                   float Y[],
+                                                   VpFunc && getVp,
+                                                   RhoFunc && getRho,
+                                                   Elem2NodesFunc && elem2nodes)
   {
       float B[ROW][COL];
       float R[ROW];
@@ -268,7 +282,11 @@ public:
                 nodesCoords,
                 precomputedData.derivativeBasisFunction1D,
                 massMatrixLocal,
-                B );
+                B,
+                getVp, 
+                getRho,
+                elem2nodes
+               );
 
       // compute stifness  matrix ( durufle's optimization)
       gradPhiGradPhi( nPointsPerElement,
@@ -277,7 +295,11 @@ public:
                       B,
                       pnLocal,
                       R,
-                      Y );
+                      Y,
+                      elementNumber,
+                      getRho,
+                      elem2nodes
+                     );
   }
   
     static constexpr int getNumGLLPoints() {
