@@ -43,7 +43,6 @@ public:
   PROXY_HOST_DEVICE ~SEMQkGLIntegralsClassic(){};
 
   // compute B and M
-  template<typename VpFunc, typename RhoFunc, typename Elem2NodesFunc>
   PROXY_HOST_DEVICE
   void static
   computeB( const int & elementNumber,
@@ -51,10 +50,7 @@ public:
             const float (*nodesCoords)[3],
             float const (&dPhi)[ORDER + 1][ORDER + 1],
             float massMatrixLocal[],
-            float B[][COL],
-            VpFunc && getVp,
-            RhoFunc && getRho,
-            Elem2NodesFunc && elem2nodes)
+            float B[][COL] )
   {
       for( int i3=0; i3<ORDER+1; i3++ )
       {
@@ -141,8 +137,7 @@ public:
             B[i][5]=(invJac10*transpInvJac02+invJac11*transpInvJac12+invJac12*transpInvJac22)*detJM1;    //B23,B32
     
             //M
-            int idx=elem2nodes(elementNumber, i1, i2, i3 );
-            massMatrixLocal[i]=(weights[i1]*weights[i2]*weights[i3]*detJ)/(getVp(idx)*getVp(idx)*getRho(idx));
+            massMatrixLocal[i]=weights[i1]*weights[i2]*weights[i3]*detJ;
           }
          }
        }
@@ -150,7 +145,6 @@ public:
     
   // compute the matrix $R_{i,j}=\int_{K}{\nabla{\phi_i}.\nabla{\phi_j}dx}$
   // Marc Durufle Formulae
-  template<typename RhoFunc, typename Elem2NodesFunc>
   PROXY_HOST_DEVICE
   static void gradPhiGradPhi( const int & nPointsPerElement,
                               float const (&weights)[ORDER + 1],
@@ -158,10 +152,7 @@ public:
                               float const B[][COL],
                               float const pnLocal[],
                               float R[],
-                              float Y[],
-                              const int & elementNumber,
-                              RhoFunc && getRho,
-                              Elem2NodesFunc && elem2nodes )
+                              float Y[] )
   {
       constexpr int orderPow2=(ORDER+1)*(ORDER+1);
       for( int i3=0; i3<ORDER+1; i3++ )
@@ -243,11 +234,10 @@ public:
             }
     
             int i=i1+i2*(ORDER+1)+i3*orderPow2;
-            int idx = elem2nodes(elementNumber, i1, i2, i3);
             Y[i]=0;
             for( int j=0; j<nPointsPerElement; j++ )
             {
-              Y[i]+=R[j]*pnLocal[j] / getRho(idx);
+              Y[i]+=R[j]*pnLocal[j];
             }
   
           }
@@ -257,7 +247,6 @@ public:
   
   // compute stiffnessVector.
   // returns mass matrix and stiffness vector local to an element
-  template<typename VpFunc, typename RhoFunc, typename Elem2NodesFunc>
   PROXY_HOST_DEVICE
   static void computeMassMatrixAndStiffnessVector( const int & elementNumber,
                                                    const int & nPointsPerElement,
@@ -265,10 +254,7 @@ public:
                                                    PrecomputedData const & precomputedData,
                                                    float massMatrixLocal[],
                                                    float const pnLocal[],
-                                                   float Y[],
-                                                   VpFunc && getVp,
-                                                   RhoFunc && getRho,
-                                                   Elem2NodesFunc && elem2nodes)
+                                                   float Y[])
   {
       float B[ROW][COL];
       float R[ROW];
@@ -282,11 +268,7 @@ public:
                 nodesCoords,
                 precomputedData.derivativeBasisFunction1D,
                 massMatrixLocal,
-                B,
-                getVp, 
-                getRho,
-                elem2nodes
-               );
+                B );
 
       // compute stifness  matrix ( durufle's optimization)
       gradPhiGradPhi( nPointsPerElement,
@@ -295,11 +277,7 @@ public:
                       B,
                       pnLocal,
                       R,
-                      Y,
-                      elementNumber,
-                      getRho,
-                      elem2nodes
-                     );
+                      Y );
   }
   
     static constexpr int getNumGLLPoints() {
