@@ -20,13 +20,13 @@
 #ifndef _Q1HEXAHEDRON_HPP_
 #define _Q1HEXAHEDRON_HPP_
 
+#include <data_type.h>
 #include "LagrangeBasis1.hpp"
 #include "LagrangeBasis2.hpp"
 #include "LagrangeBasis3GL.hpp"
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
 #include "common/mathUtilites.hpp"
-#include <data_type.h>
 
 /**
  * This class is the basis class for the hexahedron finite element cells with
