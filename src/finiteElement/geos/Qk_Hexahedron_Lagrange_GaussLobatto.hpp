@@ -20,13 +20,13 @@
 #ifndef _Q1HEXAHEDRON_HPP_
 #define _Q1HEXAHEDRON_HPP_
 
+#include <data_type.h>
 #include "LagrangeBasis1.hpp"
 #include "LagrangeBasis2.hpp"
 #include "LagrangeBasis3GL.hpp"
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
 #include "common/mathUtilites.hpp"
-#include <data_type.h>
 
 /**
  * This class is the basis class for the hexahedron finite element cells with
@@ -554,9 +554,9 @@ public:
    * @param X Array containing the coordinates of the mesh support points.
    * @return The diagonal mass term associated to q
    */
+  template< typename FUNC >
   PROXY_HOST_DEVICE
-  static real_t computeMassTerm( int const q,
-                                 real_t const (&X)[8][3] );
+  static void computeMassTerm( real_t const (&X)[8][3], FUNC && func );
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
@@ -598,8 +598,7 @@ public:
    */
   template< typename FUNC >
   PROXY_HOST_DEVICE
-  static void computeStiffnessTerm( int const q,
-                                    real_t const (&X)[8][3],
+  static void computeStiffnessTerm( real_t const (&X)[8][3],
                                     FUNC && func );
 
   /**
@@ -996,11 +995,36 @@ Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::calcGradNWithCorners( real_t co
   return detJ;
 }
 
+
+
 //*************************************************************************************************
 #if __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 #endif
+
+template<int N, typename F, int... Is>
+constexpr void for_constexpr_impl(F&& f, std::integer_sequence<int, Is...>) {
+    (f(std::integral_constant<int, Is>{}), ...);
+}
+
+template<int N, typename F>
+constexpr void for_constexpr(F&& f) {
+    for_constexpr_impl<N>(std::forward<F>(f), std::make_integer_sequence<int, N>{});
+}
+
+template<int BoundI, int BoundJ, int BoundK, typename Lambda>
+constexpr void triple_loop(Lambda&& lambda) {
+    for_constexpr<BoundI>([&](auto I) {
+        for_constexpr<BoundJ>([&](auto J) {
+            for_constexpr<BoundK>([&](auto K) {
+                lambda(I, J, K);
+            });
+        });
+    });
+}
+
+
 
 template< typename GL_BASIS >
   PROXY_HOST_DEVICE
@@ -1159,19 +1183,41 @@ jacobianTransformation2d( int const qa,
 }
 
 template< typename GL_BASIS >
+template< typename FUNC >
+// PROXY_HOST_DEVICE
+// real_t
+// Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+// computeMassTerm( int const q,
+//                  real_t const (&X)[8][3] )
+// {
+//   int qa, qb, qc;
+//   GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
+//   const real_t w3D = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
+//   real_t J[3][3] = {{0}};
+//   jacobianTransformation( qa, qb, qc, X, J );
+//   return std::abs( determinant( J ) )*w3D;
+// }
 
 PROXY_HOST_DEVICE
-real_t
+void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMassTerm( int const q,
-                 real_t const (&X)[8][3] )
+computeMassTerm( real_t const (&X)[8][3], FUNC && func )
 {
-  int qa, qb, qc;
-  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
-  const real_t w3D = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
-  real_t J[3][3] = {{0}};
-  jacobianTransformation( qa, qb, qc, X, J );
-  return std::abs( determinant( J ) )*w3D;
+    constexpr int N = num1dNodes;
+    triple_loop<N,N,N>([&](auto const icqa, auto const icqb, auto const icqc)
+    {
+      constexpr int qa = decltype(icqa)::value;
+      constexpr int qb = decltype(icqb)::value;
+      constexpr int qc = decltype(icqc)::value;
+      constexpr int q = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc );
+      // int qa, qb, qc;
+      // GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
+      constexpr real_t w3D = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
+      real_t J[3][3] = {{0}};
+      jacobianTransformation( qa, qb, qc, X, J );
+      real_t val=std::abs( determinant( J ) )*w3D;
+      func(q,val);
+   });
 }
 
 template< typename GL_BASIS >
@@ -1282,7 +1328,6 @@ computeBxyMatrix( int const qa,
 
 template< typename GL_BASIS >
 template< typename FUNC >
-
 // GEOS_FORCE_INLINE
   PROXY_HOST_DEVICE
 void
@@ -1293,6 +1338,9 @@ computeGradPhiBGradPhi( int const qa,
                         real_t const (&B)[6],
                         FUNC && func )
 {
+  const real_t wa = GL_BASIS::weight( qa );
+  const real_t wb = GL_BASIS::weight( qb );
+  const real_t wc = GL_BASIS::weight( qc );
   const real_t w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
   for( int i=0; i<num1dNodes; i++ )
   {
@@ -1376,16 +1424,21 @@ template< typename FUNC >
   PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeStiffnessTerm( int const q,
-                      real_t const (&X)[8][3],
+computeStiffnessTerm( real_t const (&X)[8][3], 
                       FUNC && func )
 {
-  int qa, qb, qc;
-  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
-  real_t B[6] = {0};
-  real_t J[3][3] = {{0}};
-  computeBMatrix( qa, qb, qc, X, J, B );
-  computeGradPhiBGradPhi( qa, qb, qc, B, func );
+
+   triple_loop<num1dNodes,num1dNodes,num1dNodes>([&](auto const icqa, auto const icqb, auto const icqc)
+   {
+      constexpr int qa = decltype(icqa)::value;
+      constexpr int qb = decltype(icqb)::value;
+      constexpr int qc = decltype(icqc)::value;
+      real_t B[6] = {0};
+      real_t J[3][3] = {{0}};
+      computeBMatrix( qa, qb, qc, X, J, B );
+      computeGradPhiBGradPhi( qa, qb, qc, B, func );
+     
+   });
 }
 
 template< typename GL_BASIS >
@@ -1681,28 +1734,38 @@ gradient( int const q,
   }, invJ, var, grad );
 }
 
-template <typename GL_BASIS>
-PROXY_HOST_DEVICE void Qk_Hexahedron_Lagrange_GaussLobatto<
-    GL_BASIS>::computeMassMatrixAndStiffnessVector(const int &elementNumber,
-                                                   const int &nPointsPerElement,
-                                                   float (&X)[8][3],
-                                                   PrecomputedData const & precomputedData,
-                                                   float massMatrixLocal[],
-                                                   float pnLocal[],
-                                                   float Y[])
-{
-  for (int q = 0; q < nPointsPerElement; q++) {
-    Y[q] = 0;
-  }
+                                                                         
+    
 
-  for (int q = 0; q < nPointsPerElement; q++) {
-    massMatrixLocal[q] = computeMassTerm(q, X);
-    computeStiffnessTerm(q, X, [&](const int i, const int j, const real_t val) {
-      float localIncrement = val * pnLocal[j];
-      Y[i] += localIncrement;
-    });
-  }
-}
+
+
+
+
+
+
+
+// template <typename GL_BASIS>
+// PROXY_HOST_DEVICE void Qk_Hexahedron_Lagrange_GaussLobatto<
+//     GL_BASIS>::computeMassMatrixAndStiffnessVector(const int &elementNumber,
+//                                                    const int &nPointsPerElement,
+//                                                    float (&X)[8][3],
+//                                                    PrecomputedData const & precomputedData,
+//                                                    float massMatrixLocal[],
+//                                                    float pnLocal[],
+//                                                    float Y[])
+// {
+//   for (int q = 0; q < nPointsPerElement; q++) {
+//     Y[q] = 0;
+//   }
+
+//   for (int q = 0; q < nPointsPerElement; q++) {
+//     //massMatrixLocal[q] = computeMassTerm(q, X);
+//     computeStiffnessTerm(q, X, [&](const int i, const int j, const real_t val) {
+//       float localIncrement = val * pnLocal[j];
+//       Y[i] += localIncrement;
+//     });
+//   }
+// }
 
 using Q1_Hexahedron_Lagrange_GaussLobatto =
     Qk_Hexahedron_Lagrange_GaussLobatto<LagrangeBasis1>;
