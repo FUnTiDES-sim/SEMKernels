@@ -1,26 +1,9 @@
-/*
- * ------------------------------------------------------------------------------------------------------------
- * SPDX-License-Identifier: LGPL-2.1-only
- *
- * Copyright (c) 2016-2024 Lawrence Livermore National Security LLC
- * Copyright (c) 2018-2024 TotalEnergies
- * Copyright (c) 2018-2024 The Board of Trustees of the Leland Stanford Junior University
- * Copyright (c) 2023-2024 Chevron
- * Copyright (c) 2019-     GEOS/GEOSX Contributors
- * All rights reserved
- *
- * See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS files for details.
- * ------------------------------------------------------------------------------------------------------------
- */
-
 #ifndef _LAGRANGEBASIS1_HPP_
 #define _LAGRANGEBASIS1_HPP_
 
 /**
  * @file LagrangeBasis1.hpp
  */
-
-// #include "common/DataTypes.hpp"
 
 
 /**
@@ -45,7 +28,6 @@ public:
    */
   constexpr static double weight( const int q )
   {
-    // GEOS_UNUSED_VAR( q );
     return 1.0;
   }
 
@@ -102,7 +84,6 @@ public:
   constexpr static double valueBubble( const double xi )
   {
     return 1.0 - pow( xi, 2 );
-    // return 1.0 - std::pow(2.0, xi);
   }
 
 
@@ -117,7 +98,6 @@ public:
   constexpr static double gradient( const int index,
                                     const double xi )
   {
-    // GEOS_UNUSED_VAR( xi );
     return 0.5 * parentSupportCoord( index );
   }
 
@@ -129,7 +109,6 @@ public:
    */
   constexpr static double gradient0( const double xi )
   {
-    // GEOS_UNUSED_VAR( xi );
     return -0.5;
   }
 
@@ -141,19 +120,7 @@ public:
    */
   constexpr static double gradient1( const double xi )
   {
-    // GEOS_UNUSED_VAR( xi );
     return 0.5;
-  }
-
-  /**
-   * @brief The gradient of the bubble basis function for support point 1 evaluated at
-   *   a point along the axes.
-   * @param xi The coordinate at which to evaluate the gradient.
-   * @return The gradient of basis function
-   */
-  constexpr static double gradientBubble( const double xi )
-  {
-    return -2.0*xi;
   }
 
   /**
@@ -239,20 +206,6 @@ public:
                         LagrangeBasis1::value( b, coords[1] );
         }
       }
-    }
-
-    /**
-     * @brief The value of the bubble basis function evaluated at a
-     *   point along the axes.
-     *
-     * @param coords The coordinates (in the parent frame) at which to evaluate the basis
-     * @param N Array to hold the value of the basis functions.
-     */
-    static void valueBubble( double const (&coords)[2],
-                             double (& N)[1] )
-    {
-      N[0] = LagrangeBasis1::valueBubble( coords[0] ) *
-             LagrangeBasis1::valueBubble( coords[1] );
     }
 
     /**
@@ -366,112 +319,6 @@ public:
     }
 
     /**
-     * @brief The value of the bubble basis function for a support face evaluated at a
-     *   point along the axes.
-     *
-     * @param coords The coordinates (in the parent frame) at which to evaluate the basis
-     * @param N Array to hold the value of the basis functions at each support face.
-     */
-    static void valueFaceBubble( double const (&coords)[3],
-                                 double (& N)[numSupportFaces] )
-    {
-      N[ 0 ] = LagrangeBasis1::valueBubble( coords[0] ) *
-               LagrangeBasis1::value( 0, coords[1] ) *
-               LagrangeBasis1::valueBubble( coords[2] );
-
-      N[ 1 ] = LagrangeBasis1::valueBubble( coords[0] ) *
-               LagrangeBasis1::valueBubble( coords[1] ) *
-               LagrangeBasis1::value( 0, coords[2] );
-
-      N[ 2 ] = LagrangeBasis1::value( 0, coords[0] ) *
-               LagrangeBasis1::valueBubble( coords[1] ) *
-               LagrangeBasis1::valueBubble( coords[2] );
-
-      N[ 3 ] = LagrangeBasis1::value( 1, coords[0] ) *
-               LagrangeBasis1::valueBubble( coords[1] ) *
-               LagrangeBasis1::valueBubble( coords[2] );
-
-      N[ 4 ] = LagrangeBasis1::valueBubble( coords[0] ) *
-               LagrangeBasis1::value( 1, coords[1] ) *
-               LagrangeBasis1::valueBubble( coords[2] );
-
-      N[ 5 ] = LagrangeBasis1::valueBubble( coords[0] ) *
-               LagrangeBasis1::valueBubble( coords[1] ) *
-               LagrangeBasis1::value( 1, coords[2] );
-    }
-
-    /**
-     * @brief The value of the bubble basis function derivatives for a support face evaluated at a
-     *   point along the axes.
-     *
-     * @param coords The coordinates (in the parent frame) at which to evaluate the basis
-     * @param dNdXi Array to hold the value of the basis function derivatives at each support face.
-     */
-    static void gradientFaceBubble( double const (&coords)[3],
-                                    double (& dNdXi)[numSupportFaces][3] )
-    {
-      dNdXi[0][0] = LagrangeBasis1::gradientBubble( coords[0] ) *
-                    LagrangeBasis1::value( 0, coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[0][1] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::gradient( 0, coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[0][2] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::value( 0, coords[1] ) *
-                    LagrangeBasis1::gradientBubble( coords[2] );
-
-      dNdXi[1][0] = LagrangeBasis1::gradientBubble( coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::value( 0, coords[2] );
-      dNdXi[1][1] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::gradientBubble( coords[1] ) *
-                    LagrangeBasis1::value( 0, coords[2] );
-      dNdXi[1][2] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::gradient( 0, coords[2] );
-
-      dNdXi[2][0] = LagrangeBasis1::gradient( 0, coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[2][1] = LagrangeBasis1::value( 0, coords[0] ) *
-                    LagrangeBasis1::gradientBubble( coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[2][2] = LagrangeBasis1::value( 0, coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::gradientBubble( coords[2] );
-
-      dNdXi[3][0] = LagrangeBasis1::gradient( 1, coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[3][1] = LagrangeBasis1::value( 1, coords[0] ) *
-                    LagrangeBasis1::gradientBubble( coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[3][2] = LagrangeBasis1::value( 1, coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::gradientBubble( coords[2] );
-
-      dNdXi[4][0] = LagrangeBasis1::gradientBubble( coords[0] ) *
-                    LagrangeBasis1::value( 1, coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[4][1] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::gradient( 1, coords[1] ) *
-                    LagrangeBasis1::valueBubble( coords[2] );
-      dNdXi[4][2] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::value( 1, coords[1] ) *
-                    LagrangeBasis1::gradientBubble( coords[2] );
-
-      dNdXi[5][0] = LagrangeBasis1::gradientBubble( coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::value( 1, coords[2] );
-      dNdXi[5][1] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::gradientBubble( coords[1] ) *
-                    LagrangeBasis1::value( 1, coords[2] );
-      dNdXi[5][2] = LagrangeBasis1::valueBubble( coords[0] ) *
-                    LagrangeBasis1::valueBubble( coords[1] ) *
-                    LagrangeBasis1::gradient( 1, coords[2] );
-    }
-
-    /**
      * @brief The parent coordinates for a support point in the xi0 direction.
      * @param linearIndex The linear index of the support point
      * @return
@@ -504,7 +351,6 @@ public:
   };
 
 };
-
 
 
 #endif /* _LAGRANGEBASIS1_HPP_ */
