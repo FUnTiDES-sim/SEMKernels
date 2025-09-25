@@ -1,26 +1,9 @@
-/*
- * ------------------------------------------------------------------------------------------------------------
- * SPDX-License-Identifier: LGPL-2.1-only
- *
- * Copyright (c) 2016-2024 Lawrence Livermore National Security LLC
- * Copyright (c) 2018-2024 TotalEnergies
- * Copyright (c) 2018-2024 The Board of Trustees of the Leland Stanford Junior
- * University Copyright (c) 2023-2024 Chevron Copyright (c) 2019-     GEOS/GEOSX
- * Contributors All rights reserved
- *
- * See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS
- * files for details.
- * ------------------------------------------------------------------------------------------------------------
- */
-
-#ifndef GEOS_FINITEELEMENT_ELEMENTFORMULATIONS_ELEMENTFORMULATIONS_LAGRANGEBASIS3GL_HPP_
-#define GEOS_FINITEELEMENT_ELEMENTFORMULATIONS_ELEMENTFORMULATIONS_LAGRANGEBASIS3GL_HPP_
+#ifndef _LAGRANGEBASIS3GL_HPP_
+#define _LAGRANGEBASIS3GL_HPP_
 
 /**
  * @file LagrangeBasis3GL.hpp
  */
-
-// #include "common/DataTypes.hpp"
 
 /**
  * This class contains the implementation for a second order (quadratic)
@@ -262,31 +245,31 @@ public:
     }
   }
 
-  /**
-   * @class TensorProduct2D
-   *
+  /**                                                                           
+   * @class TensorProduct2D                                                     
+   *                                                                            
    *                                                                  _____________________________
-   *        12         13        14         15                       |Node xi0
-   * xi1    | o---------o---------o---------o                        |===== ===
-   * ===    | |                             |                        |  0 -1 -1
-   * | |                             |                        |  1   -1/sqrt(5)
-   * -1     | |                             |                        |  2
-   * 1/sqrt(5)      -1     | |                             | |  3        1 -1 |
-   *        8 o       9 o         o 10      o 11                     |  4 -1
-   * -1/sqrt(5) | |                             |                        |  5
-   * -1/sqrt(5)  -1/sqrt(5) | |                             | |  6    1/sqrt(5)
-   * -1/sqrt(5) | |                             |                        |  7 1
-   * -1/sqrt(5) | 4 o       5 o         o 6       o 7                      |  8
-   * -1       1/sqrt(5) | |                             | |  9   -1/sqrt(5)
-   * 1/sqrt(5) | |                             |            xi1         | 10
-   * 1/sqrt(5)   1/sqrt(5) | |                             |            | | 11
-   * 1       1/sqrt(5) | |                             |            | | 12 -1 1
-   * | o---------o---------o---------o            |           | 13   -1/sqrt(5)
-   * 1     | 0          1         2          3           o----- xi0  | 14
-   * 1/sqrt(5)       1     | | 15        1           1     |
+   *        12         13        14         15                       |Node      xi0         xi1    |
+   *          o---------o---------o---------o                        |=====     ===         ===    |
+   *          |                             |                        |  0       -1          -1     |
+   *          |                             |                        |  1   -1/sqrt(5)      -1     |
+   *          |                             |                        |  2    1/sqrt(5)      -1     |
+   *          |                             |                        |  3        1          -1     |
+   *        8 o       9 o         o 10      o 11                     |  4       -1      -1/sqrt(5) |
+   *          |                             |                        |  5   -1/sqrt(5)  -1/sqrt(5) |
+   *          |                             |                        |  6    1/sqrt(5)  -1/sqrt(5) |
+   *          |                             |                        |  7        1      -1/sqrt(5) |
+   *        4 o       5 o         o 6       o 7                      |  8       -1       1/sqrt(5) |
+   *          |                             |                        |  9   -1/sqrt(5)   1/sqrt(5) |
+   *          |                             |            xi1         | 10    1/sqrt(5)   1/sqrt(5) |
+   *          |                             |            |           | 11        1       1/sqrt(5) |
+   *          |                             |            |           | 12       -1           1     |
+   *          o---------o---------o---------o            |           | 13   -1/sqrt(5)       1     |
+   *         0          1         2          3           o----- xi0  | 14    1/sqrt(5)       1     |
+   *                                                                 | 15        1           1     |
    *                                                                 |_____________________________|
-   *
-   */
+   *                                                                            
+   */ 
   struct TensorProduct2D {
     /// The number of support points in the 2D tensor product
     constexpr static int numSupportPoints = 16;
@@ -339,42 +322,41 @@ public:
     }
   };
 
-  /**
-   * @class TensorProduct3D
+  /**                                                                           
+   * @class TensorProduct3D                                                     
    *                                                                  _____________________________________
-   *                                                                 |Node xi0
-   * xi1         xi2|
-   *                                                                 |===== ===
-   * ===         ===| |  0       -1          -1          -1 | |  1   -1/sqrt(5)
-   * -1          -1 | |  2    1/sqrt(5)      -1          -1 | 60       61 62 63
-   * |  3        1          -1          -1 | o---------o---------o---------o |
-   * 4       -1      -1/sqrt(5)      -1 | 56 /.     57        58        59 /| |
-   * 5   -1/sqrt(5)  -1/sqrt(5)      -1 | o .       o         o         o | |  6
-   * 1/sqrt(5)  -1/sqrt(5)      -1 | 52 /  .   53        54        55 /  | |  7
-   * 1      -1/sqrt(5)      -1 | o   .     o         o         o   | |  8 -1
-   * 1/sqrt(5)      -1 | 48 /    o 49      o 50      o 51 /    o |  9 -1/sqrt(5)
-   * 1/sqrt(5)      -1 | o---------o---------o---------o     | | 10    1/sqrt(5)
-   * 1/sqrt(5)      -1 | |   o .       o         o     |   o | | 11        1
-   * 1/sqrt(5)      -1 | |     .                       |     | | 12       -1 1
-   * -1 | | o   o     o   o     o   o   | o   o                  | 13 -1/sqrt(5)
-   * 1          -1 | |     .                       |     |                  | 14
-   * 1/sqrt(5)       1          -1 | o   o .   o   o     o   o     o   o | | 15
-   * 1           1          -1 | |     .                       |     | | .. ..
-   * ..          .. | | o   .     o         o       | o   |                  |
-   * ..       ..          ..          .. | |     o.........o.........o...|.....o
-   * | 55        1      -1/sqrt(5)       1 | o    ,12  o     13  o     14  o /15
-   * | 56       -1       1/sqrt(5)       1 | |   o         o         o     |   o
-   * | 57   -1/sqrt(5)   1/sqrt(5)       1 | |  ,8         9         10    | /11
-   * xi2         | 58    1/sqrt(5)   1/sqrt(5)       1 | | o         o         o
-   * | o          |           | 59        1       1/sqrt(5)       1 |
-   *          |,4         5         6       |/7          | / xi1     | 60 -1 1
-   * 1 | o---------o---------o---------o            |/          | 61 -1/sqrt(5)
-   * 1           1 | 0         1         2         3             o----- xi0  |
-   * 62    1/sqrt(5)       1           1 | | 63        1           1           1
-   * |
+   *                                                                 |Node      xi0         xi1         xi2|
+   *                                                                 |=====     ===         ===         ===|
+   *                                                                 |  0       -1          -1          -1 |
+   *                                                                 |  1   -1/sqrt(5)      -1          -1 |
+   *                                                                 |  2    1/sqrt(5)      -1          -1 |
+   *              60       61         62        63                   |  3        1          -1          -1 |
+   *                o---------o---------o---------o                  |  4       -1      -1/sqrt(5)      -1 |
+   *            56 /.     57        58        59 /|                  |  5   -1/sqrt(5)  -1/sqrt(5)      -1 |
+   *              o .       o         o         o |                  |  6    1/sqrt(5)  -1/sqrt(5)      -1 |
+   *          52 /  .   53        54        55 /  |                  |  7        1      -1/sqrt(5)      -1 |
+   *            o   .     o         o         o   |                  |  8       -1       1/sqrt(5)      -1 |
+   *        48 /    o 49      o 50      o 51 /    o                  |  9   -1/sqrt(5)   1/sqrt(5)      -1 |
+   *          o---------o---------o---------o     |                  | 10    1/sqrt(5)   1/sqrt(5)      -1 |
+   *          |   o .       o         o     |   o |                  | 11        1       1/sqrt(5)      -1 |
+   *          |     .                       |     |                  | 12       -1           1          -1 |
+   *          | o   o     o   o     o   o   | o   o                  | 13   -1/sqrt(5)       1          -1 |
+   *          |     .                       |     |                  | 14    1/sqrt(5)       1          -1 |
+   *          o   o .   o   o     o   o     o   o |                  | 15        1           1          -1 |
+   *          |     .                       |     |                  | ..       ..          ..          .. |
+   *          | o   .     o         o       | o   |                  | ..       ..          ..          .. |
+   *          |     o.........o.........o...|.....o                  | 55        1      -1/sqrt(5)       1 |
+   *          o    ,12  o     13  o     14  o    /15                 | 56       -1       1/sqrt(5)       1 |
+   *          |   o         o         o     |   o                    | 57   -1/sqrt(5)   1/sqrt(5)       1 |
+   *          |  ,8         9         10    |  /11       xi2         | 58    1/sqrt(5)   1/sqrt(5)       1 |
+   *          | o         o         o       | o          |           | 59        1       1/sqrt(5)       1 |
+   *          |,4         5         6       |/7          | / xi1     | 60       -1           1           1 |
+   *          o---------o---------o---------o            |/          | 61   -1/sqrt(5)       1           1 |
+   *         0         1         2         3             o----- xi0  | 62    1/sqrt(5)       1           1 |
+   *                                                                 | 63        1           1           1 |
    *                                                                 |_____________________________________|
-   *
-   */
+   *                                                                            
+   */ 
   struct TensorProduct3D {
     /// The number of support points in the 3D tensor product
     constexpr static int numSupportPoints = 64;
@@ -441,5 +423,4 @@ public:
   };
 };
 
-#endif /* GEOS_FINITEELEMENT_ELEMENTFORMULATIONS_ELEMENTFORMULATIONS_LAGRANGEBASIS3GL_HPP_ \
-        */
+#endif /* _LAGRANGEBASIS3GL_HPP_  */
