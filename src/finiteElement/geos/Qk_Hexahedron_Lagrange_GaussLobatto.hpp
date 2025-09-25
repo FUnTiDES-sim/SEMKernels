@@ -62,6 +62,8 @@ public:
   struct PrecomputedData
   {};
 
+  
+
   PROXY_HOST_DEVICE
   static void init( PrecomputedData & )
   {}
@@ -682,14 +684,12 @@ public:
  * @param B Array of the B matrix, in Voigt notation
  * @param func Callback function accepting three parameters: i, j and R_ij
  */
-  template< typename FUNC >
+  template< int N, int qa, int qb, int qc, typename FUNC >
 
   // GEOS_FORCE_INLINE
   PROXY_HOST_DEVICE
   static void
-  computeGradPhiBGradPhi( int const qa,
-                          int const qb,
-                          int const qc,
+  computeGradPhiBGradPhi( 
                           real_t const (&B)[6],
                           FUNC && func );
 
@@ -1327,58 +1327,56 @@ computeBxyMatrix( int const qa,
 }
 
 template< typename GL_BASIS >
-template< typename FUNC >
+template< int N, int qa, int qb, int qc, typename FUNC >
 // GEOS_FORCE_INLINE
-  PROXY_HOST_DEVICE
+PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeGradPhiBGradPhi( int const qa,
-                        int const qb,
-                        int const qc,
+computeGradPhiBGradPhi( 
                         real_t const (&B)[6],
                         FUNC && func )
 {
-  const real_t wa = GL_BASIS::weight( qa );
-  const real_t wb = GL_BASIS::weight( qb );
-  const real_t wc = GL_BASIS::weight( qc );
-  const real_t w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
-  for( int i=0; i<num1dNodes; i++ )
-  {
-    const int ibc = GL_BASIS::TensorProduct3D::linearIndex( i, qb, qc );
-    const int aic = GL_BASIS::TensorProduct3D::linearIndex( qa, i, qc );
-    const int abi = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, i );
-    const real_t gia = basisGradientAt( i, qa );
-    const real_t gib = basisGradientAt( i, qb );
-    const real_t gic = basisGradientAt( i, qc );
-    for( int j=0; j<num1dNodes; j++ )
-    {
-      const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, qb, qc );
-      const int ajc = GL_BASIS::TensorProduct3D::linearIndex( qa, j, qc );
-      const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
-      const real_t gja = basisGradientAt( j, qa );
-      const real_t gjb = basisGradientAt( j, qb );
-      const real_t gjc = basisGradientAt( j, qc );
-      // diagonal terms
-      const real_t w0 = w * gia * gja;
-      func( ibc, jbc, w0 * B[0] );
-      const real_t w1 = w * gib * gjb;
-      func( aic, ajc, w1 * B[1] );
-      const real_t w2 = w * gic * gjc;
-      func( abi, abj, w2 * B[2] );
-      // off-diagonal terms
-      // const real_t w3 = w * gib * gjc;
-      // func( aic, abj, w3 * B[3] );
-      // func( abj, aic, w3 * B[3] );
-      // const real_t w4 = w * gia * gjc;
-      // func( ibc, abj, w4 * B[4] );
-      // func( abj, ibc, w4 * B[4] );
-      // const real_t w5 = w * gia * gjb;
-      // func( ibc, ajc, w5 * B[5] );
-      // func( ajc, ibc, w5 * B[5] );
-    }
-  }
-}
 
+   constexpr real_t wa = GL_BASIS::weight( qa );
+   constexpr real_t wb = GL_BASIS::weight( qb );
+   constexpr real_t wc = GL_BASIS::weight( qc );
+   const real_t w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
+   for( int i=0; i<num1dNodes; i++ )
+   {
+     const int ibc = GL_BASIS::TensorProduct3D::linearIndex( i, qb, qc );
+     const int aic = GL_BASIS::TensorProduct3D::linearIndex( qa, i, qc );
+     const int abi = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, i );
+     const real_t gia = basisGradientAt( i, qa );
+     const real_t gib = basisGradientAt( i, qb );
+     const real_t gic = basisGradientAt( i, qc );
+     for( int j=0; j<num1dNodes; j++ )
+     {
+       const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, qb, qc );
+       const int ajc = GL_BASIS::TensorProduct3D::linearIndex( qa, j, qc );
+       const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
+       const real_t gja = basisGradientAt( j, qa );
+       const real_t gjb = basisGradientAt( j, qb );
+       const real_t gjc = basisGradientAt( j, qc );
+       // diagonal terms
+       const real_t w0 = w * gia * gja;
+       func( ibc, jbc, w0 * B[0] );
+       const real_t w1 = w * gib * gjb;
+       func( aic, ajc, w1 * B[1] );
+       const real_t w2 = w * gic * gjc;
+       func( abi, abj, w2 * B[2] );
+       // off-diagonal terms
+       // const real_t w3 = w * gib * gjc;
+       // func( aic, abj, w3 * B[3] );
+       // func( abj, aic, w3 * B[3] );
+       // const real_t w4 = w * gia * gjc;
+       // func( ibc, abj, w4 * B[4] );
+       // func( abj, ibc, w4 * B[4] );
+       // const real_t w5 = w * gia * gjb;
+       // func( ibc, ajc, w5 * B[5] );
+       // func( ajc, ibc, w5 * B[5] );
+     }
+   }
+  }
 template< typename GL_BASIS >
 template< typename FUNC >
 
@@ -1395,7 +1393,7 @@ computeStiffnessxyTerm( int const q,
   real_t B[6] = {0};
   real_t J[3][3] = {{0}};
   computeBxyMatrix( qa, qb, qc, X, J, B ); // The only change!
-  computeGradPhiBGradPhi( qa, qb, qc, B, func );
+  //computeGradPhiBGradPhi( qa, qb, qc, B, func );
 }
 
 template< typename GL_BASIS >
@@ -1414,7 +1412,7 @@ computeStiffnesszTerm( int const q,
   real_t B[6] = {0};
   real_t J[3][3] = {{0}};
   computeBzMatrix( qa, qb, qc, X, J, B ); // The only change!
-  computeGradPhiBGradPhi( qa, qb, qc, B, func );
+  //computeGradPhiBGradPhi( qa, qb, qc, B, func );
 }
 
 template< typename GL_BASIS >
@@ -1436,7 +1434,7 @@ computeStiffnessTerm( real_t const (&X)[8][3],
       real_t B[6] = {0};
       real_t J[3][3] = {{0}};
       computeBMatrix( qa, qb, qc, X, J, B );
-      computeGradPhiBGradPhi( qa, qb, qc, B, func );
+      computeGradPhiBGradPhi<num1dNodes,qa,qb,qc>(B, func );
      
    });
 }
