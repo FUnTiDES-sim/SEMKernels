@@ -346,6 +346,7 @@ public:
      * @param coords The coordinates (in the parent frame) at which to evaluate the basis
      * @param N Array to hold the value of the basis functions at each support point.
      */
+    PROXY_HOST_DEVICE
     static void value( double const (&coords)[3],
                        double (& N)[numSupportPoints] )
     {

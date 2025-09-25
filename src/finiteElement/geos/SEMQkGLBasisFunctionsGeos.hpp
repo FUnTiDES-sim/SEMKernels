@@ -1,8 +1,8 @@
 #ifndef SEMQKGLBASISFUNCTIONSGEOS_HPP_
 #define SEMQKGLBASISFUNCTIONSGEOS_HPP_
-#include <dataType.hpp>
-#include <SEMmacros.hpp>
-#include <SEMdata.hpp>
+#include <data_type.h>
+#include <sem_macros.h>
+#include <sem_data.h>
 
 #include "LagrangeBasis1.hpp"
 #include "LagrangeBasis2.hpp"
