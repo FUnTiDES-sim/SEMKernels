@@ -554,15 +554,6 @@ public:
                                                     real_t const ( &invJ )[3][3],
                                                     real_t ( &gradN )[numNodes][3] );
 
-  PROXY_HOST_DEVICE
-  static void
-  computeMassMatrixAndStiffnessVector( const int &elementNumber,
-                                       const int &nPointsPerElement,
-                                       float (&X)[8][3],
-                                       PrecomputedData const & precomputedData,
-                                       float massMatrixLocal[],
-                                       float pnLocal[],
-                                       float Y[] );
 
 private:
   /// The length of one dimension of the parent element.
