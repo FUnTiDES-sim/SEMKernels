@@ -1,26 +1,9 @@
-/*
- * ------------------------------------------------------------------------------------------------------------
- * SPDX-License-Identifier: LGPL-2.1-only
- *
- * Copyright (c) 2016-2024 Lawrence Livermore National Security LLC
- * Copyright (c) 2018-2024 TotalEnergies
- * Copyright (c) 2018-2024 The Board of Trustees of the Leland Stanford Junior University
- * Copyright (c) 2023-2024 Chevron
- * Copyright (c) 2019-     GEOS/GEOSX Contributors
- * All rights reserved
- *
- * See top level LICENSE, COPYRIGHT, CONTRIBUTORS, NOTICE, and ACKNOWLEDGEMENTS files for details.
- * ------------------------------------------------------------------------------------------------------------
- */
-
-#ifndef GEOS_FINITEELEMENT_ELEMENTFORMULATIONS_ELEMENTFORMULATIONS_LAGRANGEBASIS5GL_HPP_
-#define GEOS_FINITEELEMENT_ELEMENTFORMULATIONS_ELEMENTFORMULATIONS_LAGRANGEBASIS5GL_HPP_
+#ifndef _LAGRANGEBASIS5GL_HPP_
+#define _LAGRANGEBASIS5GL_HPP_
 
 /**
  * @file LagrangeBasis5GL.hpp
  */
-
-// #include "common/DataTypes.hpp"
 
 /**
  * This class contains the implementation for a 5th order Lagrange
@@ -512,8 +495,6 @@ public:
    *   0         1        2        3        4         5                  o----- xi0
    */
 
-  /* UNCRUSTIFY-ON */
-
   struct TensorProduct2D
   {
     /// The number of support points in the basis.
@@ -620,8 +601,6 @@ public:
    *    0        1        2        3        4        5                   o----- xi0
    */
 
-  /* UNCRUSTIFY-ON */
-
   struct TensorProduct3D
   {
     /// The number of support points in the basis.
@@ -693,4 +672,4 @@ public:
 
 };
 
-#endif /* GEOS_FINITEELEMENT_ELEMENTFORMULATIONS_ELEMENTFORMULATIONS_LAGRANGEBASIS5GL_HPP_ */
+#endif /* _LAGRANGEBASIS5GL_HPP_ */
