@@ -1,5 +1,14 @@
+
+set( SHIVA_ENABLE_UNIT_TESTS    OFF CACHE BOOL "" FORCE )
+set( SHIVA_ENABLE_BENCHMARKS    OFF CACHE BOOL "" FORCE )
+set( SHIVA_ENABLE_EXAMPLES      OFF CACHE BOOL "" FORCE )
+set( SHIVA_ENABLE_BLT           OFF CACHE BOOL "" FORCE )
+set( SHIVA_ENABLE_CAMP          OFF CACHE BOOL "" FORCE )
+set( SHIVA_ENABLE_BOUNDS_CHECKS OFF CACHE BOOL "" FORCE )
+
+
 add_subdirectory(Shiva)
 
-shiva_add_code_checks( PREFIX SEMKernels
-                       EXCLUDES "Shiva/*" )
+
+
 add_subdirectory(finiteElement)
