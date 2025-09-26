@@ -1,7 +1,7 @@
 
   set( finiteElement_headers
          geos/SEMQkGLIntegralsGeos.hpp
-         shiva/SEMQkGLIntegralsShiva.hpp
+        # shiva/SEMQkGLIntegralsShiva.hpp
       )
 
 set( finiteElement_dependencies
