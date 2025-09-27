@@ -24,7 +24,7 @@ class Qk_Hexahedron_Lagrange_GaussLobatto final
 {
 public:
 
-  constexpr static bool isClassic = false;
+  constexpr static bool isShiva = false;
 
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
@@ -44,12 +44,40 @@ public:
   /// The number of quadrature points per element.
   constexpr static int numQuadraturePoints = numNodes;
 
-  struct PrecomputedData
-  {};
+  struct TransformType
+  {
+    float data[8][3];
+  };
 
-  PROXY_HOST_DEVICE
-  static void init( PrecomputedData & )
-  {}
+
+  template< typename MESH_TYPE >
+  static constexpr inline
+  SEMKERNELS_HOST_DEVICE
+  TransformType
+  gatherCoordinates( const int & elementNumber,
+                     const MESH_TYPE & mesh  )
+  {
+    TransformType transformData;
+
+    int I = 0;
+    int nodes_corner[2] = {0, mesh.getOrder()};
+    for (int k : nodes_corner)
+    {
+      for (int j : nodes_corner)
+      {
+        for (int i : nodes_corner)
+        {
+          int nodeIdx = mesh.globalNodeIndex(elementNumber, i, j, k);
+          transformData.data[I][0] = mesh.nodeCoord(nodeIdx, 0);
+          transformData.data[I][1] = mesh.nodeCoord(nodeIdx, 1);
+          transformData.data[I][2] = mesh.nodeCoord(nodeIdx, 2);
+          I++;
+        }
+      }
+    }
+    return transformData;
+  }
+
 
   /**
    * @brief The linear index associated to the given one-dimensional indices in the three directions
@@ -447,7 +475,7 @@ public:
    */
   template< typename FUNC >
   PROXY_HOST_DEVICE
-  static void computeMassTerm( real_t const (&X)[8][3], FUNC && func );
+  static void computeMassTerm( TransformType const & transformData, FUNC && func );
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
@@ -489,7 +517,7 @@ public:
    */
   template< typename FUNC >
   PROXY_HOST_DEVICE
-  static void computeStiffnessTerm( real_t const (&X)[8][3],
+  static void computeStiffnessTerm( TransformType const & transformData,
                                     FUNC && func );
 
 /**
@@ -945,7 +973,7 @@ template< typename FUNC >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMassTerm( real_t const (&X)[8][3], FUNC && func )
+computeMassTerm( TransformType const & transformData, FUNC && func )
 {
     constexpr int N = num1dNodes;
     triple_loop<N,N,N>([&](auto const icqa, auto const icqb, auto const icqc)
@@ -956,6 +984,7 @@ computeMassTerm( real_t const (&X)[8][3], FUNC && func )
       constexpr int q = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc );
       constexpr real_t w3D = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
       real_t J[3][3] = {{0}};
+      float const (&X)[8][3] = transformData.data;
       jacobianTransformation( qa, qb, qc, X, J );
       real_t val=std::abs( determinant( J ) )*w3D;
       func(q,val);
@@ -1064,7 +1093,7 @@ template< typename FUNC >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeStiffnessTerm( real_t const (&X)[8][3],
+computeStiffnessTerm( TransformType const & transformData,
                       FUNC && func )
 {
 
@@ -1075,6 +1104,7 @@ computeStiffnessTerm( real_t const (&X)[8][3],
       constexpr int qc = decltype(icqc)::value;
       real_t B[6] = {0};
       real_t J[3][3] = {{0}};
+      float const (&X)[8][3] = transformData.data;
       computeBMatrix( qa, qb, qc, X, J, B );
       computeGradPhiBGradPhi<num1dNodes,qa,qb,qc>(B, func );
 
