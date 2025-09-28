@@ -51,21 +51,19 @@ public:
 
 
   template< typename MESH_TYPE >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  TransformType
+  static constexpr
+  PROXY_HOST_DEVICE
+  void
   gatherCoordinates( const int & elementNumber,
-                     const MESH_TYPE & mesh  )
+                     const MESH_TYPE & mesh, 
+                     TransformType & transformData  )
   {
-    TransformType transformData;
-
     int I = 0;
-    int nodes_corner[2] = {0, mesh.getOrder()};
-    for (int k : nodes_corner)
+    for (int k = 0; k < 2; ++k)
     {
-      for (int j : nodes_corner)
+      for (int j = 0; j < 2; ++j)
       {
-        for (int i : nodes_corner)
+        for (int i=0; i<2; ++i)
         {
           int nodeIdx = mesh.globalNodeIndex(elementNumber, i, j, k);
           transformData.data[I][0] = mesh.nodeCoord(nodeIdx, 0);
@@ -75,7 +73,6 @@ public:
         }
       }
     }
-    return transformData;
   }
 
 

@@ -49,13 +49,13 @@ public:
 
 
   template< typename MESH_TYPE >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  TransformType
+  static constexpr
+  PROXY_HOST_DEVICE
+  void
   gatherCoordinates( const int & elementNumber,
-                     const MESH_TYPE & mesh  )
+                     const MESH_TYPE & mesh,
+                     TransformType & trilinearCell )
   {
-    TransformType trilinearCell;
     typename TransformType::DataType & cellCoordData = trilinearCell.getData();
 
     for ( int k = 0; k < 2; ++k )
@@ -72,7 +72,6 @@ public:
         }
       }
     }
-    return trilinearCell;
   }
 
 
