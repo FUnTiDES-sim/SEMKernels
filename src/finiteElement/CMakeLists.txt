@@ -1,6 +1,6 @@
 
   set( finiteElement_headers
-         geos/SEMQkGLIntegralsGeos.hpp
+    makutu/SEMQkGLIntegralsGeos.hpp
         # shiva/SEMQkGLIntegralsShiva.hpp
       )
 
