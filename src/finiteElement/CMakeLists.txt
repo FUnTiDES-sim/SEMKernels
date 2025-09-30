@@ -1,9 +1,4 @@
 
-  set( finiteElement_headers
-    makutu/SEMQkGLIntegralsGeos.hpp
-        # shiva/SEMQkGLIntegralsShiva.hpp
-      )
-
 set( finiteElement_dependencies
      shiva
      )
