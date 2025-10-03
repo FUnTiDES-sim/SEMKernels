@@ -58,17 +58,24 @@ public:
   {
     typename TransformType::DataType & cellCoordData = trilinearCell.getData();
 
+    int nodeIJK[3] = { 0, 0, 0 };
+
     for ( int k = 0; k < 2; ++k )
     {
+      nodeIJK[2] = elementNumber[2] + k;
       for ( int j = 0; j < 2; ++j )
       {
+        nodeIJK[1] = elementNumber[1] + j;
         for ( int i = 0; i < 2; ++i )
         {
+          nodeIJK[0] = elementNumber[0] + i;
           int const li = linearIndex<1>( i, j, k );
           int const nodeIdx = mesh.globalNodeIndex(elementNumber, i, j, k);
-          cellCoordData( i, j, k, 0 ) = mesh.nodeCoord(nodeIdx, 0);
-          cellCoordData( i, j, k, 1 ) = mesh.nodeCoord(nodeIdx, 1);
-          cellCoordData( i, j, k, 2 ) = mesh.nodeCoord(nodeIdx, 2);
+          typename TransformType::DataType::value_type * const pData = &(cellCoordData( i, j, k, 0 ));
+          mesh.vertexCoords( nodeIJK, pData );
+          // cellCoordData( i, j, k, 0 ) = mesh.nodeCoord(nodeIdx, 0);
+          // cellCoordData( i, j, k, 1 ) = mesh.nodeCoord(nodeIdx, 1);
+          // cellCoordData( i, j, k, 2 ) = mesh.nodeCoord(nodeIdx, 2);
         }
       }
     }
