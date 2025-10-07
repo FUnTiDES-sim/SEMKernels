@@ -19,9 +19,21 @@ static constexpr inline
 SEMKERNELS_HOST_DEVICE
 typename T::value_type determinant( T const & m )
 {
-  return  + m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
-          - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
-          + m( 0, 2 ) * ( m( 1, 0 ) * m( 2, 1 ) - m( 2, 0 ) * m( 1, 1 ) );
+  if constexpr ( T::rank() ==2 )
+  {
+    return  + m( 0, 0 ) * ( m( 1, 1 ) * m( 2, 2 ) - m( 2, 1 ) * m( 1, 2 ) )
+            - m( 0, 1 ) * ( m( 1, 0 ) * m( 2, 2 ) - m( 2, 0 ) * m( 1, 2 ) )
+            + m( 0, 2 ) * ( m( 1, 0 ) * m( 2, 1 ) - m( 2, 0 ) * m( 1, 1 ) );
+  }
+  else if constexpr ( T::rank() ==1 )
+  {
+    return m(0) * m(1) * m(2);
+  }
+  else
+  {
+    static_assert(T::rank() <=2, "determinant only implemented for rank 1 or 2 arrays");
+    return T::value_type(0);
+  }
 }
 
 
@@ -191,11 +203,26 @@ SEMKERNELS_HOST_DEVICE
 void computeB( T const & J,
                typename T::value_type (&B)[6] )
 {
-  B[0] = ( J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 ) );
-  B[1] = ( J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 ) );
-  B[2] = ( J( 0, 2 ) * J( 0, 2 ) + J( 1, 2 ) * J( 1, 2 ) + J( 2, 2 ) * J( 2, 2 ) );
-  B[3] = ( J( 0, 1 ) * J( 0, 2 ) + J( 1, 1 ) * J( 1, 2 ) + J( 2, 1 ) * J( 2, 2 ) );
-  B[4] = ( J( 0, 0 ) * J( 0, 2 ) + J( 1, 0 ) * J( 1, 2 ) + J( 2, 0 ) * J( 2, 2 ) );
-  B[5] = ( J( 0, 0 ) * J( 0, 1 ) + J( 1, 0 ) * J( 1, 1 ) + J( 2, 0 ) * J( 2, 1 ) );
-  symInvert( B );
+  if constexpr ( T::rank() == 2 )
+  {
+    B[0] = ( J( 0, 0 ) * J( 0, 0 ) + J( 1, 0 ) * J( 1, 0 ) + J( 2, 0 ) * J( 2, 0 ) );
+    B[1] = ( J( 0, 1 ) * J( 0, 1 ) + J( 1, 1 ) * J( 1, 1 ) + J( 2, 1 ) * J( 2, 1 ) );
+    B[2] = ( J( 0, 2 ) * J( 0, 2 ) + J( 1, 2 ) * J( 1, 2 ) + J( 2, 2 ) * J( 2, 2 ) );
+    B[3] = ( J( 0, 1 ) * J( 0, 2 ) + J( 1, 1 ) * J( 1, 2 ) + J( 2, 1 ) * J( 2, 2 ) );
+    B[4] = ( J( 0, 0 ) * J( 0, 2 ) + J( 1, 0 ) * J( 1, 2 ) + J( 2, 0 ) * J( 2, 2 ) );
+    B[5] = ( J( 0, 0 ) * J( 0, 1 ) + J( 1, 0 ) * J( 1, 1 ) + J( 2, 0 ) * J( 2, 1 ) );
+    symInvert( B );
+  }
+  else
+  {
+    B[0] = ( J(0) * J(0) );
+    B[1] = ( J(1) * J(1) );
+    B[2] = ( J(2) * J(2) );
+    B[3] = 0;
+    B[4] = 0;
+    B[5] = 0;
+    B[0] = 1.0 / B[0];
+    B[1] = 1.0 / B[1];
+    B[2] = 1.0 / B[2];
+   }
 }

@@ -9,6 +9,7 @@
 #include "shiva/geometry/shapes/NCube.hpp"
 #include "shiva/geometry/shapes/InterpolatedShape.hpp"
 #include "shiva/geometry/mapping/LinearTransform.hpp"
+#include "shiva/geometry/mapping/Scaling.hpp"
 #include "shiva/common/ShivaMacros.hpp"
 #include "shiva/common/pmpl.hpp"
 #include "shiva/common/types.hpp"
@@ -56,28 +57,36 @@ public:
                      const MESH_TYPE & mesh,
                      TransformType & trilinearCell )
   {
+    // this can either be a single h, (hx,hy,hz), or vertex coordinates
     typename TransformType::DataType & cellCoordData = trilinearCell.getData();
 
-    int nodeIJK[3] = { 0, 0, 0 };
+    typename MESH_TYPE::IndexType elementIndex;
+    mesh.elementIndex( elementNumber, elementIndex );
 
-    for ( int k = 0; k < 2; ++k )
+    if constexpr ( TransformType::jacobianIsConstInCell()==true )
     {
-      nodeIJK[2] = elementNumber[2] + k;
-      for ( int j = 0; j < 2; ++j )
+      mesh.gatherShapeData( elementIndex, [&cellCoordData]( tfloat const hx, 
+                                                                  tfloat const hy, 
+                                                                  tfloat const hz ) 
       {
-        nodeIJK[1] = elementNumber[1] + j;
-        for ( int i = 0; i < 2; ++i )
-        {
-          nodeIJK[0] = elementNumber[0] + i;
-          int const li = linearIndex<1>( i, j, k );
-          int const nodeIdx = mesh.globalNodeIndex(elementNumber, i, j, k);
-          typename TransformType::DataType::value_type * const pData = &(cellCoordData( i, j, k, 0 ));
-          mesh.vertexCoords( nodeIJK, pData );
-          // cellCoordData( i, j, k, 0 ) = mesh.nodeCoord(nodeIdx, 0);
-          // cellCoordData( i, j, k, 1 ) = mesh.nodeCoord(nodeIdx, 1);
-          // cellCoordData( i, j, k, 2 ) = mesh.nodeCoord(nodeIdx, 2);
-        }
-      }
+        cellCoordData[0] = hx;
+        cellCoordData[1] = hy;
+        cellCoordData[2] = hz;
+      } );
+    }
+    else
+    {
+      mesh.gatherShapeData( elementIndex, [&cellCoordData]( int const i,
+                                                             int const j,
+                                                             int const k,
+                                                             tfloat const x,
+                                                             tfloat const y,
+                                                             tfloat const z ) 
+      {
+        cellCoordData( i, j, k, 0 ) = x;
+        cellCoordData( i, j, k, 1 ) = y;
+        cellCoordData( i, j, k, 2 ) = z;
+      } );
     }
   }
 
