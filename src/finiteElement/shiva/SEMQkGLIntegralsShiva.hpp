@@ -205,31 +205,5 @@ public:
 
 
 
-  // /**
-  //  * @brief compute  mass Matrix stiffnessVector.
-  //  */
-  // // template< typename ARRAY_REAL_VIEW >
-  // static constexpr inline
-  // SEMKERNELS_HOST_DEVICE
-  // void computeMassMatrixAndStiffnessVector( const int & elementNumber,
-  //                                           const int & nPointsPerElement,
-  //                                           const float X[8][3],
-  //                                           PrecomputedData const & precomputedData,
-  //                                           float massMatrixLocal[],
-  //                                           float pnLocal[],
-  //                                           float Y[] )
-  // {
-  //   TransformType trilinearCell;
-  //   typename TransformType::DataType & cellCoordData = trilinearCell.getData();
-
-  //   gatherCoordinates( elementNumber,
-  //                      X,
-  //                      cellCoordData );
-
-  //   computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val )
-  //   {
-  //     Y[i] = Y[i] + val * pnLocal[j];
-  //   } );
-  // }
 
 };
