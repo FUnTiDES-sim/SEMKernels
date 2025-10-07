@@ -1,6 +1,12 @@
 
   set( finiteElement_headers
-         geos/SEMQkGLIntegralsGeos.hpp
+         makutu/LagrangeBasis1.hpp
+         makutu/LagrangeBasis2.hpp
+         makutu/LagrangeBasis3GL.hpp
+         makutu/LagrangeBasis4GL.hpp
+         makutu/LagrangeBasis5GL.hpp
+         makutu/Qk_Hexahedron_Lagrange_GaussLobatto.hpp
+         makutu/tensorops.hpp
          shiva/SEMQkGLIntegralsShiva.hpp
       )
 

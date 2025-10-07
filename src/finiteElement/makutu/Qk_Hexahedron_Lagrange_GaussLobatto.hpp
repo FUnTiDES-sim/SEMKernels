@@ -609,7 +609,6 @@ private:
    */
   template< typename FUNC, typename ... PARAMS >
 
-  // GEOS_FORCE_INLINE
   PROXY_HOST_DEVICE
   static void supportLoop( int const q,
                            FUNC && func,
@@ -856,7 +855,6 @@ jacobianTransformation( real_t const (&coords)[3],
                                              real_t const (&X)[numNodes][3],
                                              real_t (& J)[3][3] )
   {
-    // real_t const * const GEOS_RESTRICT Xnode = X[nodeIndex];
     real_t const *Xnode = X[nodeIndex];
     for( int i = 0; i < 3; ++i )
     {
@@ -1207,7 +1205,6 @@ applyTransformationToParentGradients( real_t const (&coords)[3],
 
 template< typename GL_BASIS >
 
-// GEOS_FORCE_INLINE
   PROXY_HOST_DEVICE
 real_t
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
@@ -1227,7 +1224,6 @@ transformedQuadratureWeight( int const q,
 
 template< typename GL_BASIS >
 
-// GEOS_FORCE_INLINE
   PROXY_HOST_DEVICE
 void Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 symmetricGradient( int const q,
