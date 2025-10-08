@@ -1011,8 +1011,7 @@ template< int N, int qa, int qb, int qc, typename FUNC >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeGradPhiBGradPhi(
-                        real_t const (&B)[6],
+computeGradPhiBGradPhi( real_t const (&B)[6],
                         FUNC && func )
 {
 
@@ -1038,11 +1037,11 @@ computeGradPhiBGradPhi(
        const real_t gjc = basisGradientAt( j, qc );
        // diagonal terms
        const real_t w0 = w * gia * gja;
-       func( ibc, jbc, w0 * B[0] );
+       func( qa, qb, qc, ibc, jbc, w0 * B[0] );
        const real_t w1 = w * gib * gjb;
-       func( aic, ajc, w1 * B[1] );
+       func( qa, qb, qc, aic, ajc, w1 * B[1] );
        const real_t w2 = w * gic * gjc;
-       func( abi, abj, w2 * B[2] );
+       func( qa, qb , qc, abi, abj, w2 * B[2] );
        // off-diagonal terms
        // const real_t w3 = w * gib * gjc;
        // func( aic, abj, w3 * B[3] );
