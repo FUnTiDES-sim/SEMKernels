@@ -991,19 +991,41 @@ computeBMatrix( int const qa,
                 real_t (& J)[3][3],
                 real_t (& B)[6] )
 {
-  jacobianTransformation( qa, qb, qc, X, J );
-  real_t const detJ = determinant( J );
+  // jacobianTransformation( qa, qb, qc, X, J );
+  // real_t const detJ = determinant( J );
 
-  // compute J^T.J/det(J), using Voigt notation for B
-  B[0] = (J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0])/detJ;
-  B[1] = (J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1])/detJ;
-  B[2] = (J[0][2]*J[0][2]+J[1][2]*J[1][2]+J[2][2]*J[2][2])/detJ;
-  B[3] = (J[0][1]*J[0][2]+J[1][1]*J[1][2]+J[2][1]*J[2][2])/detJ;
-  B[4] = (J[0][0]*J[0][2]+J[1][0]*J[1][2]+J[2][0]*J[2][2])/detJ;
-  B[5] = (J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1])/detJ;
+  // // compute J^T.J/det(J), using Voigt notation for B
+  // B[0] = (J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0])/detJ;
+  // B[1] = (J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1])/detJ;
+  // B[2] = (J[0][2]*J[0][2]+J[1][2]*J[1][2]+J[2][2]*J[2][2])/detJ;
+  // B[3] = (J[0][1]*J[0][2]+J[1][1]*J[1][2]+J[2][1]*J[2][2])/detJ;
+  // B[4] = (J[0][0]*J[0][2]+J[1][0]*J[1][2]+J[2][0]*J[2][2])/detJ;
+  // B[5] = (J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1])/detJ;
 
-  // compute detJ*J^{-1}J^{-T}
-  symInvert( B );
+  // // compute detJ*J^{-1}J^{-T}
+  // symInvert( B );
+      jacobianTransformation(qa, qb, qc, X, J);
+
+   
+    const real_t detJ = determinant(J);
+    const real_t invDetJ = static_cast<real_t>(1.0)/detJ;
+
+   
+    const real_t j00 = J[0][0], j01 = J[0][1], j02 = J[0][2];
+    const real_t j10 = J[1][0], j11 = J[1][1], j12 = J[1][2];
+    const real_t j20 = J[2][0], j21 = J[2][1], j22 = J[2][2];
+
+
+    B[0] = (j00*j00 + j10*j10 + j20*j20) * invDetJ; // xx
+    B[1] = (j01*j01 + j11*j11 + j21*j21) * invDetJ; // yy
+    B[2] = (j02*j02 + j12*j12 + j22*j22) * invDetJ; // zz
+    B[3] = (j01*j02 + j11*j12 + j21*j22) * invDetJ; // yz
+    B[4] = (j00*j02 + j10*j12 + j20*j22) * invDetJ; // xz
+    B[5] = (j00*j01 + j10*j11 + j20*j21) * invDetJ; // xy
+
+   
+    symInvert(B);
+
 }
 
 template< typename GL_BASIS >
@@ -1065,14 +1087,14 @@ Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeStiffnessTerm( real_t const (&X)[8][3],
                       FUNC && func )
 {
-
+  
    triple_loop<num1dNodes,num1dNodes,num1dNodes>([&](auto const icqa, auto const icqb, auto const icqc)
    {
       constexpr int qa = decltype(icqa)::value;
       constexpr int qb = decltype(icqb)::value;
       constexpr int qc = decltype(icqc)::value;
-      real_t B[6] = {0};
-      real_t J[3][3] = {{0}};
+      real_t B[6]={0};
+      real_t J[3][3]={{0}};
       computeBMatrix( qa, qb, qc, X, J, B );
       computeGradPhiBGradPhi<num1dNodes,qa,qb,qc>(B, func );
 

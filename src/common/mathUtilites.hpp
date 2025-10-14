@@ -152,20 +152,48 @@ void symInvert( T (&dstSymMatrix)[6], T const (&srcSymMatrix)[6] )
  * @return The determinant.
  * @note @p symMatrix can contain integers but @p dstMatrix must contain floating point values.
  */
-template< typename T >
-static inline
-SEMKERNELS_HOST_DEVICE
-void symInvert( T (&symMatrix)[6] )
-{
-  T temp[ 6 ];
-  symInvert( temp, symMatrix );
+// template< typename T >
+// static inline
+// SEMKERNELS_HOST_DEVICE
+// void symInvert( T (&symMatrix)[6] )
+// {
+//   T temp[ 6 ];
+//   symInvert( temp, symMatrix );
 
-  symMatrix[0] = temp[0];
-  symMatrix[1] = temp[1];
-  symMatrix[2] = temp[2];
-  symMatrix[3] = temp[3];
-  symMatrix[4] = temp[4];
-  symMatrix[5] = temp[5];
+//   symMatrix[0] = temp[0];
+//   symMatrix[1] = temp[1];
+//   symMatrix[2] = temp[2];
+//   symMatrix[3] = temp[3];
+//   symMatrix[4] = temp[4];
+//   symMatrix[5] = temp[5];
+// }
+template<typename T>
+static inline SEMKERNELS_HOST_DEVICE
+void symInvert(T (&B)[6]) noexcept
+{
+    // Voigt order: [xx, yy, zz, yz, xz, xy]
+    const T Bxx = B[0];
+    const T Byy = B[1];
+    const T Bzz = B[2];
+    const T Byz = B[3];
+    const T Bxz = B[4];
+    const T Bxy = B[5];
+
+    // Calcul intermédiaire pour le determinant
+    T dst0 = Byy*Bzz - Byz*Byz; // dst[0]
+    T dst5 = Bxz*Byz - Bxy*Bzz; // dst[5]
+    T dst4 = Bxy*Byz - Bxz*Byy; // dst[4]
+
+    T det = Bxx*dst0 + Bxy*dst5 + Bxz*dst4;
+    T invDet = static_cast<T>(1.0)/det;
+
+    B[0] = dst0 * invDet;
+    B[5] = dst5 * invDet;
+    B[4] = dst4 * invDet;
+
+    B[1] = (Bxx*Bzz - Bxz*Bxz) * invDet;
+    B[3] = (Bxy*Bxz - Bxx*Byz) * invDet;
+    B[2] = (Bxx*Byy - Bxy*Bxy) * invDet;
 }
 
 
