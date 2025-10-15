@@ -1044,15 +1044,15 @@ computeGradPhiBGradPhi( real_t const (&B)[6],
        const real_t w2 = w * gic * gjc;
        func( qa, qb , qc, abi, abj, w2 * B[2] );
        // off-diagonal terms
-       // const real_t w3 = w * gib * gjc;
-       // func( aic, abj, w3 * B[3] );
-       // func( abj, aic, w3 * B[3] );
-       // const real_t w4 = w * gia * gjc;
-       // func( ibc, abj, w4 * B[4] );
-       // func( abj, ibc, w4 * B[4] );
-       // const real_t w5 = w * gia * gjb;
-       // func( ibc, ajc, w5 * B[5] );
-       // func( ajc, ibc, w5 * B[5] );
+       const real_t w3 = w * gib * gjc;
+       func( qa, qb, qc, aic, abj, w3 * B[3] );
+       func( qa, qb, qc, abj, aic, w3 * B[3] );
+       const real_t w4 = w * gia * gjc;
+       func( qa, qb, qc, ibc, abj, w4 * B[4] );
+       func( qa, qb, qc, abj, ibc, w4 * B[4] );
+       const real_t w5 = w * gia * gjb;
+       func( qa, qb, qc, ibc, ajc, w5 * B[5] );
+       func( qa, qb, qc, ajc, ibc, w5 * B[5] );
      }
    }
   }
