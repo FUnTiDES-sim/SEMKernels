@@ -109,21 +109,21 @@ public:
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
         // diagonal terms
         constexpr gfloat w0 = w * gia * gja;
-        func( ibc, jbc, w0 * B[0] );
+        func( qa, qb, qc, ibc, jbc, w0 * B[0] );
         constexpr gfloat w1 = w * gib * gjb;
-        func( aic, ajc, w1 * B[1] );
+        func( qa, qb, qc, aic, ajc, w1 * B[1] );
         constexpr gfloat w2 = w * gic * gjc;
-        func( abi, abj, w2 * B[2] );
+        func( qa, qb, qc, abi, abj, w2 * B[2] );
         // off-diagonal terms
-        // const gfloat w3 = w * gib * gjc;
-        // func( aic, abj, w3 * B[3] );
-        // func( abj, aic, w3 * B[3] );
-        // const gfloat w4 = w * gia * gjc;
-        // func( ibc, abj, w4 * B[4] );
-        // func( abj, ibc, w4 * B[4] );
-        // const gfloat w5 = w * gia * gjb;
-        // func( ibc, ajc, w5 * B[5] );
-        // func( ajc, ibc, w5 * B[5] );
+        constexpr gfloat w3 = w * gib * gjc;
+        func( qa, qb, qc, aic, abj, w3 * B[3] );
+        func( qa, qb, qc, abj, aic, w3 * B[3] );
+        constexpr gfloat w4 = w * gia * gjc;
+        func( qa, qb, qc, ibc, abj, w4 * B[4] );
+        func( qa, qb, qc, abj, ibc, w4 * B[4] );
+        constexpr gfloat w5 = w * gia * gjb;
+        func( qa, qb, qc, ibc, ajc, w5 * B[5] );
+        func( qa, qb, qc, ajc, ibc, w5 * B[5] );
       } );
     } );
   }
