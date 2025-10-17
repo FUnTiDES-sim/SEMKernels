@@ -31,7 +31,7 @@ template< int ORDER,
 class SEMQkGLIntegralsShiva
 {
 public:
-  constexpr static bool isClassic = false;
+  constexpr static bool isShiva = true;
 
   static constexpr int order = ORDER;
   static constexpr int numSupportPoints1d = ORDER + 1;
@@ -46,12 +46,34 @@ public:
   using quadrature = QuadratureGaussLobatto< gfloat, numSupportPoints1d >;
   using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
-  struct PrecomputedData
-  {};
 
+
+  template< typename MESH_TYPE >
+  static constexpr
   PROXY_HOST_DEVICE
-  static void init( PrecomputedData & )
-  {}
+  void
+  gatherCoordinates( const int & elementNumber,
+                     const MESH_TYPE & mesh,
+                     TransformType & trilinearCell )
+  {
+    typename TransformType::DataType & cellCoordData = trilinearCell.getData();
+
+    for ( int k = 0; k < 2; ++k )
+    {
+      for ( int j = 0; j < 2; ++j )
+      {
+        for ( int i = 0; i < 2; ++i )
+        {
+          int const li = linearIndex<1>( i, j, k );
+          int const nodeIdx = mesh.globalNodeIndex(elementNumber, i, j, k);
+          cellCoordData( i, j, k, 0 ) = mesh.nodeCoord(nodeIdx, 0);
+          cellCoordData( i, j, k, 1 ) = mesh.nodeCoord(nodeIdx, 1);
+          cellCoordData( i, j, k, 2 ) = mesh.nodeCoord(nodeIdx, 2);
+        }
+      }
+    }
+  }
+
 
   template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
@@ -87,33 +109,31 @@ public:
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
         // diagonal terms
         constexpr gfloat w0 = w * gia * gja;
-        func( ibc, jbc, w0 * B[0] );
+        func( qa, qb, qc, ibc, jbc, w0 * B[0] );
         constexpr gfloat w1 = w * gib * gjb;
-        func( aic, ajc, w1 * B[1] );
+        func( qa, qb, qc, aic, ajc, w1 * B[1] );
         constexpr gfloat w2 = w * gic * gjc;
-        func( abi, abj, w2 * B[2] );
+        func( qa, qb, qc, abi, abj, w2 * B[2] );
         // off-diagonal terms
-        // const gfloat w3 = w * gib * gjc;
-        // func( aic, abj, w3 * B[3] );
-        // func( abj, aic, w3 * B[3] );
-        // const gfloat w4 = w * gia * gjc;
-        // func( ibc, abj, w4 * B[4] );
-        // func( abj, ibc, w4 * B[4] );
-        // const gfloat w5 = w * gia * gjb;
-        // func( ibc, ajc, w5 * B[5] );
-        // func( ajc, ibc, w5 * B[5] );
+        constexpr gfloat w3 = w * gib * gjc;
+        func( qa, qb, qc, aic, abj, w3 * B[3] );
+        func( qa, qb, qc, abj, aic, w3 * B[3] );
+        constexpr gfloat w4 = w * gia * gjc;
+        func( qa, qb, qc, ibc, abj, w4 * B[4] );
+        func( qa, qb, qc, abj, ibc, w4 * B[4] );
+        constexpr gfloat w5 = w * gia * gjb;
+        func( qa, qb, qc, ibc, ajc, w5 * B[5] );
+        func( qa, qb, qc, ajc, ibc, w5 * B[5] );
       } );
     } );
   }
 
 
-
   template< typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
-  void computeStiffnessAndMassTerm( TransformType const & trilinearCell,
-                             float massMatrix[],
-                             FUNC && func )
+  void computeMassTerm( TransformType const & trilinearCell,
+                        FUNC && func )
   {
 
     // this is a compile time quadrature loop over each tensor direction
@@ -138,12 +158,38 @@ public:
       constexpr tfloat w3D = quadrature::template weight< qa >() *
                              quadrature::template weight< qb >() *
                              quadrature::template weight< qc >();
-      massMatrix[q] = w3D * detJ;
+      func( q, w3D * detJ );
+    } );
+  }
 
+
+
+  template< typename FUNC >
+  static constexpr inline
+  SEMKERNELS_HOST_DEVICE
+  void computeStiffnessTerm( TransformType const & trilinearCell,
+                             FUNC && func )
+  {
+
+    // this is a compile time quadrature loop over each tensor direction
+    forNestedSequence< ORDER + 1,
+                       ORDER + 1,
+                       ORDER + 1 >( [&] ( auto const icqa,
+                                          auto const icqb,
+                                          auto const icqc )
+    {
+      constexpr int qa = decltype(icqa)::value;
+      constexpr int qb = decltype(icqb)::value;
+      constexpr int qc = decltype(icqc)::value;
+
+      JacobianType J{ tfloat(0.0) };
+
+      shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
+
+      tfloat const detJ = determinant( J );
+      
       tfloat B[6] = {0};
       computeB( J, B );
-
-//      printf( "B(%d,%d,%d) = | %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e |\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
 
       // compute detJ*J^{-1}J^{-T}
       for( int i = 0; i < 6; ++i )
@@ -157,57 +203,7 @@ public:
   }
 
 
-  // template< typename ARRAY_REAL_VIEW, typename LOCAL_ARRAY >
-  template< typename LOCAL_ARRAY >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  void
-  gatherCoordinates( const int & elementNumber,
-                     const float X[8][3],
-                     LOCAL_ARRAY & cellData )
-  {
-    int corner_id = 0;
-    for ( int k = 0; k < 2; ++k )
-    {
-      for ( int j = 0; j < 2; ++j )
-      {
-        for ( int i = 0; i < 2; ++i )
-        {
-          int const l = linearIndex<1>( i, j, k );
-          cellData( i, j, k, 0 ) = X[corner_id][0];
-          cellData( i, j, k, 1 ) = X[corner_id][1];
-          cellData( i, j, k, 2 ) = X[corner_id][2];
-          corner_id++;
-        }
-      }
-    }
-  }
 
-  /**
-   * @brief compute  mass Matrix stiffnessVector.
-   */
-  // template< typename ARRAY_REAL_VIEW >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  void computeMassMatrixAndStiffnessVector( const int & elementNumber,
-                                            const int & nPointsPerElement,
-                                            const float X[8][3],
-                                            PrecomputedData const & precomputedData,
-                                            float massMatrixLocal[],
-                                            float pnLocal[],
-                                            float Y[] )
-  {
-    TransformType trilinearCell;
-    typename TransformType::DataType & cellCoordData = trilinearCell.getData();
 
-    gatherCoordinates( elementNumber,
-                       X,
-                       cellCoordData );
-
-    computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val )
-    {
-      Y[i] = Y[i] + val * pnLocal[j];
-    } );
-  }
 
 };
