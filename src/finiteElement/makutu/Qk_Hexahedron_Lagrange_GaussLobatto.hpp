@@ -1019,14 +1019,15 @@ computeBMatrix( int const qa,
 {
   jacobianTransformation( qa, qb, qc, X, J );
   real_t const detJ = determinant( J );
+  real_t const invDetJ = 1.0 / detJ;
 
   // compute J^T.J/det(J), using Voigt notation for B
-  B[0] = (J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0])/detJ;
-  B[1] = (J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1])/detJ;
-  B[2] = (J[0][2]*J[0][2]+J[1][2]*J[1][2]+J[2][2]*J[2][2])/detJ;
-  B[3] = (J[0][1]*J[0][2]+J[1][1]*J[1][2]+J[2][1]*J[2][2])/detJ;
-  B[4] = (J[0][0]*J[0][2]+J[1][0]*J[1][2]+J[2][0]*J[2][2])/detJ;
-  B[5] = (J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1])/detJ;
+  B[0] = (J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0])*invDetJ;
+  B[1] = (J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1])*invDetJ;
+  B[2] = (J[0][2]*J[0][2]+J[1][2]*J[1][2]+J[2][2]*J[2][2])*invDetJ;
+  B[3] = (J[0][1]*J[0][2]+J[1][1]*J[1][2]+J[2][1]*J[2][2])*invDetJ;
+  B[4] = (J[0][0]*J[0][2]+J[1][0]*J[1][2]+J[2][0]*J[2][2])*invDetJ;
+  B[5] = (J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1])*invDetJ;
 
   // compute detJ*J^{-1}J^{-T}
   symInvert( B );
@@ -1037,8 +1038,7 @@ template< int N, int qa, int qb, int qc, typename FUNC >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeGradPhiBGradPhi(
-                        real_t const (&B)[6],
+computeGradPhiBGradPhi( real_t const (&B)[6],
                         FUNC && func )
 {
 
@@ -1064,21 +1064,21 @@ computeGradPhiBGradPhi(
        const real_t gjc = basisGradientAt( j, qc );
        // diagonal terms
        const real_t w0 = w * gia * gja;
-       func( ibc, jbc, w0 * B[0] );
+       func( qa, qb, qc, ibc, jbc, w0 * B[0] );
        const real_t w1 = w * gib * gjb;
-       func( aic, ajc, w1 * B[1] );
+       func( qa, qb, qc, aic, ajc, w1 * B[1] );
        const real_t w2 = w * gic * gjc;
-       func( abi, abj, w2 * B[2] );
+       func( qa, qb , qc, abi, abj, w2 * B[2] );
        // off-diagonal terms
-       // const real_t w3 = w * gib * gjc;
-       // func( aic, abj, w3 * B[3] );
-       // func( abj, aic, w3 * B[3] );
-       // const real_t w4 = w * gia * gjc;
-       // func( ibc, abj, w4 * B[4] );
-       // func( abj, ibc, w4 * B[4] );
-       // const real_t w5 = w * gia * gjb;
-       // func( ibc, ajc, w5 * B[5] );
-       // func( ajc, ibc, w5 * B[5] );
+       const real_t w3 = w * gib * gjc;
+       func( qa, qb, qc, aic, abj, w3 * B[3] );
+       func( qa, qb, qc, abj, aic, w3 * B[3] );
+       const real_t w4 = w * gia * gjc;
+       func( qa, qb, qc, ibc, abj, w4 * B[4] );
+       func( qa, qb, qc, abj, ibc, w4 * B[4] );
+       const real_t w5 = w * gia * gjb;
+       func( qa, qb, qc, ibc, ajc, w5 * B[5] );
+       func( qa, qb, qc, ajc, ibc, w5 * B[5] );
      }
    }
   }
