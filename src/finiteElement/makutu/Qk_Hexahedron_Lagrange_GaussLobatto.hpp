@@ -50,32 +50,6 @@ public:
   };
 
 
-  template< typename MESH_TYPE >
-  static constexpr
-  PROXY_HOST_DEVICE
-  void
-  gatherCoordinates( const int & elementNumber,
-                     const MESH_TYPE & mesh, 
-                     TransformType & transformData  )
-  {
-    int I = 0;
-    for (int k = 0; k < 2; ++k)
-    {
-      for (int j = 0; j < 2; ++j)
-      {
-        for (int i=0; i<2; ++i)
-        {
-          int nodeIdx = mesh.globalNodeIndex(elementNumber, i, j, k);
-          transformData.data[I][0] = mesh.nodeCoord(nodeIdx, 0);
-          transformData.data[I][1] = mesh.nodeCoord(nodeIdx, 1);
-          transformData.data[I][2] = mesh.nodeCoord(nodeIdx, 2);
-          I++;
-        }
-      }
-    }
-  }
-
-
   /**
    * @brief The linear index associated to the given one-dimensional indices in the three directions
    * @param qa The index in the first direction

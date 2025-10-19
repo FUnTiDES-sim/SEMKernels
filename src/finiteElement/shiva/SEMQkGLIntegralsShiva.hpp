@@ -47,34 +47,6 @@ public:
   using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
 
-
-  template< typename MESH_TYPE >
-  static constexpr
-  PROXY_HOST_DEVICE
-  void
-  gatherCoordinates( const int & elementNumber,
-                     const MESH_TYPE & mesh,
-                     TransformType & trilinearCell )
-  {
-    typename TransformType::DataType & cellCoordData = trilinearCell.getData();
-
-    for ( int k = 0; k < 2; ++k )
-    {
-      for ( int j = 0; j < 2; ++j )
-      {
-        for ( int i = 0; i < 2; ++i )
-        {
-          int const li = linearIndex<1>( i, j, k );
-          int const nodeIdx = mesh.globalNodeIndex(elementNumber, i, j, k);
-          cellCoordData( i, j, k, 0 ) = mesh.nodeCoord(nodeIdx, 0);
-          cellCoordData( i, j, k, 1 ) = mesh.nodeCoord(nodeIdx, 1);
-          cellCoordData( i, j, k, 2 ) = mesh.nodeCoord(nodeIdx, 2);
-        }
-      }
-    }
-  }
-
-
   template< int qa, int qb, int qc, typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
