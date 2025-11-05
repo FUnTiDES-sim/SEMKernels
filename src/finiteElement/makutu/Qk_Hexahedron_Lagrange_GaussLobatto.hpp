@@ -508,13 +508,19 @@ public:
                           real_t const (&B)[6],
                           FUNC && func );
 
-  /**
-   * @brief Computes the "Grad(Phi)*Grad(Phi)" coefficient of the stiffness term .
-   * @param qa The 1d quadrature point index in xi0 direction (0,1)
-   * @param qb The 1d quadrature point index in xi1 direction (0,1)
-   * @param qc The 1d quadrature point index in xi2 direction (0,1)
-   * @param func Callback function accepting nine parameters:qa, qb, qc,  i, j, R_ij, J, p and q
-   */  
+/** 
+ * @brief Computes the "Grad(Phi)*Grad(Phi)" coefficient of the stiffness term.
+ * @tparam qa The 1D quadrature point index in xi0 direction (0,1)
+ * @tparam qb The 1D quadrature point index in xi1 direction (0,1)
+ * @tparam qc The 1D quadrature point index in xi2 direction (0,1)
+ * @tparam FUNC1 First callback function type which takes four parameters: 
+ *               the three 1D Gauss-Lobatto point indices and the Jacobian matrix
+ * @tparam FUNC2 Second callback function type for processing computed gradient products to get R_ij
+ * @param[in] X Array of 8 nodal coordinates [node][dimension] defining the corner of the hexaedra
+ * @param[in,out] J Jacobian matrix [3][3] used for coordinate transformation computations
+ * @param[in] func1 First callback function invoked during gradient computation
+ * @param[in] func2 Second callback function invoked for gradient product processing
+ */
   template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
   static void 
@@ -523,11 +529,16 @@ public:
                                 FUNC1 && func1,
                                 FUNC2 && func2 );
 
-  /**
-   * @brief computes the non-zero contributions of the d.o.f. indexed by q to the
-   *   stiffness matrix R, i.e., the superposition matrix of first derivatives
-   *   of the shape functions.
-   */
+/**
+ * @brief Computes the non-zero contributions of the d.o.f. indexed by q to the
+ *        stiffness matrix R, i.e., the superposition matrix of first derivatives
+ *        of the shape functions.
+ * @tparam FUNC1 First callback function type invoked during Jacobian computation
+ * @tparam FUNC2 Second callback function type for processing stiffness contributions
+ * @param[in] X Array of 8 nodal coordinates [node][dimension] defining the hexahedral element geometry
+ * @param[in] func1 First callback function invoked for Jacobian-related operations
+ * @param[in] func2 Second callback function invoked to process computed stiffness matrix contributions
+ */
   template< typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
   static void
