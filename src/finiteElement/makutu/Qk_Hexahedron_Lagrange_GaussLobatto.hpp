@@ -507,21 +507,43 @@ public:
                           real_t const (&B)[6],
                           FUNC && func );
 
-  /**
-   * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
-   *   stiffness matrix R for the elastic case, i.e., the superposition matrix of first derivatives
-   *   of the shape functions. This callback returns the two indices indices i and j of matrix R and the value
-   *   R[i][j] associated to those two indices.
-   * @param q The quadrature point index
-   * @param X Array containing the coordinates of the support points.
-   * @param stiffnessVal Callback function accepting three parameters: i, j and R_ij
-   */
-  template< typename FUNC >
+/** 
+ * @brief Computes the "Grad(Phi)*Grad(Phi)" coefficient of the stiffness term.
+ * @tparam qa The 1D quadrature point index in xi0 direction (0,1)
+ * @tparam qb The 1D quadrature point index in xi1 direction (0,1)
+ * @tparam qc The 1D quadrature point index in xi2 direction (0,1)
+ * @tparam FUNC1 First callback function type which takes four parameters: 
+ *               the three 1D Gauss-Lobatto point indices and the Jacobian matrix
+ * @tparam FUNC2 Second callback function type for processing computed gradient products to get R_ij
+ * @param[in] X Array of 8 nodal coordinates [node][dimension] defining the corner of the hexaedra
+ * @param[in,out] J Jacobian matrix [3][3] used for coordinate transformation computations
+ * @param[in] func1 First callback function invoked during gradient computation
+ * @param[in] func2 Second callback function invoked for gradient product processing
+ */
+  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
-  static void computeFirstOrderStiffnessTerm( int const q,
-                                              real_t const (&X)[8][3],
-                                              FUNC && stiffnessVal );
+  static void 
+  computeGradPhiGradPhi( real_t const (&X)[8][3],
+                          real_t  (&J)[3][3],
+                                FUNC1 && func1,
+                                FUNC2 && func2 );
 
+/**
+ * @brief Computes the non-zero contributions of the d.o.f. indexed by q to the
+ *        stiffness matrix R, i.e., the superposition matrix of first derivatives
+ *        of the shape functions.
+ * @tparam FUNC1 First callback function type invoked during Jacobian computation
+ * @tparam FUNC2 Second callback function type for processing stiffness contributions
+ * @param[in] X Array of 8 nodal coordinates [node][dimension] defining the hexahedral element geometry
+ * @param[in] func1 First callback function invoked for Jacobian-related operations
+ * @param[in] func2 Second callback function invoked to process computed stiffness matrix contributions
+ */
+  template< typename FUNC1, typename FUNC2 >
+  PROXY_HOST_DEVICE
+  static void
+  computeStiffNessTermwithJac( real_t const (&X)[8][3],
+                               FUNC1 && func1,
+                               FUNC2 && func2 );
 
   /**
    * @brief Apply a Jacobian transformation matrix from the parent space to the
@@ -1081,21 +1103,38 @@ computeStiffnessTerm( TransformType const & transformData,
 }
 
 template< typename GL_BASIS >
-template< typename FUNC >
-
+template< typename FUNC1, typename FUNC2 >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeFirstOrderStiffnessTerm( int const q,
-                                real_t const (&X)[8][3],
-                                FUNC && func )
+computeStiffNessTermwithJac( real_t const (&X)[8][3],
+                             FUNC1 && func1,
+                             FUNC2 && func2 )
 {
-  int qa, qb, qc;
-  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
-  real_t J[3][3] = {{0}};
-  jacobianTransformation( qa, qb, qc, X, J );
+    triple_loop<num1dNodes,num1dNodes,num1dNodes>([&](auto const icqa, auto const icqb, auto const icqc)
+    {
+        constexpr int qa = decltype(icqa)::value;
+        constexpr int qb = decltype(icqb)::value;
+        constexpr int qc = decltype(icqc)::value;
+        real_t J[3][3] = {{0}};
+        jacobianTransformation( qa, qb, qc, X, J );
+        computeGradPhiGradPhi<qa,qb,qc>(X, J,func1, func2 );
+    });
+}
+
+template< typename GL_BASIS >
+template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
+PROXY_HOST_DEVICE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeGradPhiGradPhi( real_t const (&X)[8][3],
+                       real_t ( &J )[3][3],
+                       FUNC1 && func1,
+                       FUNC2 && func2 )
+{
   real_t const detJ = invert3x3( J );
   const real_t w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
+  func1( qa, qb, qc, J);
   for( int i=0; i<num1dNodes; i++ )
   {
     const int ibc = GL_BASIS::TensorProduct3D::linearIndex( i, qb, qc );
@@ -1114,21 +1153,30 @@ computeFirstOrderStiffnessTerm( int const q,
       const real_t gjc = basisGradientAt( j, qc );
       // diagonal terms
       const real_t w00 = w * gia * gja;
-      func( ibc, jbc, w00 * detJ, J, 0, 0 );
+      //func(qa, qb, qc,  ibc, jbc, w00 * detJ, J, 0, 0 );
+      func2(ibc, jbc, w00 * detJ,J, 0, 0 );
       const real_t w11 = w * gib * gjb;
-      func( aic, ajc, w11 * detJ, J, 1, 1 );
+      //func(qa, qb, qc, aic, ajc, w11 * detJ, J, 1, 1 );
+      func2(aic, ajc, w11 * detJ,J, 1, 1 );
       const real_t w22 = w * gic * gjc;
-      func( abi, abj, w22 * detJ, J, 2, 2 );
+      //func(qa, qb, qc, abi, abj, w22 * detJ, J, 2, 2 );
+      func2(abi, abj, w22 * detJ,J, 2, 2 );
       // off-diagonal terms
       const real_t w12 = w * gib * gjc;
-      func( aic, abj, w12 * detJ, J, 1, 2 );
-      func( abj, aic, w12 * detJ, J, 2, 1 );
+      //func(qa, qb, qc, aic, abj, w12 * detJ, J, 1, 2 );
+      //func(qa, qb, qc, abj, aic, w12 * detJ, J, 2, 1 );
+      func2(aic, abj, w12 * detJ,J, 1, 2 );
+      func2(abj, aic, w12 * detJ,J, 2, 1 );
       const real_t w02 = w * gia * gjc;
-      func( ibc, abj, w02 * detJ, J, 0, 2 );
-      func( abj, ibc, w02 * detJ, J, 2, 0 );
+      //func(qa, qb, qc, ibc, abj, w02 * detJ, J, 0, 2 );
+      //func(qa, qb, qc, abj, ibc, w02 * detJ, J, 2, 0 );
+      func2(ibc, abj, w02 * detJ,J, 0, 2 );
+      func2(abj, ibc, w02 * detJ,J, 2, 0 );
       const real_t w01 = w * gia * gjb;
-      func( ibc, ajc, w01 * detJ, J, 0, 1 );
-      func( ajc, ibc, w01 * detJ, J, 1, 0 );
+      //func(qa, qb, qc, ibc, ajc, w01 * detJ, J, 0, 1 );
+      //func(qa, qb, qc, ajc, ibc, w01 * detJ, J, 1, 0 );
+      func2(ibc, ajc, w01 * detJ,J, 0, 1 );
+      func2(ajc, ibc, w01 * detJ,J, 1, 0 );
     }
   }
 }
