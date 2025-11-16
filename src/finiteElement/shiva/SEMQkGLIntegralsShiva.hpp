@@ -101,6 +101,63 @@ public:
   }
 
 
+  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
+  static constexpr inline
+  SEMKERNELS_HOST_DEVICE
+  void
+  computeGradPhiGradPhi( JacobianType & J,
+                        FUNC1 && func1,
+                        FUNC2 && func2 )
+  {
+    real_t detJ;
+    shiva::mathUtilities::inverse( J, detJ );
+    func1( qa, qb, qc, *reinterpret_cast< real_t const (*)[3][3] >(J.data()) );
+    constexpr gfloat qcoords0 = quadrature::template coordinate< qa >();
+    constexpr gfloat qcoords1 = quadrature::template coordinate< qb >();
+    constexpr gfloat qcoords2 = quadrature::template coordinate< qc >();
+    constexpr gfloat w = quadrature::template weight< qa >() * quadrature::template weight< qb >() * quadrature::template weight< qc >();
+    forSequence< numSupportPoints1d >( [&] ( auto const ici )
+    {
+      constexpr int i = decltype(ici)::value;      
+      const int ibc = linearIndex<ORDER>( i, qb, qc );
+      const int aic = linearIndex<ORDER>( qa, i, qc );
+      const int abi = linearIndex<ORDER>( qa, qb, i );
+      const gfloat gia = basisFunction::template gradient< i >( qcoords0 );
+      const gfloat gib = basisFunction::template gradient< i >( qcoords1 );
+      const gfloat gic = basisFunction::template gradient< i >( qcoords2 );
+
+      forSequence< numSupportPoints1d >( [&] ( auto const icj )
+      {
+        constexpr int j = decltype(icj)::value;
+        const int jbc = linearIndex<ORDER>( j, qb, qc );
+        const int ajc = linearIndex<ORDER>( qa, j, qc );
+        const int abj = linearIndex<ORDER>( qa, qb, j );
+        const gfloat gja = basisFunction::template gradient< j >( qcoords0 );
+        const gfloat gjb = basisFunction::template gradient< j >( qcoords1 );
+        const gfloat gjc = basisFunction::template gradient< j >( qcoords2 );
+
+        // diagonal terms
+        const real_t w00 = w * gia * gja;
+        func2(ibc, jbc, w00 * detJ, 0, 0 );
+        const real_t w11 = w * gib * gjb;
+        func2(aic, ajc, w11 * detJ, 1, 1 );
+        const real_t w22 = w * gic * gjc;
+        func2(abi, abj, w22 * detJ, 2, 2 );
+        // off-diagonal terms
+        const real_t w12 = w * gib * gjc;
+        func2(aic, abj, w12 * detJ, 1, 2 );
+        func2(abj, aic, w12 * detJ, 2, 1 );
+        const real_t w02 = w * gia * gjc;
+        func2(ibc, abj, w02 * detJ, 0, 2 );
+        func2(abj, ibc, w02 * detJ, 2, 0 );
+        const real_t w01 = w * gia * gjb;
+        func2(ibc, ajc, w01 * detJ, 0, 1 );
+        func2(ajc, ibc, w01 * detJ, 1, 0 );
+      });
+    });
+  }
+
+
   template< typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
@@ -175,7 +232,32 @@ public:
   }
 
 
+  template< typename FUNC1, typename FUNC2 >
+  static constexpr inline
+  SEMKERNELS_HOST_DEVICE
+  void computeStiffNessTermwithJac( TransformType const & trilinearCell,
+                                    FUNC1 && func1, 
+                                    FUNC2 && func2 )
+  {
 
+    // this is a compile time quadrature loop over each tensor direction
+    forNestedSequence< ORDER + 1,
+                       ORDER + 1,
+                       ORDER + 1 >( [&] ( auto const icqa,
+                                          auto const icqb,
+                                          auto const icqc )
+    {
+      constexpr int qa = decltype(icqa)::value;
+      constexpr int qb = decltype(icqb)::value;
+      constexpr int qc = decltype(icqc)::value;
+
+      JacobianType J{ tfloat(0.0) };
+      shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
+
+      // compute gradPhiI*B*gradPhiJ and stiffness vector
+      computeGradPhiGradPhi<qa,qb,qc>( J, func1, func2 );
+    } );
+  }
 
 
 };
