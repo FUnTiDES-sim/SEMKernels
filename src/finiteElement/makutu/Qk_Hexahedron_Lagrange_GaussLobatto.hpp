@@ -485,7 +485,8 @@ public:
    *   of the shape functions.
    * @param q The quadrature point index
    * @param X Array containing the coordinates of the support points.
-   * @param func Callback function accepting three parameters: i, j and R_ij
+   * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point
+   * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution 
    */
   template< typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
@@ -500,7 +501,8 @@ public:
  * @param qb The 1d quadrature point index in xi1 direction (0,1)
  * @param qc The 1d quadrature point index in xi2 direction (0,1)
  * @param B Array of the B matrix, in Voigt notation
- * @param func Callback function accepting three parameters: i, j and R_ij
+ * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point
+ * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution
  */
   template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
