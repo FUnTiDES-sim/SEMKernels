@@ -485,8 +485,11 @@ public:
    *   of the shape functions.
    * @param q The quadrature point index
    * @param X Array containing the coordinates of the support points.
-   * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point
-   * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution 
+   * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point. This function will 
+   *              return each 1-D quadrature used inside the kernel to compute the global degree of freedom index, used when the model is defined on nodes.
+   * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution. The function 
+   *              will compute the index i (line of the matrix used to store the result inside Y vector), index j (column of the matrix used 
+   *              to pick the correct value from the output solution ) and R_ij which is the value of the stiffness matrix itself.
    */
   template< typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
@@ -501,8 +504,11 @@ public:
  * @param qb The 1d quadrature point index in xi1 direction (0,1)
  * @param qc The 1d quadrature point index in xi2 direction (0,1)
  * @param B Array of the B matrix, in Voigt notation
- * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point
- * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution
+ * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point. This function will 
+ *              return each 1-D quadrature used inside the kernel to compute the global degree of freedom index, used when the model is defined on nodes.
+ * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution. The function 
+ *              will compute the index i (line of the matrix used to store the result inside Y vector), index j (column of the matrix used 
+ *              to pick the correct value from the output solution ) and R_ij which is the value of the stiffness matrix itself.
  */
   template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
