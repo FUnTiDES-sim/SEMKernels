@@ -47,16 +47,18 @@ public:
   using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
 
-  template< int qa, int qb, int qc, typename FUNC >
+  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeGradPhiBGradPhi( tfloat const (&B)[6],
-                               FUNC && func )
+                               FUNC1 && func1,
+                               FUNC2 && func2 )
   {
     constexpr gfloat qcoords0 = quadrature::template coordinate< qa >();
     constexpr gfloat qcoords1 = quadrature::template coordinate< qb >();
     constexpr gfloat qcoords2 = quadrature::template coordinate< qc >();
     constexpr gfloat w = quadrature::template weight< qa >() * quadrature::template weight< qb >() * quadrature::template weight< qc >();
+    func1( qa, qb, qc);
     forSequence< numSupportPoints1d >( [&] ( auto const ici )
     {
       constexpr int i = decltype(ici)::value;      
@@ -81,21 +83,21 @@ public:
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
         // diagonal terms
         const gfloat w0 = w * gia * gja;
-        func( qa, qb, qc, ibc, jbc, w0 * B[0] );
+        func2( ibc, jbc, w0 * B[0] );
         const gfloat w1 = w * gib * gjb;
-        func( qa, qb, qc, aic, ajc, w1 * B[1] );
+        func2( aic, ajc, w1 * B[1] );
         const gfloat w2 = w * gic * gjc;
-        func( qa, qb, qc, abi, abj, w2 * B[2] );
+        func2( abi, abj, w2 * B[2] );
         // off-diagonal terms
         const gfloat w3 = w * gib * gjc;
-        func( qa, qb, qc, aic, abj, w3 * B[3] );
-        func( qa, qb, qc, abj, aic, w3 * B[3] );
+        func2( aic, abj, w3 * B[3] );
+        func2( abj, aic, w3 * B[3] );
         const gfloat w4 = w * gia * gjc;
-        func( qa, qb, qc, ibc, abj, w4 * B[4] );
-        func( qa, qb, qc, abj, ibc, w4 * B[4] );
+        func2( ibc, abj, w4 * B[4] );
+        func2( abj, ibc, w4 * B[4] );
         const gfloat w5 = w * gia * gjb;
-        func( qa, qb, qc, ibc, ajc, w5 * B[5] );
-        func( qa, qb, qc, ajc, ibc, w5 * B[5] );
+        func2( ibc, ajc, w5 * B[5] );
+        func2( ajc, ibc, w5 * B[5] );
       } );
     } );
   }
@@ -193,11 +195,11 @@ public:
 
 
 
-  template< typename FUNC >
+  template< typename FUNC1, typename FUNC2 >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeStiffnessTerm( TransformType const & trilinearCell,
-                             FUNC && func )
+                             FUNC1 && func1, FUNC2 && func2)
   {
 
     // this is a compile time quadrature loop over each tensor direction
@@ -227,7 +229,7 @@ public:
       }
 
       // compute gradPhiI*B*gradPhiJ and stiffness vector
-      computeGradPhiBGradPhi< qa, qb, qc >( B, func );
+      computeGradPhiBGradPhi< qa, qb, qc >( B, func1, func2 );
     } );
   }
 
