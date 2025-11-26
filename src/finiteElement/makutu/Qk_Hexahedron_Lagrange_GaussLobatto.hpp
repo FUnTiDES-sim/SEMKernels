@@ -489,12 +489,17 @@ public:
    *   of the shape functions.
    * @param q The quadrature point index
    * @param X Array containing the coordinates of the support points.
-   * @param func Callback function accepting three parameters: i, j and R_ij
+   * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point. This function will 
+   *              return each 1-D quadrature used inside the kernel to compute the global degree of freedom index, used when the model is defined on nodes.
+   * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution. The function 
+   *              will compute the index i (line of the matrix used to store the result inside Y vector), index j (column of the matrix used 
+   *              to pick the correct value from the output solution ) and R_ij which is the value of the stiffness matrix itself.
    */
-  template< typename FUNC >
+  template< typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
   static void computeStiffnessTerm( TransformType const & transformData,
-                                    FUNC && func );
+                                    FUNC1 && func1,
+                                    FUNC2 && func2 );
 
 /**
  * @brief Computes the "Grad(Phi)*B*Grad(Phi)" coefficient of the stiffness term. The matrix B must be provided and Phi denotes a basis
@@ -503,14 +508,19 @@ public:
  * @param qb The 1d quadrature point index in xi1 direction (0,1)
  * @param qc The 1d quadrature point index in xi2 direction (0,1)
  * @param B Array of the B matrix, in Voigt notation
- * @param func Callback function accepting three parameters: i, j and R_ij
+ * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point. This function will 
+ *              return each 1-D quadrature used inside the kernel to compute the global degree of freedom index, used when the model is defined on nodes.
+ * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution. The function 
+ *              will compute the index i (line of the matrix used to store the result inside Y vector), index j (column of the matrix used 
+ *              to pick the correct value from the output solution ) and R_ij which is the value of the stiffness matrix itself.
  */
-  template< int N, int qa, int qb, int qc, typename FUNC >
+  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
   static void
   computeGradPhiBGradPhi(
                           real_t const (&B)[6],
-                          FUNC && func );
+                          FUNC1 && func1,
+                          FUNC2 && func2 );
 
 /** 
  * @brief Computes the "Grad(Phi)*Grad(Phi)" coefficient of the stiffness term.
@@ -1034,18 +1044,19 @@ computeBMatrix( int const qa,
 }
 
 template< typename GL_BASIS >
-template< int N, int qa, int qb, int qc, typename FUNC >
+template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeGradPhiBGradPhi( real_t const (&B)[6],
-                        FUNC && func )
+                        FUNC1 && func1, FUNC2 && func2 )
 {
 
    constexpr real_t wa = GL_BASIS::weight( qa );
    constexpr real_t wb = GL_BASIS::weight( qb );
    constexpr real_t wc = GL_BASIS::weight( qc );
    const real_t w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
+   func1( qa, qb, qc);
    for( int i=0; i<num1dNodes; i++ )
    {
      const int ibc = GL_BASIS::TensorProduct3D::linearIndex( i, qb, qc );
@@ -1064,32 +1075,33 @@ computeGradPhiBGradPhi( real_t const (&B)[6],
        const real_t gjc = basisGradientAt( j, qc );
        // diagonal terms
        const real_t w0 = w * gia * gja;
-       func( qa, qb, qc, ibc, jbc, w0 * B[0] );
+       func2( ibc, jbc, w0 * B[0] );
        const real_t w1 = w * gib * gjb;
-       func( qa, qb, qc, aic, ajc, w1 * B[1] );
+       func2( aic, ajc, w1 * B[1] );
        const real_t w2 = w * gic * gjc;
-       func( qa, qb , qc, abi, abj, w2 * B[2] );
+       func2( abi, abj, w2 * B[2] );
        // off-diagonal terms
        const real_t w3 = w * gib * gjc;
-       func( qa, qb, qc, aic, abj, w3 * B[3] );
-       func( qa, qb, qc, abj, aic, w3 * B[3] );
+       func2( aic, abj, w3 * B[3] );
+       func2( abj, aic, w3 * B[3] );
        const real_t w4 = w * gia * gjc;
-       func( qa, qb, qc, ibc, abj, w4 * B[4] );
-       func( qa, qb, qc, abj, ibc, w4 * B[4] );
+       func2( ibc, abj, w4 * B[4] );
+       func2( abj, ibc, w4 * B[4] );
        const real_t w5 = w * gia * gjb;
-       func( qa, qb, qc, ibc, ajc, w5 * B[5] );
-       func( qa, qb, qc, ajc, ibc, w5 * B[5] );
+       func2( ibc, ajc, w5 * B[5] );
+       func2( ajc, ibc, w5 * B[5] );
      }
    }
   }
 
 template< typename GL_BASIS >
-template< typename FUNC >
+template< typename FUNC1, typename FUNC2 >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeStiffnessTerm( TransformType const & transformData,
-                      FUNC && func )
+                      FUNC1 && func1,
+                      FUNC2 && func2 )
 {
 
    triple_loop<num1dNodes,num1dNodes,num1dNodes>([&](auto const icqa, auto const icqb, auto const icqc)
@@ -1101,7 +1113,7 @@ computeStiffnessTerm( TransformType const & transformData,
       real_t J[3][3] = {{0}};
       float const (&X)[8][3] = transformData.data;
       computeBMatrix( qa, qb, qc, X, J, B );
-      computeGradPhiBGradPhi<num1dNodes,qa,qb,qc>(B, func );
+      computeGradPhiBGradPhi<qa,qb,qc>(B, func1, func2 );
 
    });
 }
