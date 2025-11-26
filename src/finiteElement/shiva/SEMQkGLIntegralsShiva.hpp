@@ -31,7 +31,7 @@ template< int ORDER,
 class SEMQkGLIntegralsShiva
 {
 public:
-  constexpr static bool isClassic = false;
+  constexpr static bool isShiva = true;
 
   static constexpr int order = ORDER;
   static constexpr int numSupportPoints1d = ORDER + 1;
@@ -46,74 +46,125 @@ public:
   using quadrature = QuadratureGaussLobatto< gfloat, numSupportPoints1d >;
   using basisFunction = LagrangeBasis< gfloat, ORDER, GaussLobattoSpacing >;
 
-  struct PrecomputedData
-  {};
 
-  PROXY_HOST_DEVICE
-  static void init( PrecomputedData & )
-  {}
-
-  template< int qa, int qb, int qc, typename FUNC >
+  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
   void computeGradPhiBGradPhi( tfloat const (&B)[6],
-                               FUNC && func )
+                               FUNC1 && func1,
+                               FUNC2 && func2 )
   {
-    constexpr gfloat qcoords[3] = { quadrature::template coordinate< qa >(),
-                                    quadrature::template coordinate< qb >(),
-                                    quadrature::template coordinate< qc >() };
+    constexpr gfloat qcoords0 = quadrature::template coordinate< qa >();
+    constexpr gfloat qcoords1 = quadrature::template coordinate< qb >();
+    constexpr gfloat qcoords2 = quadrature::template coordinate< qc >();
     constexpr gfloat w = quadrature::template weight< qa >() * quadrature::template weight< qb >() * quadrature::template weight< qc >();
+    func1( qa, qb, qc);
     forSequence< numSupportPoints1d >( [&] ( auto const ici )
     {
       constexpr int i = decltype(ici)::value;      
-      constexpr int ibc = linearIndex<ORDER>( i, qb, qc );
-      constexpr int aic = linearIndex<ORDER>( qa, i, qc );
-      constexpr int abi = linearIndex<ORDER>( qa, qb, i );
-      constexpr gfloat gia = basisFunction::template gradient< i >( qcoords[0] );
-      constexpr gfloat gib = basisFunction::template gradient< i >( qcoords[1] );
-      constexpr gfloat gic = basisFunction::template gradient< i >( qcoords[2] );
+      const int ibc = linearIndex<ORDER>( i, qb, qc );
+      const int aic = linearIndex<ORDER>( qa, i, qc );
+      const int abi = linearIndex<ORDER>( qa, qb, i );
+      const gfloat gia = basisFunction::template gradient< i >( qcoords0 );
+      const gfloat gib = basisFunction::template gradient< i >( qcoords1 );
+      const gfloat gic = basisFunction::template gradient< i >( qcoords2 );
 //      printf("i: %d, ibc: %d, aic: %d, abi: %d, gia: %f, gib: %f, gic: %f\n", i, ibc, aic, abi, gia, gib, gic);
 
       forSequence< numSupportPoints1d >( [&] ( auto const icj )
       {
         constexpr int j = decltype(icj)::value;
-        constexpr int jbc = linearIndex<ORDER>( j, qb, qc );
-        constexpr int ajc = linearIndex<ORDER>( qa, j, qc );
-        constexpr int abj = linearIndex<ORDER>( qa, qb, j );
-        constexpr gfloat gja = basisFunction::template gradient< j >( qcoords[0] );
-        constexpr gfloat gjb = basisFunction::template gradient< j >( qcoords[1] );
-        constexpr gfloat gjc = basisFunction::template gradient< j >( qcoords[2] );
+        const int jbc = linearIndex<ORDER>( j, qb, qc );
+        const int ajc = linearIndex<ORDER>( qa, j, qc );
+        const int abj = linearIndex<ORDER>( qa, qb, j );
+        const gfloat gja = basisFunction::template gradient< j >( qcoords0 );
+        const gfloat gjb = basisFunction::template gradient< j >( qcoords1 );
+        const gfloat gjc = basisFunction::template gradient< j >( qcoords2 );
 
 //        printf("j: %d, jbc: %d, ajc: %d, abj: %d, gja: %f, gjb: %f, gjc: %f\n", j, jbc, ajc, abj, gja, gjb, gjc);
         // diagonal terms
-        constexpr gfloat w0 = w * gia * gja;
-        func( ibc, jbc, w0 * B[0] );
-        constexpr gfloat w1 = w * gib * gjb;
-        func( aic, ajc, w1 * B[1] );
-        constexpr gfloat w2 = w * gic * gjc;
-        func( abi, abj, w2 * B[2] );
+        const gfloat w0 = w * gia * gja;
+        func2( ibc, jbc, w0 * B[0] );
+        const gfloat w1 = w * gib * gjb;
+        func2( aic, ajc, w1 * B[1] );
+        const gfloat w2 = w * gic * gjc;
+        func2( abi, abj, w2 * B[2] );
         // off-diagonal terms
-        // const gfloat w3 = w * gib * gjc;
-        // func( aic, abj, w3 * B[3] );
-        // func( abj, aic, w3 * B[3] );
-        // const gfloat w4 = w * gia * gjc;
-        // func( ibc, abj, w4 * B[4] );
-        // func( abj, ibc, w4 * B[4] );
-        // const gfloat w5 = w * gia * gjb;
-        // func( ibc, ajc, w5 * B[5] );
-        // func( ajc, ibc, w5 * B[5] );
+        const gfloat w3 = w * gib * gjc;
+        func2( aic, abj, w3 * B[3] );
+        func2( abj, aic, w3 * B[3] );
+        const gfloat w4 = w * gia * gjc;
+        func2( ibc, abj, w4 * B[4] );
+        func2( abj, ibc, w4 * B[4] );
+        const gfloat w5 = w * gia * gjb;
+        func2( ibc, ajc, w5 * B[5] );
+        func2( ajc, ibc, w5 * B[5] );
       } );
     } );
   }
 
 
+  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
+  static constexpr inline
+  SEMKERNELS_HOST_DEVICE
+  void
+  computeGradPhiGradPhi( JacobianType & J,
+                        FUNC1 && func1,
+                        FUNC2 && func2 )
+  {
+    real_t detJ;
+    shiva::mathUtilities::inverse( J, detJ );
+    func1( qa, qb, qc, *reinterpret_cast< real_t const (*)[3][3] >(J.data()) );
+    constexpr gfloat qcoords0 = quadrature::template coordinate< qa >();
+    constexpr gfloat qcoords1 = quadrature::template coordinate< qb >();
+    constexpr gfloat qcoords2 = quadrature::template coordinate< qc >();
+    constexpr gfloat w = quadrature::template weight< qa >() * quadrature::template weight< qb >() * quadrature::template weight< qc >();
+    forSequence< numSupportPoints1d >( [&] ( auto const ici )
+    {
+      constexpr int i = decltype(ici)::value;      
+      const int ibc = linearIndex<ORDER>( i, qb, qc );
+      const int aic = linearIndex<ORDER>( qa, i, qc );
+      const int abi = linearIndex<ORDER>( qa, qb, i );
+      const gfloat gia = basisFunction::template gradient< i >( qcoords0 );
+      const gfloat gib = basisFunction::template gradient< i >( qcoords1 );
+      const gfloat gic = basisFunction::template gradient< i >( qcoords2 );
+
+      forSequence< numSupportPoints1d >( [&] ( auto const icj )
+      {
+        constexpr int j = decltype(icj)::value;
+        const int jbc = linearIndex<ORDER>( j, qb, qc );
+        const int ajc = linearIndex<ORDER>( qa, j, qc );
+        const int abj = linearIndex<ORDER>( qa, qb, j );
+        const gfloat gja = basisFunction::template gradient< j >( qcoords0 );
+        const gfloat gjb = basisFunction::template gradient< j >( qcoords1 );
+        const gfloat gjc = basisFunction::template gradient< j >( qcoords2 );
+
+        // diagonal terms
+        const real_t w00 = w * gia * gja;
+        func2(ibc, jbc, w00 * detJ, 0, 0 );
+        const real_t w11 = w * gib * gjb;
+        func2(aic, ajc, w11 * detJ, 1, 1 );
+        const real_t w22 = w * gic * gjc;
+        func2(abi, abj, w22 * detJ, 2, 2 );
+        // off-diagonal terms
+        const real_t w12 = w * gib * gjc;
+        func2(aic, abj, w12 * detJ, 1, 2 );
+        func2(abj, aic, w12 * detJ, 2, 1 );
+        const real_t w02 = w * gia * gjc;
+        func2(ibc, abj, w02 * detJ, 0, 2 );
+        func2(abj, ibc, w02 * detJ, 2, 0 );
+        const real_t w01 = w * gia * gjb;
+        func2(ibc, ajc, w01 * detJ, 0, 1 );
+        func2(ajc, ibc, w01 * detJ, 1, 0 );
+      });
+    });
+  }
+
 
   template< typename FUNC >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
-  void computeStiffnessAndMassTerm( TransformType const & trilinearCell,
-                             float massMatrix[],
-                             FUNC && func )
+  void computeMassTerm( TransformType const & trilinearCell,
+                        FUNC && func )
   {
 
     // this is a compile time quadrature loop over each tensor direction
@@ -138,12 +189,38 @@ public:
       constexpr tfloat w3D = quadrature::template weight< qa >() *
                              quadrature::template weight< qb >() *
                              quadrature::template weight< qc >();
-      massMatrix[q] = w3D * detJ;
+      func( q, w3D * detJ );
+    } );
+  }
 
+
+
+  template< typename FUNC1, typename FUNC2 >
+  static constexpr inline
+  SEMKERNELS_HOST_DEVICE
+  void computeStiffnessTerm( TransformType const & trilinearCell,
+                             FUNC1 && func1, FUNC2 && func2)
+  {
+
+    // this is a compile time quadrature loop over each tensor direction
+    forNestedSequence< ORDER + 1,
+                       ORDER + 1,
+                       ORDER + 1 >( [&] ( auto const icqa,
+                                          auto const icqb,
+                                          auto const icqc )
+    {
+      constexpr int qa = decltype(icqa)::value;
+      constexpr int qb = decltype(icqb)::value;
+      constexpr int qc = decltype(icqc)::value;
+
+      JacobianType J{ tfloat(0.0) };
+
+      shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
+
+      tfloat const detJ = determinant( J );
+      
       tfloat B[6] = {0};
       computeB( J, B );
-
-//      printf( "B(%d,%d,%d) = | %18.14e %18.14e %18.14e %18.14e %18.14e %18.14e |\n", qa, qb, qc, B[0], B[1], B[2], B[3], B[4], B[5] );
 
       // compute detJ*J^{-1}J^{-T}
       for( int i = 0; i < 6; ++i )
@@ -152,62 +229,37 @@ public:
       }
 
       // compute gradPhiI*B*gradPhiJ and stiffness vector
-      computeGradPhiBGradPhi< qa, qb, qc >( B, func );
+      computeGradPhiBGradPhi< qa, qb, qc >( B, func1, func2 );
     } );
   }
 
 
-  // template< typename ARRAY_REAL_VIEW, typename LOCAL_ARRAY >
-  template< typename LOCAL_ARRAY >
+  template< typename FUNC1, typename FUNC2 >
   static constexpr inline
   SEMKERNELS_HOST_DEVICE
-  void
-  gatherCoordinates( const int & elementNumber,
-                     const float X[8][3],
-                     LOCAL_ARRAY & cellData )
+  void computeStiffNessTermwithJac( TransformType const & trilinearCell,
+                                    FUNC1 && func1, 
+                                    FUNC2 && func2 )
   {
-    int corner_id = 0;
-    for ( int k = 0; k < 2; ++k )
+
+    // this is a compile time quadrature loop over each tensor direction
+    forNestedSequence< ORDER + 1,
+                       ORDER + 1,
+                       ORDER + 1 >( [&] ( auto const icqa,
+                                          auto const icqb,
+                                          auto const icqc )
     {
-      for ( int j = 0; j < 2; ++j )
-      {
-        for ( int i = 0; i < 2; ++i )
-        {
-          int const l = linearIndex<1>( i, j, k );
-          cellData( i, j, k, 0 ) = X[corner_id][0];
-          cellData( i, j, k, 1 ) = X[corner_id][1];
-          cellData( i, j, k, 2 ) = X[corner_id][2];
-          corner_id++;
-        }
-      }
-    }
-  }
+      constexpr int qa = decltype(icqa)::value;
+      constexpr int qb = decltype(icqb)::value;
+      constexpr int qc = decltype(icqc)::value;
 
-  /**
-   * @brief compute  mass Matrix stiffnessVector.
-   */
-  // template< typename ARRAY_REAL_VIEW >
-  static constexpr inline
-  SEMKERNELS_HOST_DEVICE
-  void computeMassMatrixAndStiffnessVector( const int & elementNumber,
-                                            const int & nPointsPerElement,
-                                            const float X[8][3],
-                                            PrecomputedData const & precomputedData,
-                                            float massMatrixLocal[],
-                                            float pnLocal[],
-                                            float Y[] )
-  {
-    TransformType trilinearCell;
-    typename TransformType::DataType & cellCoordData = trilinearCell.getData();
+      JacobianType J{ tfloat(0.0) };
+      shiva::geometry::utilities::jacobian< quadrature, qa, qb, qc >( trilinearCell, J );
 
-    gatherCoordinates( elementNumber,
-                       X,
-                       cellCoordData );
-
-    computeStiffnessAndMassTerm( trilinearCell, massMatrixLocal, [&] ( const int i, const int j, const auto val )
-    {
-      Y[i] = Y[i] + val * pnLocal[j];
+      // compute gradPhiI*B*gradPhiJ and stiffness vector
+      computeGradPhiGradPhi<qa,qb,qc>( J, func1, func2 );
     } );
   }
+
 
 };

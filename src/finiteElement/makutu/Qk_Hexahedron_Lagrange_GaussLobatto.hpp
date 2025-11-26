@@ -24,7 +24,7 @@ class Qk_Hexahedron_Lagrange_GaussLobatto final
 {
 public:
 
-  constexpr static bool isClassic = false;
+  constexpr static bool isShiva = false;
 
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
@@ -44,12 +44,16 @@ public:
   /// The number of quadrature points per element.
   constexpr static int numQuadraturePoints = numNodes;
 
-  struct PrecomputedData
-  {};
+  struct TransformType
+  {
+    float data[8][3];
+  };
 
-  PROXY_HOST_DEVICE
-  static void init( PrecomputedData & )
-  {}
+  struct JacobianType
+  {
+    float data[3][3];
+  };
+
 
   /**
    * @brief The linear index associated to the given one-dimensional indices in the three directions
@@ -447,7 +451,7 @@ public:
    */
   template< typename FUNC >
   PROXY_HOST_DEVICE
-  static void computeMassTerm( real_t const (&X)[8][3], FUNC && func );
+  static void computeMassTerm( TransformType const & transformData, FUNC && func );
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
@@ -493,7 +497,7 @@ public:
    */
   template< typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
-  static void computeStiffnessTerm( real_t const (&X)[8][3],
+  static void computeStiffnessTerm( TransformType const & transformData,
                                     FUNC1 && func1,
                                     FUNC2 && func2 );
 
@@ -534,8 +538,7 @@ public:
   template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
   static void 
-  computeGradPhiGradPhi( real_t const (&X)[8][3],
-                          real_t  (&J)[3][3],
+  computeGradPhiGradPhi( JacobianType &J,
                                 FUNC1 && func1,
                                 FUNC2 && func2 );
 
@@ -552,7 +555,7 @@ public:
   template< typename FUNC1, typename FUNC2 >
   PROXY_HOST_DEVICE
   static void
-  computeStiffNessTermwithJac( real_t const (&X)[8][3],
+  computeStiffNessTermwithJac( TransformType const & transformData,
                                FUNC1 && func1,
                                FUNC2 && func2 );
 
@@ -975,7 +978,7 @@ template< typename FUNC >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMassTerm( real_t const (&X)[8][3], FUNC && func )
+computeMassTerm( TransformType const & transformData, FUNC && func )
 {
     constexpr int N = num1dNodes;
     triple_loop<N,N,N>([&](auto const icqa, auto const icqb, auto const icqc)
@@ -986,6 +989,7 @@ computeMassTerm( real_t const (&X)[8][3], FUNC && func )
       constexpr int q = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc );
       constexpr real_t w3D = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
       real_t J[3][3] = {{0}};
+      float const (&X)[8][3] = transformData.data;
       jacobianTransformation( qa, qb, qc, X, J );
       real_t val=std::abs( determinant( J ) )*w3D;
       func(q,val);
@@ -1095,7 +1099,7 @@ template< typename FUNC1, typename FUNC2 >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeStiffnessTerm( real_t const (&X)[8][3],
+computeStiffnessTerm( TransformType const & transformData,
                       FUNC1 && func1,
                       FUNC2 && func2 )
 {
@@ -1107,6 +1111,7 @@ computeStiffnessTerm( real_t const (&X)[8][3],
       constexpr int qc = decltype(icqc)::value;
       real_t B[6] = {0};
       real_t J[3][3] = {{0}};
+      float const (&X)[8][3] = transformData.data;
       computeBMatrix( qa, qb, qc, X, J, B );
       computeGradPhiBGradPhi<qa,qb,qc>(B, func1, func2 );
 
@@ -1118,7 +1123,7 @@ template< typename FUNC1, typename FUNC2 >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeStiffNessTermwithJac( real_t const (&X)[8][3],
+computeStiffNessTermwithJac( TransformType const & transformData,
                              FUNC1 && func1,
                              FUNC2 && func2 )
 {
@@ -1127,9 +1132,9 @@ computeStiffNessTermwithJac( real_t const (&X)[8][3],
         constexpr int qa = decltype(icqa)::value;
         constexpr int qb = decltype(icqb)::value;
         constexpr int qc = decltype(icqc)::value;
-        real_t J[3][3] = {{0}};
-        jacobianTransformation( qa, qb, qc, X, J );
-        computeGradPhiGradPhi<qa,qb,qc>(X, J,func1, func2 );
+        JacobianType J = {{0}};
+        jacobianTransformation( qa, qb, qc, transformData.data, J.data );
+        computeGradPhiGradPhi<qa,qb,qc>( J,func1, func2 );
     });
 }
 
@@ -1138,14 +1143,13 @@ template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
 PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeGradPhiGradPhi( real_t const (&X)[8][3],
-                       real_t ( &J )[3][3],
+computeGradPhiGradPhi( JacobianType &J,
                        FUNC1 && func1,
                        FUNC2 && func2 )
 {
-  real_t const detJ = invert3x3( J );
+  real_t const detJ = invert3x3( J.data );
   const real_t w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
-  func1( qa, qb, qc, J);
+  func1( qa, qb, qc, J.data);
   for( int i=0; i<num1dNodes; i++ )
   {
     const int ibc = GL_BASIS::TensorProduct3D::linearIndex( i, qb, qc );
@@ -1164,30 +1168,21 @@ computeGradPhiGradPhi( real_t const (&X)[8][3],
       const real_t gjc = basisGradientAt( j, qc );
       // diagonal terms
       const real_t w00 = w * gia * gja;
-      //func(qa, qb, qc,  ibc, jbc, w00 * detJ, J, 0, 0 );
-      func2(ibc, jbc, w00 * detJ,J, 0, 0 );
+      func2(ibc, jbc, w00 * detJ, 0, 0 );
       const real_t w11 = w * gib * gjb;
-      //func(qa, qb, qc, aic, ajc, w11 * detJ, J, 1, 1 );
-      func2(aic, ajc, w11 * detJ,J, 1, 1 );
+      func2(aic, ajc, w11 * detJ, 1, 1 );
       const real_t w22 = w * gic * gjc;
-      //func(qa, qb, qc, abi, abj, w22 * detJ, J, 2, 2 );
-      func2(abi, abj, w22 * detJ,J, 2, 2 );
+      func2(abi, abj, w22 * detJ, 2, 2 );
       // off-diagonal terms
       const real_t w12 = w * gib * gjc;
-      //func(qa, qb, qc, aic, abj, w12 * detJ, J, 1, 2 );
-      //func(qa, qb, qc, abj, aic, w12 * detJ, J, 2, 1 );
-      func2(aic, abj, w12 * detJ,J, 1, 2 );
-      func2(abj, aic, w12 * detJ,J, 2, 1 );
+      func2(aic, abj, w12 * detJ, 1, 2 );
+      func2(abj, aic, w12 * detJ, 2, 1 );
       const real_t w02 = w * gia * gjc;
-      //func(qa, qb, qc, ibc, abj, w02 * detJ, J, 0, 2 );
-      //func(qa, qb, qc, abj, ibc, w02 * detJ, J, 2, 0 );
-      func2(ibc, abj, w02 * detJ,J, 0, 2 );
-      func2(abj, ibc, w02 * detJ,J, 2, 0 );
+      func2(ibc, abj, w02 * detJ, 0, 2 );
+      func2(abj, ibc, w02 * detJ, 2, 0 );
       const real_t w01 = w * gia * gjb;
-      //func(qa, qb, qc, ibc, ajc, w01 * detJ, J, 0, 1 );
-      //func(qa, qb, qc, ajc, ibc, w01 * detJ, J, 1, 0 );
-      func2(ibc, ajc, w01 * detJ,J, 0, 1 );
-      func2(ajc, ibc, w01 * detJ,J, 1, 0 );
+      func2(ibc, ajc, w01 * detJ, 0, 1 );
+      func2(ajc, ibc, w01 * detJ, 1, 0 );
     }
   }
 }
