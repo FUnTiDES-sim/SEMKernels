@@ -8,7 +8,7 @@ set( finiteElement_headers
      makutu/tensorops.hpp
 )
 
-if( ENABLE_SHIVA )
+if( ENABLE_Shiva )
     list( APPEND finiteElement_headers
           shiva/SEMQkGLIntegralsShiva.hpp
     )
