@@ -1,14 +1,18 @@
+set( finiteElement_headers
+     makutu/LagrangeBasis1.hpp
+     makutu/LagrangeBasis2.hpp
+     makutu/LagrangeBasis3GL.hpp
+     makutu/LagrangeBasis4GL.hpp
+     makutu/LagrangeBasis5GL.hpp
+     makutu/Qk_Hexahedron_Lagrange_GaussLobatto.hpp
+     makutu/tensorops.hpp
+)
 
-  set( finiteElement_headers
-       makutu/LagrangeBasis1.hpp
-       makutu/LagrangeBasis2.hpp
-       makutu/LagrangeBasis3GL.hpp
-       makutu/LagrangeBasis4GL.hpp
-       makutu/LagrangeBasis5GL.hpp
-       makutu/Qk_Hexahedron_Lagrange_GaussLobatto.hpp
-       makutu/tensorops.hpp
-       shiva/SEMQkGLIntegralsShiva.hpp
-      )
+if( ENABLE_Shiva )
+    list( APPEND finiteElement_headers
+          shiva/SEMQkGLIntegralsShiva.hpp
+    )
+endif()
 
 set( finiteElement_dependencies
      shiva
