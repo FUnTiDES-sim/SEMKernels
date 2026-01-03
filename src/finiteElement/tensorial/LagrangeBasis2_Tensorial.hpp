@@ -185,4 +185,7 @@ public:
   };
 };
 
+// Define static constexpr array
+constexpr double LagrangeBasis2_Tensorial::D[3][3];
+
 #endif /* _LAGRANGEBASIS2_TENSORIAL_HPP_ */

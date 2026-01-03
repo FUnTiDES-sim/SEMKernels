@@ -46,7 +46,7 @@ public:
   /// The number of nodes per element per dimension
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
 
-  /// Half the number of support points, rounded down
+  /// Half the number of support points, rounded down. Precomputed for efficiency
   constexpr static int halfNodes = (GL_BASIS::numSupportPoints - 1) / 2;
 
   /// The total number of nodes per element
@@ -54,6 +54,28 @@ public:
 
   /// The number of quadrature points per element (same as nodes for GL)
   constexpr static int numQuadraturePoints = numNodes;
+
+  /**
+   * @brief Access derivative matrix with symmetry optimization
+   * @param q The index of the quadrature point
+   * @param p The index of the basis function
+   * @return The derivative value D[q][p]
+   *
+   * Exploits symmetry of Gauss-Lobatto nodes to reduce memory accesses:
+   * D[q][p] = -D[n-1-q][n-1-p] for symmetric points
+   */
+  PROXY_HOST_DEVICE
+  static inline real_t derivativeAt(const int q, const int p)
+  {
+    if (p <= halfNodes)
+    {
+      return GL_BASIS::derivativeMatrix(q, p);
+    }
+    else
+    {
+      return -GL_BASIS::derivativeMatrix(num1dNodes - 1 - q, num1dNodes - 1 - p);
+    }
+  }
 
   /// Maximum support points per element
   constexpr static int maxSupportPoints = numNodes;
@@ -266,10 +288,10 @@ public:
       const int aic = qa + rp1 * i + rp1sq * qc;
       const int abi = qa + rp1 * qb + rp1sq * i;
 
-      // Use derivative matrix instead of evaluating gradients
-      const real_t gia = GL_BASIS::derivativeMatrix(qa, i);
-      const real_t gib = GL_BASIS::derivativeMatrix(qb, i);
-      const real_t gic = GL_BASIS::derivativeMatrix(qc, i);
+      // Use derivative matrix with symmetry optimization
+      const real_t gia = derivativeAt(qa, i);
+      const real_t gib = derivativeAt(qb, i);
+      const real_t gic = derivativeAt(qc, i);
 
       for (int j = 0; j < rp1; j++)
       {
@@ -277,9 +299,9 @@ public:
         const int ajc = qa + rp1 * j + rp1sq * qc;
         const int abj = qa + rp1 * qb + rp1sq * j;
 
-        const real_t gja = GL_BASIS::derivativeMatrix(qa, j);
-        const real_t gjb = GL_BASIS::derivativeMatrix(qb, j);
-        const real_t gjc = GL_BASIS::derivativeMatrix(qc, j);
+        const real_t gja = derivativeAt(qa, j);
+        const real_t gjb = derivativeAt(qb, j);
+        const real_t gjc = derivativeAt(qc, j);
 
         // Diagonal terms: grad_x * grad_x, grad_y * grad_y, grad_z * grad_z
         const real_t w0 = w * gia * gja;
@@ -385,10 +407,10 @@ public:
       const int aic = qa + rp1 * i + rp1 * rp1 * qc;
       const int abi = qa + rp1 * qb + rp1 * rp1 * i;
 
-      // Use derivative matrix instead of evaluating gradients
-      const real_t gia = GL_BASIS::derivativeMatrix(qa, i);
-      const real_t gib = GL_BASIS::derivativeMatrix(qb, i);
-      const real_t gic = GL_BASIS::derivativeMatrix(qc, i);
+      // Use derivative matrix with symmetry optimization
+      const real_t gia = derivativeAt(qa, i);
+      const real_t gib = derivativeAt(qb, i);
+      const real_t gic = derivativeAt(qc, i);
 
       for (int j = 0; j < rp1; j++)
       {
@@ -396,9 +418,9 @@ public:
         const int ajc = qa + rp1 * j + rp1 * rp1 * qc;
         const int abj = qa + rp1 * qb + rp1 * rp1 * j;
 
-        const real_t gja = GL_BASIS::derivativeMatrix(qa, j);
-        const real_t gjb = GL_BASIS::derivativeMatrix(qb, j);
-        const real_t gjc = GL_BASIS::derivativeMatrix(qc, j);
+        const real_t gja = derivativeAt(qa, j);
+        const real_t gjb = derivativeAt(qb, j);
+        const real_t gjc = derivativeAt(qc, j);
 
         // Diagonal terms
         const real_t w00 = w * gia * gja;

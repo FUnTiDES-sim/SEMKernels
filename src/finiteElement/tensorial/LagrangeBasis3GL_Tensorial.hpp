@@ -225,4 +225,7 @@ public:
   };
 };
 
+// Define static constexpr array
+constexpr double LagrangeBasis3GL_Tensorial::D[4][4];
+
 #endif /* _LAGRANGEBASIS3GL_TENSORIAL_HPP_ */
