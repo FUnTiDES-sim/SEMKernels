@@ -12,6 +12,7 @@
 #include "LagrangeBasis4GL.hpp"
 #include "LagrangeBasis5GL.hpp"
 #include "common/mathUtilites.hpp"
+#include "common/compile_time_loops.hpp"
 
 /**
  * This class is the basis class for the hexahedron finite element cells with
@@ -789,42 +790,8 @@ Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::calcGradNWithCorners( real_t co
 // over the degrees of freedom in each direction of the hexahedral element
 // when computing the stiffness and mass matrix contributions.
 
-/*
- * Helper to perform a compile-time loop from 0 to N-1, calling a lambda with
- * std::integral_constant<int, I> as argument.
- */
-template<int N, typename F, int... Is>
-constexpr void for_constexpr_impl(F&& f, std::integer_sequence<int, Is...>) {
-    (f(std::integral_constant<int, Is>{}), ...);
-}
-
-/*
- * Perform a compile-time loop from 0 to N-1, calling a lambda with
- * std::integral_constant<int, I> as argument.
- */
-template<int N, typename F>
-constexpr void for_constexpr(F&& f) {
-    for_constexpr_impl<N>(std::forward<F>(f), std::make_integer_sequence<int, N>{});
-}
-
-/*
- * Perform a triple nested compile-time loop from 0 to BoundI-1, 0 to BoundJ-1,
- * 0 to BoundK-1, calling a lambda with std::integral_constant<int, I>,
- * std::integral_constant<int, J>, std::integral_constant<int, K> as arguments.
- */
-
-template<int BoundI, int BoundJ, int BoundK, typename Lambda>
-constexpr void triple_loop(Lambda&& lambda) {
-    for_constexpr<BoundI>([&](auto I) {
-        for_constexpr<BoundJ>([&](auto J) {
-            for_constexpr<BoundK>([&](auto K) {
-                lambda(I, J, K);
-            });
-        });
-    });
-}
-
-
+// Compile-time loop utilities (for_constexpr, triple_loop) are now defined in
+// common/compile_time_loops.hpp and included at the top of this file.
 
 template< typename GL_BASIS >
 PROXY_HOST_DEVICE
