@@ -30,18 +30,6 @@ public:
   /// sqrt(3/7)
   constexpr static double sqrt3_7 = 0.6546536707079771;
 
-private:
-  // Static derivative matrix for O(n^4) algorithm
-  // D[i][j] = d(phi_j)/d(xi) evaluated at xi_i
-  constexpr static double D[5][5] = {
-      {-5.0, 6.7565024887242400038, -2.6666666666666666667, 1.4101641779424266628, -0.5},
-      {-1.2409902530309828578, 0.0, 1.7457431218879390501, -0.7637626158259733344, 0.25900974696901714215},
-      {0.37500000000000000000, -1.3365845776954533353, 0.0, 1.3365845776954533353, -0.37500000000000000000},
-      {-0.25900974696901714215, 0.7637626158259733344, -1.7457431218879390501, 0.0, 1.2409902530309828578},
-      {0.5, -1.4101641779424266628, 2.6666666666666666667, -6.7565024887242400038, 5.0}
-  };
-
-public:
   /**
    * @brief The value of the weight for the given support point
    * @param q The index of the support point
@@ -94,13 +82,70 @@ public:
   }
 
   /**
+   * @brief Gradient of basis function evaluated at quadrature point
+   * @param q The index of the quadrature point
+   * @param p The index of the basis function (assumed in 0..(N-1)/2 by symmetry)
+   * @return d(phi_p)/d(xi) evaluated at xi_q
+   */
+  PROXY_HOST_DEVICE
+  constexpr static double gradientAt(const int q, const int p) {
+    switch (q) {
+    case 0:
+      switch (p) {
+      case 0: return -5.0000000000000000000;
+      case 1: return -1.2409902530309828578;
+      case 2: return 0.37500000000000000000;
+      }
+      break;
+    case 1:
+      switch (p) {
+      case 0: return 6.7565024887242400038;
+      case 1: return 0.0;
+      case 2: return -1.3365845776954533353;
+      }
+      break;
+    case 2:
+      switch (p) {
+      case 0: return -2.6666666666666666667;
+      case 1: return 1.7457431218879390501;
+      case 2: return 0.0;
+      }
+      break;
+    case 3:
+      switch (p) {
+      case 0: return 1.4101641779424266628;
+      case 1: return -0.7637626158259733344;
+      case 2: return 1.3365845776954533353;
+      }
+      break;
+    case 4:
+      switch (p) {
+      case 0: return -0.50000000000000000000;
+      case 1: return 0.25900974696901714215;
+      case 2: return -0.37500000000000000000;
+      }
+      break;
+    }
+    return 0;
+  }
+
+  /**
    * @brief Access element (i,j) of the derivative matrix D
    * @param i Row index
    * @param j Column index
    * @return Value of D[i][j]
+   *
+   * Uses constexpr local array for compile-time evaluation and device compatibility
    */
-  PROXY_HOST_DEVICE PROXY_FORCE_INLINE
+  PROXY_HOST_DEVICE
   constexpr static double derivativeMatrix(const int i, const int j) {
+    constexpr double D[5][5] = {
+        {-5.0, 6.7565024887242400038, -2.6666666666666666667, 1.4101641779424266628, -0.5},
+        {-1.2409902530309828578, 0.0, 1.7457431218879390501, -0.7637626158259733344, 0.25900974696901714215},
+        {0.37500000000000000000, -1.3365845776954533353, 0.0, 1.3365845776954533353, -0.37500000000000000000},
+        {-0.25900974696901714215, 0.7637626158259733344, -1.7457431218879390501, 0.0, 1.2409902530309828578},
+        {0.5, -1.4101641779424266628, 2.6666666666666666667, -6.7565024887242400038, 5.0}
+    };
     return D[i][j];
   }
 
@@ -236,6 +281,5 @@ public:
 };
 
 // Define static constexpr array
-constexpr double LagrangeBasis4GL_Tensorial::D[5][5];
 
 #endif /* _LAGRANGEBASIS4GL_TENSORIAL_HPP_ */

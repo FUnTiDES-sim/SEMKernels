@@ -30,17 +30,6 @@ public:
   /// sqrt(5)
   constexpr static double sqrt5 = 2.2360679774997897;
 
-private:
-  // Static derivative matrix for O(n^4) algorithm
-  // D[i][j] = d(phi_j)/d(xi) evaluated at xi_i
-  constexpr static double D[4][4] = {
-      {-3.0, 4.04508497187474, -1.54508497187474, 0.5},
-      {-0.809016994374947, 0.0, 1.11803398874989, -0.309016994374947},
-      {0.309016994374947, -1.11803398874989, 0.0, 0.809016994374947},
-      {-0.5, 1.54508497187474, -4.04508497187474, 3.0}
-  };
-
-public:
   /**
    * @brief The value of the weight for the given support point
    * @param q The index of the support point
@@ -87,6 +76,28 @@ public:
   }
 
   /**
+   * @brief Gradient of basis function evaluated at quadrature point
+   * @param q The index of the quadrature point
+   * @param p The index of the basis function (assumed in 0..(N-1)/2 by symmetry)
+   * @return d(phi_p)/d(xi) evaluated at xi_q
+   */
+  PROXY_HOST_DEVICE
+  constexpr static double gradientAt(const int q, const int p) {
+    switch (q) {
+    case 0:
+      return p == 0 ? -3.0 : -0.80901699437494742410;
+    case 1:
+      return p == 0 ? 4.0450849718747371205 : 0.0;
+    case 2:
+      return p == 0 ? -1.5450849718747371205 : 1.1180339887498948482;
+    case 3:
+      return p == 0 ? 0.5 : -0.30901699437494742410;
+    default:
+      return 0;
+    }
+  }
+
+  /**
    * @brief Access element (i,j) of the derivative matrix D
    * @param i Row index
    * @param j Column index
@@ -95,8 +106,14 @@ public:
    * The derivative matrix D is such that D[i][j] = d(phi_j)/d(xi) evaluated at xi_i
    * This is the key to the tensorial O(n^4) implementation.
    */
-  PROXY_HOST_DEVICE PROXY_FORCE_INLINE
+  PROXY_HOST_DEVICE
   constexpr static double derivativeMatrix(const int i, const int j) {
+    constexpr double D[4][4] = {
+        {-3.0, 4.04508497187474, -1.54508497187474, 0.5},
+        {-0.809016994374947, 0.0, 1.11803398874989, -0.309016994374947},
+        {0.309016994374947, -1.11803398874989, 0.0, 0.809016994374947},
+        {-0.5, 1.54508497187474, -4.04508497187474, 3.0}
+    };
     return D[i][j];
   }
 
@@ -226,6 +243,5 @@ public:
 };
 
 // Define static constexpr array
-constexpr double LagrangeBasis3GL_Tensorial::D[4][4];
 
 #endif /* _LAGRANGEBASIS3GL_TENSORIAL_HPP_ */

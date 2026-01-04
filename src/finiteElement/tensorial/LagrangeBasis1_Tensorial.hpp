@@ -26,16 +26,6 @@ class LagrangeBasis1_Tensorial {
 public:
   /// The number of support points for the basis
   constexpr static int numSupportPoints = 2;
-
-private:
-  // Static derivative matrix for O(n^4) algorithm
-  // D[i][j] = d(phi_j)/d(xi) evaluated at xi_i
-  constexpr static double D[2][2] = {
-      {-0.5, 0.5},
-      {-0.5, 0.5}
-  };
-
-public:
   /**
    * @brief The value of the weight for the given support point
    * @param q The index of the support point
@@ -57,13 +47,30 @@ public:
   }
 
   /**
+   * @brief Gradient of basis function evaluated at quadrature point
+   * @param q The index of the quadrature point
+   * @param p The index of the basis function (assumed in 0..(N-1)/2 by symmetry)
+   * @return d(phi_p)/d(xi) evaluated at xi_q
+   */
+  PROXY_HOST_DEVICE
+  constexpr static double gradientAt(const int q, const int) {
+    return q == 0 ? -0.5 : 0.5;
+  }
+
+  /**
    * @brief Access element (i,j) of the derivative matrix D
    * @param i Row index
    * @param j Column index
    * @return Value of D[i][j]
+   *
+   * Uses constexpr local array for compile-time evaluation and device compatibility
    */
-  PROXY_HOST_DEVICE PROXY_FORCE_INLINE
+  PROXY_HOST_DEVICE
   constexpr static double derivativeMatrix(const int i, const int j) {
+    constexpr double D[2][2] = {
+        {-0.5, 0.5},
+        {-0.5, 0.5}
+    };
     return D[i][j];
   }
 
@@ -153,8 +160,5 @@ public:
     }
   };
 };
-
-// Define static constexpr array
-constexpr double LagrangeBasis1_Tensorial::D[2][2];
 
 #endif /* _LAGRANGEBASIS1_TENSORIAL_HPP_ */

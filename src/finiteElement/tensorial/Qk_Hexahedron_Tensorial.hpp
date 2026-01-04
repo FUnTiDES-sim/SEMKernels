@@ -56,24 +56,24 @@ public:
   constexpr static int numQuadraturePoints = numNodes;
 
   /**
-   * @brief Access derivative matrix with symmetry optimization
+   * @brief Compute gradient of basis function using direct polynomial evaluation
    * @param q The index of the quadrature point
    * @param p The index of the basis function
-   * @return The derivative value D[q][p]
+   * @return The gradient value d(phi_p)/d(xi) evaluated at xi_q
    *
-   * Exploits symmetry of Gauss-Lobatto nodes to reduce memory accesses:
-   * D[q][p] = -D[n-1-q][n-1-p] for symmetric points
+   * Uses direct polynomial evaluation like makutu for optimal performance.
+   * Exploits symmetry of Gauss-Lobatto nodes to reduce computation.
    */
   PROXY_HOST_DEVICE
-  static inline real_t derivativeAt(const int q, const int p)
+  constexpr static real_t basisGradientAt(const int q, const int p)
   {
     if (p <= halfNodes)
     {
-      return GL_BASIS::derivativeMatrix(q, p);
+      return GL_BASIS::gradientAt(q, p);
     }
     else
     {
-      return -GL_BASIS::derivativeMatrix(num1dNodes - 1 - q, num1dNodes - 1 - p);
+      return -GL_BASIS::gradientAt(num1dNodes - 1 - q, num1dNodes - 1 - p);
     }
   }
 
@@ -267,7 +267,7 @@ public:
    * This is the key O(n^4) implementation using derivative matrices.
    */
   template<int qa, int qb, int qc, typename FUNC1, typename FUNC2>
-  PROXY_HOST_DEVICE
+  PROXY_HOST_DEVICE 
   static void computeGradPhiBGradPhi(real_t const (&B)[6],
                                      FUNC1 && func1,
                                      FUNC2 && func2)
@@ -288,10 +288,10 @@ public:
       const int aic = qa + rp1 * i + rp1sq * qc;
       const int abi = qa + rp1 * qb + rp1sq * i;
 
-      // Use derivative matrix with symmetry optimization
-      const real_t gia = derivativeAt(qa, i);
-      const real_t gib = derivativeAt(qb, i);
-      const real_t gic = derivativeAt(qc, i);
+      // Use basis gradient with symmetry optimization
+      const real_t gia = basisGradientAt(qa, i);
+      const real_t gib = basisGradientAt(qb, i);
+      const real_t gic = basisGradientAt(qc, i);
 
       for (int j = 0; j < rp1; j++)
       {
@@ -299,9 +299,9 @@ public:
         const int ajc = qa + rp1 * j + rp1sq * qc;
         const int abj = qa + rp1 * qb + rp1sq * j;
 
-        const real_t gja = derivativeAt(qa, j);
-        const real_t gjb = derivativeAt(qb, j);
-        const real_t gjc = derivativeAt(qc, j);
+        const real_t gja = basisGradientAt(qa, j);
+        const real_t gjb = basisGradientAt(qb, j);
+        const real_t gjc = basisGradientAt(qc, j);
 
         // Diagonal terms: grad_x * grad_x, grad_y * grad_y, grad_z * grad_z
         const real_t w0 = w * gia * gja;
@@ -407,10 +407,10 @@ public:
       const int aic = qa + rp1 * i + rp1 * rp1 * qc;
       const int abi = qa + rp1 * qb + rp1 * rp1 * i;
 
-      // Use derivative matrix with symmetry optimization
-      const real_t gia = derivativeAt(qa, i);
-      const real_t gib = derivativeAt(qb, i);
-      const real_t gic = derivativeAt(qc, i);
+      // Use basis gradient with symmetry optimization
+      const real_t gia = basisGradientAt(qa, i);
+      const real_t gib = basisGradientAt(qb, i);
+      const real_t gic = basisGradientAt(qc, i);
 
       for (int j = 0; j < rp1; j++)
       {
@@ -418,9 +418,9 @@ public:
         const int ajc = qa + rp1 * j + rp1 * rp1 * qc;
         const int abj = qa + rp1 * qb + rp1 * rp1 * j;
 
-        const real_t gja = derivativeAt(qa, j);
-        const real_t gjb = derivativeAt(qb, j);
-        const real_t gjc = derivativeAt(qc, j);
+        const real_t gja = basisGradientAt(qa, j);
+        const real_t gjb = basisGradientAt(qb, j);
+        const real_t gjc = basisGradientAt(qc, j);
 
         // Diagonal terms
         const real_t w00 = w * gia * gja;
