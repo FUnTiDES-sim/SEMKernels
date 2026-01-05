@@ -289,9 +289,9 @@ public:
       const int abi = qa + rp1 * qb + rp1sq * i;
 
       // Use basis gradient with symmetry optimization
-      const real_t gia = basisGradientAt(qa, i);
-      const real_t gib = basisGradientAt(qb, i);
-      const real_t gic = basisGradientAt(qc, i);
+      const real_t gia = basisGradientAt(i, qa);
+      const real_t gib = basisGradientAt(i, qb);
+      const real_t gic = basisGradientAt(i, qc);
 
       for (int j = 0; j < rp1; j++)
       {
@@ -299,9 +299,9 @@ public:
         const int ajc = qa + rp1 * j + rp1sq * qc;
         const int abj = qa + rp1 * qb + rp1sq * j;
 
-        const real_t gja = basisGradientAt(qa, j);
-        const real_t gjb = basisGradientAt(qb, j);
-        const real_t gjc = basisGradientAt(qc, j);
+        const real_t gja = basisGradientAt(j, qa);
+        const real_t gjb = basisGradientAt(j, qb);
+        const real_t gjc = basisGradientAt(j, qc);
 
         // Diagonal terms: grad_x * grad_x, grad_y * grad_y, grad_z * grad_z
         const real_t w0 = w * gia * gja;
@@ -408,9 +408,9 @@ public:
       const int abi = qa + rp1 * qb + rp1 * rp1 * i;
 
       // Use basis gradient with symmetry optimization
-      const real_t gia = basisGradientAt(qa, i);
-      const real_t gib = basisGradientAt(qb, i);
-      const real_t gic = basisGradientAt(qc, i);
+      const real_t gia = basisGradientAt(i, qa);
+      const real_t gib = basisGradientAt(i, qb);
+      const real_t gic = basisGradientAt(i, qc);
 
       for (int j = 0; j < rp1; j++)
       {
@@ -418,9 +418,9 @@ public:
         const int ajc = qa + rp1 * j + rp1 * rp1 * qc;
         const int abj = qa + rp1 * qb + rp1 * rp1 * j;
 
-        const real_t gja = basisGradientAt(qa, j);
-        const real_t gjb = basisGradientAt(qb, j);
-        const real_t gjc = basisGradientAt(qc, j);
+        const real_t gja = basisGradientAt(j, qa);
+        const real_t gjb = basisGradientAt(j, qb);
+        const real_t gjc = basisGradientAt(j, qc);
 
         // Diagonal terms
         const real_t w00 = w * gia * gja;
