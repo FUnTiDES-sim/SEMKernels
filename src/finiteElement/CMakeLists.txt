@@ -6,6 +6,12 @@ set( finiteElement_headers
      makutu/LagrangeBasis5GL.hpp
      makutu/Qk_Hexahedron_Lagrange_GaussLobatto.hpp
      makutu/tensorops.hpp
+     tensorial/LagrangeBasis1_Tensorial.hpp
+     tensorial/LagrangeBasis2_Tensorial.hpp
+     tensorial/LagrangeBasis3GL_Tensorial.hpp
+     tensorial/LagrangeBasis4GL_Tensorial.hpp
+     tensorial/LagrangeBasis5GL_Tensorial.hpp
+     tensorial/Qk_Hexahedron_Tensorial.hpp
 )
 
 if( ENABLE_Shiva )
