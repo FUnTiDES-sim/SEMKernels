@@ -6,8 +6,8 @@
  */
 
 /**
- * This class contains the implementation for a second order (quadratic) Lagrange
- * polynomial basis. The parent space is defined by:
+ * This class contains the implementation for a second order (quadratic)
+ * Lagrange polynomial basis. The parent space is defined by:
  *
  *                 o------o------o------o------o  ---> xi
  *  Index:         0      1      2      3      4
@@ -16,7 +16,7 @@
  */
 class LagrangeBasis4GL
 {
-public:
+ public:
   /// The number of support points for the basis
   constexpr static int numSupportPoints = 5;
 
@@ -28,18 +28,18 @@ public:
    * @param q The index of the support point
    * @return The value of the weight
    */
-  constexpr static double weight( const int q )
+  constexpr static double weight(const int q)
   {
-    switch( q )
+    switch (q)
     {
       case 0:
       case 4:
-        return 1.0/10.0;
+        return 1.0 / 10.0;
       case 1:
       case 3:
-        return 49.0/90.0;
+        return 49.0 / 90.0;
       default:
-        return 32.0/45.0;
+        return 32.0 / 45.0;
     }
   }
 
@@ -50,12 +50,12 @@ public:
    * @return parent coordinate in the xi0 direction.
    */
   // depending on the supportPointIndex value
-  //Switch case
-  constexpr static double parentSupportCoord( const int supportPointIndex )
+  // Switch case
+  constexpr static double parentSupportCoord(const int supportPointIndex)
   {
-    double result=0.0;
+    double result = 0.0;
 
-    switch( supportPointIndex )
+    switch (supportPointIndex)
     {
       case 0:
         result = -1.0;
@@ -79,7 +79,6 @@ public:
     return result;
   }
 
-
   /**
    * @brief The value of the basis function for a support point evaluated at a
    *   point along the axes.
@@ -87,27 +86,26 @@ public:
    * @param xi The coordinate at which to evaluate the basis.
    * @return The value of basis function.
    */
-  constexpr static double value( const int index,
-                                 const double xi )
+  constexpr static double value(const int index, const double xi)
   {
-    double result=0.0;
+    double result = 0.0;
 
-    switch( index )
+    switch (index)
     {
       case 0:
-        result = LagrangeBasis4GL::value0( xi );
+        result = LagrangeBasis4GL::value0(xi);
         break;
       case 1:
-        result = LagrangeBasis4GL::value1( xi );
+        result = LagrangeBasis4GL::value1(xi);
         break;
       case 2:
-        result = LagrangeBasis4GL::value2( xi );
+        result = LagrangeBasis4GL::value2(xi);
         break;
       case 3:
-        result = LagrangeBasis4GL::value3( xi );
+        result = LagrangeBasis4GL::value3(xi);
         break;
       case 4:
-        result = LagrangeBasis4GL::value4( xi );
+        result = LagrangeBasis4GL::value4(xi);
         break;
       default:
         break;
@@ -116,16 +114,15 @@ public:
     return result;
   }
 
-
   /**
    * @brief The value of the basis function for support point 0.
    * @param xi The coordinate at which to evaluate the basis.
    * @return The value of the basis.
    */
-  //MODFI4 : Implemented new base functions and their derivative for Q3
-  constexpr static double value0( const double xi )
+  // MODFI4 : Implemented new base functions and their derivative for Q3
+  constexpr static double value0(const double xi)
   {
-    return (1.0/8.0)*(-1.0+xi)*xi*(-3.0+7.0*xi*xi);
+    return (1.0 / 8.0) * (-1.0 + xi) * xi * (-3.0 + 7.0 * xi * xi);
   }
 
   /**
@@ -133,9 +130,9 @@ public:
    * @param xi The coordinate at which to evaluate the basis.
    * @return The value of the basis.
    */
-  constexpr static double value1( const double xi )
+  constexpr static double value1(const double xi)
   {
-    return (49.0/24.0)*(sqrt3_7-xi)*xi*(-1.0+xi*xi);
+    return (49.0 / 24.0) * (sqrt3_7 - xi) * xi * (-1.0 + xi * xi);
   }
 
   /**
@@ -143,9 +140,9 @@ public:
    * @param xi The coordinate at which to evaluate the basis.
    * @return The value of the basis.
    */
-  constexpr static double value2( const double xi )
+  constexpr static double value2(const double xi)
   {
-    return (1.0/3.0)*(3.0-10.0*xi*xi+7.0*xi*xi*xi*xi);
+    return (1.0 / 3.0) * (3.0 - 10.0 * xi * xi + 7.0 * xi * xi * xi * xi);
   }
 
   /**
@@ -153,9 +150,9 @@ public:
    * @param xi The coordinate at which to evaluate the basis.
    * @return The value of the basis.
    */
-  constexpr static double value3( const double xi )
+  constexpr static double value3(const double xi)
   {
-    return -(49.0/24.0)*(sqrt3_7+xi)*xi*(-1.0+xi*xi);
+    return -(49.0 / 24.0) * (sqrt3_7 + xi) * xi * (-1.0 + xi * xi);
   }
 
   /**
@@ -163,40 +160,38 @@ public:
    * @param xi The coordinate at which to evaluate the basis.
    * @return The value of the basis.
    */
-  constexpr static double value4( const double xi )
+  constexpr static double value4(const double xi)
   {
-    return (1.0/8.0)*(1.0+xi)*xi*(-3.0+7.0*xi*xi);
+    return (1.0 / 8.0) * (1.0 + xi) * xi * (-3.0 + 7.0 * xi * xi);
   }
 
-
   /**
-   * @brief The gradient of the basis function for a support point evaluated at a
-   *   point along the axes.
+   * @brief The gradient of the basis function for a support point evaluated at
+   * a point along the axes.
    * @param index The index of the support point.
    * @param xi The coordinate at which to evaluate the basis.
    * @return The value of basis function.
    */
-  constexpr static double gradient( const int index,
-                                    const double xi )
+  constexpr static double gradient(const int index, const double xi)
   {
-    double result=0.0;
+    double result = 0.0;
 
-    switch( index )
+    switch (index)
     {
       case 0:
-        result = LagrangeBasis4GL::gradient0( xi );
+        result = LagrangeBasis4GL::gradient0(xi);
         break;
       case 1:
-        result = LagrangeBasis4GL::gradient1( xi );
+        result = LagrangeBasis4GL::gradient1(xi);
         break;
       case 2:
-        result = LagrangeBasis4GL::gradient2( xi );
+        result = LagrangeBasis4GL::gradient2(xi);
         break;
       case 3:
-        result = LagrangeBasis4GL::gradient3( xi );
+        result = LagrangeBasis4GL::gradient3(xi);
         break;
       case 4:
-        result = LagrangeBasis4GL::gradient4( xi );
+        result = LagrangeBasis4GL::gradient4(xi);
         break;
       default:
         break;
@@ -211,9 +206,9 @@ public:
    * @param xi The coordinate at which to evaluate the gradient.
    * @return The gradient of basis function
    */
-  constexpr static double gradient0( const double xi )
+  constexpr static double gradient0(const double xi)
   {
-    return (1.0/8.0)*(3.0+xi*(-6.0+7.0*xi*(-3.0+4.0*xi)));
+    return (1.0 / 8.0) * (3.0 + xi * (-6.0 + 7.0 * xi * (-3.0 + 4.0 * xi)));
   }
 
   /**
@@ -222,9 +217,10 @@ public:
    * @param xi The coordinate at which to evaluate the gradient.
    * @return The gradient of basis function
    */
-  constexpr static double gradient1( const double xi )
+  constexpr static double gradient1(const double xi)
   {
-    return (49.0/24.0)*(-sqrt3_7+xi*(2.0+3.0*sqrt3_7*xi-4.0*xi*xi));
+    return (49.0 / 24.0) *
+           (-sqrt3_7 + xi * (2.0 + 3.0 * sqrt3_7 * xi - 4.0 * xi * xi));
   }
 
   /**
@@ -233,9 +229,9 @@ public:
    * @param xi The coordinate at which to evaluate the gradient.
    * @return The gradient of basis function
    */
-  constexpr static double gradient2( const double xi )
+  constexpr static double gradient2(const double xi)
   {
-    return (4.0/3.0)*xi*(-5.0+7.0*xi*xi);
+    return (4.0 / 3.0) * xi * (-5.0 + 7.0 * xi * xi);
   }
 
   /**
@@ -244,9 +240,10 @@ public:
    * @param xi The coordinate at which to evaluate the gradient.
    * @return The gradient of basis function
    */
-  constexpr static double gradient3( const double xi )
+  constexpr static double gradient3(const double xi)
   {
-    return (49.0/24.0)*(sqrt3_7+xi*(2.0-3.0*sqrt3_7*xi-4.0*xi*xi));
+    return (49.0 / 24.0) *
+           (sqrt3_7 + xi * (2.0 - 3.0 * sqrt3_7 * xi - 4.0 * xi * xi));
   }
 
   /**
@@ -255,9 +252,9 @@ public:
    * @param xi The coordinate at which to evaluate the gradient.
    * @return The gradient of basis function
    */
-  constexpr static double gradient4( const double xi )
+  constexpr static double gradient4(const double xi)
   {
-    return (1.0/8.0)*(-3.0+xi*(-6.0+7.0*xi*(3.0+4.0*xi)));
+    return (1.0 / 8.0) * (-3.0 + xi * (-6.0 + 7.0 * xi * (3.0 + 4.0 * xi)));
   }
 
   /**
@@ -267,49 +264,63 @@ public:
    * @param p The index of the support point
    * @return The gradient of basis function.
    */
-  constexpr static double gradientAt( const int q,
-                                      const int p )
+  constexpr static double gradientAt(const int q, const int p)
   {
-    switch( q )
+    switch (q)
     {
       case 0:
-        switch( p )
+        switch (p)
         {
-          case 0: return -5.0000000000000000000;
-          case 1: return -1.2409902530309828578;
-          case 2: return 0.37500000000000000000;
+          case 0:
+            return -5.0000000000000000000;
+          case 1:
+            return -1.2409902530309828578;
+          case 2:
+            return 0.37500000000000000000;
         }
         break;
       case 1:
-        switch( p )
+        switch (p)
         {
-          case 0: return 6.7565024887242400038;
-          case 1: return 0.0;
-          case 2: return -1.3365845776954533353;
+          case 0:
+            return 6.7565024887242400038;
+          case 1:
+            return 0.0;
+          case 2:
+            return -1.3365845776954533353;
         }
         break;
       case 2:
-        switch( p )
+        switch (p)
         {
-          case 0: return -2.6666666666666666667;
-          case 1: return 1.7457431218879390501;
-          case 2: return 0.0;
+          case 0:
+            return -2.6666666666666666667;
+          case 1:
+            return 1.7457431218879390501;
+          case 2:
+            return 0.0;
         }
         break;
       case 3:
-        switch( p )
+        switch (p)
         {
-          case 0: return 1.4101641779424266628;
-          case 1: return -0.7637626158259733344;
-          case 2: return 1.3365845776954533353;
+          case 0:
+            return 1.4101641779424266628;
+          case 1:
+            return -0.7637626158259733344;
+          case 2:
+            return 1.3365845776954533353;
         }
         break;
       case 4:
-        switch( p )
+        switch (p)
         {
-          case 0: return -0.50000000000000000000;
-          case 1: return 0.25900974696901714215;
-          case 2: return -0.37500000000000000000;
+          case 0:
+            return -0.50000000000000000000;
+          case 1:
+            return 0.25900974696901714215;
+          case 2:
+            return -0.37500000000000000000;
         }
         break;
     }
@@ -320,24 +331,24 @@ public:
    * @class TensorProduct2D
    *
    *                                                                    _____________________________
-   *        20       21      22         23     24                      |Node      xi0         xi1    |
-   *          o-------o-------o-------o-------o                        |=====     ===         ===    |
-   *          |                               |                        |  0       -1          -1     |
-   *          |                               |                        |  1   -sqrt(3/7)      -1     |
-   *       15 o    16 o    17 o       o 18    o 19                     |  2        0          -1     |
-   *          |                               |                        |  3    sqrt(3/7)      -1     |
-   *          |                               |                        |  4        1          -1     |
-   *          |                               |                        |  5       -1      -sqrt(3/7) |
-   *       10 o    11 o    12 o       o 13    o 14                     |  6   -sqrt(3/7)  -sqrt(3/7) |
-   *          |                               |                        |  7        0      -sqrt(3/7) |
-   *          |                               |                        |  8    sqrt(3/7)  -sqrt(3/7) |
-   *          |                               |                        |  9        1      -sqrt(3/7) |
-   *        5 o     6 o     7 o       o 8     o 9         xi1          | 10       -1           0     |
-   *          |                               |            |           | 11   -sqrt(3/7)       0     |
-   *          |                               |            |           | ........................... |
-   *          o-------o-------o-------o-------o            |           | 13        0           1     |
-   *         0        1       2       3       4            o----- xi0  | 14    sqrt(3/7)       1     |
-   *                                                                   | 15        1           1     |
+   *        20       21      22         23     24                      |Node xi0
+   * xi1    | o-------o-------o-------o-------o                        |=====
+   * ===         ===    | |                               | |  0       -1 -1 |
+   *          |                               |                        |  1
+   * -sqrt(3/7)      -1     | 15 o    16 o    17 o       o 18    o 19 |  2 0 -1
+   * | |                               |                        |  3 sqrt(3/7)
+   * -1     | |                               |                        |  4 1 -1
+   * | |                               |                        |  5       -1
+   * -sqrt(3/7) | 10 o    11 o    12 o       o 13    o 14                     |
+   * 6   -sqrt(3/7)  -sqrt(3/7) | |                               | |  7 0
+   * -sqrt(3/7) | |                               |                        |  8
+   * sqrt(3/7)  -sqrt(3/7) | |                               | |  9        1
+   * -sqrt(3/7) | 5 o     6 o     7 o       o 8     o 9         xi1          |
+   * 10       -1           0     | |                               | | | 11
+   * -sqrt(3/7)       0     | |                               |            | |
+   * ........................... | o-------o-------o-------o-------o | | 13 0 1
+   * | 0        1       2       3       4            o----- xi0  | 14 sqrt(3/7)
+   * 1     | | 15        1           1     |
    *                                                                   |_____________________________|
    *
    */
@@ -353,13 +364,10 @@ public:
      * @param j The index in the xi1 direction (0,1)
      * @return The linear index of the support/quadrature point (0-15)
      */
-    constexpr static int linearIndex( const int i,
-                                      const int j )
+    constexpr static int linearIndex(const int i, const int j)
     {
       return i + 5 * j;
     }
-
-
 
     /**
      * @brief Calculate the Cartesian/TensorProduct index given the linear index
@@ -368,35 +376,32 @@ public:
      * @param i0 The Cartesian index of the support point in the xi0 direction.
      * @param i1 The Cartesian index of the support point in the xi1 direction.
      */
-    constexpr static void multiIndex( int const linearIndex,
-                                      int & i0,
-                                      int & i1 )
+    constexpr static void multiIndex(int const linearIndex, int& i0, int& i1)
     {
+      i1 = linearIndex / 5;
 
-      i1 = linearIndex/5;
-
-      i0 = linearIndex%5;
-
+      i0 = linearIndex % 5;
     }
-
 
     /**
      * @brief The value of the basis function for a support point evaluated at a
      *   point along the axes.
      *
-     * @param coords The coordinates (in the parent frame) at which to evaluate the basis
-     * @param N Array to hold the value of the basis functions at each support point.
+     * @param coords The coordinates (in the parent frame) at which to evaluate
+     * the basis
+     * @param N Array to hold the value of the basis functions at each support
+     * point.
      */
-    static void value( const double (& coords)[2],
-                       double (& N)[numSupportPoints] )
+    static void value(const double (&coords)[2], double (&N)[numSupportPoints])
     {
-      for( int a=0; a<5; ++a )
+      for (int a = 0; a < 5; ++a)
       {
-        for( int b=0; b<5; ++b )
+        for (int b = 0; b < 5; ++b)
         {
-          const int lindex = LagrangeBasis4GL::TensorProduct2D::linearIndex( a, b );
-          N[ lindex ] = LagrangeBasis4GL::value( a, coords[0] ) *
-                        LagrangeBasis4GL::value( b, coords[1] );
+          const int lindex =
+              LagrangeBasis4GL::TensorProduct2D::linearIndex(a, b);
+          N[lindex] = LagrangeBasis4GL::value(a, coords[0]) *
+                      LagrangeBasis4GL::value(b, coords[1]);
         }
       }
     }
@@ -408,31 +413,36 @@ public:
    *
    *
    *                                                                  _____________________________________
-   *                120      121     122     123       124           |Node      xi0         xi1         xi2 |
-   *                  o-------o-------o-------o-------o              |=====     ===         ===         === |
-   *                 /.                              /|              |   0       -1          -1          -1 |
-   *            115 o .  116o    117o    118o    119o |              |   1   -sqrt(3/7)      -1          -1 |
-   *               /  o                            /  o              |   2        0          -1          -1 |
-   *          110 o   .111o    112o    113o    114o   |              |   3    sqrt(3/7)      -1          -1 |
-   *             /  o .                          /  o |              |   4        1          -1          -1 |
-   *        105 o     . o106    o107    o108 109o     |              |   5       -1      -sqrt(3/7)      -1 |
-   *           /  o   o      102     103    104/  o   o              |   6   -sqrt(3/7)  -sqrt(3/7)      -1 |
-   *      100 o-------o-------o-------o-------o       |              |   7        0      -sqrt(3/7)      -1 |
-   *          | o   o . 101                   | o   o |              |   8    sqrt(3/7)  -sqrt(3/7)      -1 |
-   *          |       .                       |       |              |   9        1      -sqrt(3/7)      -1 |
-   *          o   o   o       o       o       o   o   o              |  10       -1           0          -1 |
-   *          |       .                       |       |              |  11   -sqrt(3/7)       0          -1 |
-   *          | o   o .20     21      22    23| o   o |24            |  12        0           0          -1 |
-   *          |       o.......o.......o.......|.......o              |  13    sqrt(3/7)       0          -1 |
-   *          o   o  ,o       o       o       o   o  /               |  14        1           0          -1 |
-   *          |     o       o       o       o |     o                |  ..       ..          ..          .. |
-   *          | o  ,15      13      17      18| o  /19               |  ..       ..          ..          .. |
-   *          |   o       o       o       o   |   o                  |  ..       ..          ..          .. |
-   *          o  ,10  o   11  o   12  o   13  o  /14     xi2         | 121        -1          1           1 |
-   *          | o       o       o       o     | o        |           | 122    -sqrt(3/7)      1           1 |
-   *          |,5       6       7       8     |/9        | / xi1     | 123         0          1           1 |
-   *          o-------o-------o-------o-------o          |/          | 124     sqrt(3/7)      1           1 |
-   *         0        1       2       3        4         o----- xi0  | 125         1          1           1 |
+   *                120      121     122     123       124           |Node xi0
+   * xi1         xi2 | o-------o-------o-------o-------o              |===== ===
+   * ===         === |
+   *                 /.                              /|              |   0 -1 -1
+   * -1 | 115 o .  116o    117o    118o    119o |              |   1 -sqrt(3/7)
+   * -1          -1 | /  o                            /  o              |   2 0
+   * -1          -1 | 110 o   .111o    112o    113o    114o   |              |
+   * 3    sqrt(3/7)      -1          -1 | /  o .                          /  o |
+   * |   4        1          -1          -1 | 105 o     . o106    o107    o108
+   * 109o     |              |   5       -1      -sqrt(3/7)      -1 | /  o   o
+   * 102     103    104/  o   o              |   6   -sqrt(3/7)  -sqrt(3/7) -1 |
+   *      100 o-------o-------o-------o-------o       |              |   7 0
+   * -sqrt(3/7)      -1 | | o   o . 101                   | o   o | |   8
+   * sqrt(3/7)  -sqrt(3/7)      -1 | |       .                       |       |
+   * |   9        1      -sqrt(3/7)      -1 | o   o   o       o       o       o
+   * o   o              |  10       -1           0          -1 | |       . | |
+   * |  11   -sqrt(3/7)       0          -1 | | o   o .20     21      22    23|
+   * o   o |24            |  12        0           0          -1 | |
+   * o.......o.......o.......|.......o              |  13    sqrt(3/7)       0
+   * -1 | o   o  ,o       o       o       o   o  /               |  14        1
+   * 0          -1 | |     o       o       o       o |     o                | ..
+   * ..          ..          .. | | o  ,15      13      17      18| o  /19 |  ..
+   * ..          ..          .. | |   o       o       o       o   |   o |  .. ..
+   * ..          .. | o  ,10  o   11  o   12  o   13  o  /14     xi2         |
+   * 121        -1          1           1 | | o       o       o       o     | o
+   * |           | 122    -sqrt(3/7)      1           1 |
+   *          |,5       6       7       8     |/9        | / xi1     | 123 0 1
+   * 1 | o-------o-------o-------o-------o          |/          | 124 sqrt(3/7)
+   * 1           1 | 0        1       2       3        4         o----- xi0  |
+   * 125         1          1           1 |
    *                                                                 |______________________________________|
    *
    *
@@ -450,14 +460,10 @@ public:
      * @param k The index in the xi2 direction (0,1)
      * @return The linear index of the support/quadrature point (0-124)
      */
-    constexpr static int linearIndex( const int i,
-                                      const int j,
-                                      const int k )
+    constexpr static int linearIndex(const int i, const int j, const int k)
     {
       return i + 5 * j + 25 * k;
     }
-
-
 
     /**
      * @brief Calculate the Cartesian/TensorProduct index given the linear index
@@ -467,47 +473,43 @@ public:
      * @param i1 The Cartesian index of the support point in the xi1 direction.
      * @param i2 The Cartesian index of the support point in the xi2 direction.
      */
-    constexpr static void multiIndex( int const linearIndex,
-                                      int & i0,
-                                      int & i1,
-                                      int & i2 )
+    constexpr static void multiIndex(int const linearIndex, int& i0, int& i1,
+                                     int& i2)
     {
+      i2 = linearIndex / 25;
 
-      i2 = linearIndex/25;
+      i1 = (linearIndex % 25) / 5;
 
-      i1 = (linearIndex%25)/5;
-
-      i0 = (linearIndex%25)%5;
-
+      i0 = (linearIndex % 25) % 5;
     }
-
 
     /**
      * @brief The value of the basis function for a support point evaluated at a
      *   point along the axes.
      *
-     * @param coords The coordinates (in the parent frame) at which to evaluate the basis
-     * @param N Array to hold the value of the basis functions at each support point.
+     * @param coords The coordinates (in the parent frame) at which to evaluate
+     * the basis
+     * @param N Array to hold the value of the basis functions at each support
+     * point.
      */
-    static void value( const double (& coords)[3],
-                       double (& N)[numSupportPoints] )
+    static void value(const double (&coords)[3], double (&N)[numSupportPoints])
     {
-      for( int a=0; a<5; ++a )
+      for (int a = 0; a < 5; ++a)
       {
-        for( int b=0; b<5; ++b )
+        for (int b = 0; b < 5; ++b)
         {
-          for( int c=0; c<5; ++c )
+          for (int c = 0; c < 5; ++c)
           {
-            const int lindex = LagrangeBasis4GL::TensorProduct3D::linearIndex( a, b, c );
-            N[ lindex ] = LagrangeBasis4GL::value( a, coords[0] ) *
-                          LagrangeBasis4GL::value( b, coords[1] ) *
-                          LagrangeBasis4GL::value( c, coords[2] );
+            const int lindex =
+                LagrangeBasis4GL::TensorProduct3D::linearIndex(a, b, c);
+            N[lindex] = LagrangeBasis4GL::value(a, coords[0]) *
+                        LagrangeBasis4GL::value(b, coords[1]) *
+                        LagrangeBasis4GL::value(c, coords[2]);
           }
         }
       }
     }
   };
 };
-
 
 #endif /* _LAGRANGEBASIS4GL_HPP_ */

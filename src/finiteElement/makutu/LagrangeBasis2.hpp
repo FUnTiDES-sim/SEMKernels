@@ -4,7 +4,7 @@
  * @file LagrangeBasis2.hpp
  */
 
-//#include <data_type.h>
+// #include <data_type.h>
 
 /**
  * This class contains the implementation for a second order (quadratic)
@@ -15,8 +15,9 @@
  *  Coordinate:   -1             0             1
  *
  */
-class LagrangeBasis2 {
-public:
+class LagrangeBasis2
+{
+ public:
   /// The number of support points for the basis
   constexpr static int numSupportPoints = 3;
 
@@ -26,13 +27,15 @@ public:
    * @return The value of the weight
    */
   PROXY_HOST_DEVICE
-  constexpr static real_t weight(const int q) {
-    switch (q) {
-    case 0:
-    case 2:
-      return 1.0 / 3.0;
-    default:
-      return 4.0 / 3.0;
+  constexpr static real_t weight(const int q)
+  {
+    switch (q)
+    {
+      case 0:
+      case 2:
+        return 1.0 / 3.0;
+      default:
+        return 4.0 / 3.0;
     }
   }
 
@@ -43,16 +46,18 @@ public:
    * @return parent coordinate in the xi0 direction.
    */
   PROXY_HOST_DEVICE
-  constexpr static double parentSupportCoord(const int supportPointIndex) {
-    switch (supportPointIndex) {
-    case 0:
-      return -1.0;
-      break;
-    case 2:
-      return 1.0;
-    case 1:
-    default:
-      return 0.0;
+  constexpr static double parentSupportCoord(const int supportPointIndex)
+  {
+    switch (supportPointIndex)
+    {
+      case 0:
+        return -1.0;
+        break;
+      case 2:
+        return 1.0;
+      case 1:
+      default:
+        return 0.0;
     }
   }
 
@@ -64,16 +69,17 @@ public:
    * @return The value of basis function.
    */
   PROXY_HOST_DEVICE
-  constexpr static double value(const int index, const double xi) {
-
-    switch (index) {
-    case 0:
-      return value0(xi);
-    case 2:
-      return value2(xi);
-    case 1:
-    default:
-      return value1(xi);
+  constexpr static double value(const int index, const double xi)
+  {
+    switch (index)
+    {
+      case 0:
+        return value0(xi);
+      case 2:
+        return value2(xi);
+      case 1:
+      default:
+        return value1(xi);
     }
   }
 
@@ -83,7 +89,8 @@ public:
    * @return The value of the basis.
    */
   PROXY_HOST_DEVICE
-  constexpr static double value0(const double xi) {
+  constexpr static double value0(const double xi)
+  {
     const double xi_div2 = 0.5 * xi;
     return -xi_div2 + xi_div2 * xi;
   }
@@ -102,7 +109,8 @@ public:
    * @return The value of the basis.
    */
   PROXY_HOST_DEVICE
-  constexpr static double value2(const double xi) {
+  constexpr static double value2(const double xi)
+  {
     const double xi_div2 = 0.5 * xi;
     return xi_div2 + xi_div2 * xi;
   }
@@ -142,15 +150,17 @@ public:
    * @return The value of basis function.
    */
   PROXY_HOST_DEVICE
-  constexpr static double gradient(const int index, const double xi) {
-    switch (index) {
-    case 0:
-      return gradient0(xi);
-    case 2:
-      return gradient2(xi);
-    case 1:
-    default:
-      return gradient1(xi);
+  constexpr static double gradient(const int index, const double xi)
+  {
+    switch (index)
+    {
+      case 0:
+        return gradient0(xi);
+      case 2:
+        return gradient2(xi);
+      case 1:
+      default:
+        return gradient1(xi);
     }
   }
 
@@ -162,46 +172,45 @@ public:
    * @return The gradient of basis function.
    */
   PROXY_HOST_DEVICE
-  constexpr static double gradientAt(const int q, const int p) {
-    switch (q) {
-    case 0:
-      return p == 0 ? -1.5 : -0.5;
-    case 1:
-      return p == 0 ? 2.0 : 0.0;
-    case 2:
-      return p == 0 ? -0.5 : 0.5;
-    default:
-      return 0;
+  constexpr static double gradientAt(const int q, const int p)
+  {
+    switch (q)
+    {
+      case 0:
+        return p == 0 ? -1.5 : -0.5;
+      case 1:
+        return p == 0 ? 2.0 : 0.0;
+      case 2:
+        return p == 0 ? -0.5 : 0.5;
+      default:
+        return 0;
     }
   }
 
- 
-  /**                                                                           
-   * @class TensorProduct2D                                                     
-   *                                                                            
-   *         6               7               8                                  
-   *          o--------------o--------------o                          ________________
-   *          |                             |                         |Node   xi0  xi1 |
-   *          |                             |                         |=====  ===  === |
-   *          |                             |                         |  0    -1   -1  |
-   *          |                             |                         |  1     0   -1  |
-   *          |                             |                         |  2     1   -1  |
-   *          |                             |                         |  3    -1    0  |
-   *        3 o              o 4            o 5                       |  4     0    0  |
-   *          |                             |                         |  5     1    0  |
-   *          |                             |                         |  6    -1    1  |
-   *          |                             |                         |  7     0    1  |
-   *          |                             |            xi1          |  8     1    1  |
-   *          |                             |            |            |________________|
-   *          |                             |            |                      
-   *          o--------------o--------------o            |                      
-   *         0               1               2           o----- xi0             
-   *                                                                            
-   *                                                                            
-   *                                                                            
-   */  
-  struct TensorProduct2D {
-
+  /**
+   * @class TensorProduct2D
+   *
+   *         6               7               8
+   *          o--------------o--------------o ________________ | | |Node   xi0
+   * xi1 | |                             |                         |=====  ===
+   * === | |                             |                         |  0    -1 -1
+   * | |                             |                         |  1     0   -1 |
+   *          |                             |                         |  2     1
+   * -1  | |                             |                         |  3    -1 0
+   * | 3 o              o 4            o 5                       |  4     0    0
+   * | |                             |                         |  5     1    0 |
+   *          |                             |                         |  6    -1
+   * 1  | |                             |                         |  7     0 1 |
+   *          |                             |            xi1          |  8     1
+   * 1  | |                             |            | |________________| | | |
+   *          o--------------o--------------o            |
+   *         0               1               2           o----- xi0
+   *
+   *
+   *
+   */
+  struct TensorProduct2D
+  {
     /// The number of support points in the basis.
     constexpr static int numSupportPoints = 9;
 
@@ -213,7 +222,8 @@ public:
      * @return The linear index of the support/quadrature point (0-8)
      */
     PROXY_HOST_DEVICE
-    constexpr static int linearIndex(const int i, const int j) {
+    constexpr static int linearIndex(const int i, const int j)
+    {
       return i + 3 * j;
     }
 
@@ -225,8 +235,8 @@ public:
      * @param i1 The Cartesian index of the support point in the xi1 direction.
      */
     PROXY_HOST_DEVICE
-    constexpr static void multiIndex(const int linearIndex, int &i0, int &i1) {
-
+    constexpr static void multiIndex(const int linearIndex, int &i0, int &i1)
+    {
       i1 = ((linearIndex * 22) >> 6);
       // i1 = a/3;
 
@@ -243,10 +253,12 @@ public:
      * point.
      */
     PROXY_HOST_DEVICE
-    static void value(double const (&coords)[2],
-                      double (&N)[numSupportPoints]) {
-      for (int a = 0; a < 3; ++a) {
-        for (int b = 0; b < 3; ++b) {
+    static void value(double const (&coords)[2], double (&N)[numSupportPoints])
+    {
+      for (int a = 0; a < 3; ++a)
+      {
+        for (int b = 0; b < 3; ++b)
+        {
           const int lindex = LagrangeBasis2::TensorProduct2D::linearIndex(a, b);
           N[lindex] = LagrangeBasis2::value(a, coords[0]) *
                       LagrangeBasis2::value(b, coords[1]);
@@ -255,44 +267,45 @@ public:
     }
   };
 
-  /**                                                                           
-   * @class TensorProduct3D                                                     
-   *                                                                            
+  /**
+   * @class TensorProduct3D
+   *
    *                                                                  ____________________
-   *                                                                 |Node   xi0  xi1  xi2|
-   *                                                                 |=====  ===  ===  ===|
-   *                                                                 |  0    -1   -1   -1 |
-   *                                                                 |  1     0   -1   -1 |
-   *                                                                 |  2     1   -1   -1 |
-   *              24              25               26                |  3    -1    0   -1 |
-   *                o--------------o--------------o                  |  4     0    0   -1 |
-   *               /.                            /|                  |  5     1    0   -1 |
-   *              / .                           / |                  |  6    -1    1   -1 |
-   *          21 o  .           o 22        23 o  |                  |  7     0    1   -1 |
-   *            /   .                         /   |                  |  8     1    1   -1 |
-   *           /    .         19             /    |                  |  9    -1   -1    0 |
-   *       18 o--------------o--------------o 20  |                  | 10     0   -1    0 |
-   *          |     o              o        |     o                  | 11     1   -1    0 |
-   *          |     .15             16      |     |17                | 12    -1    0    0 |
-   *          |     .                       |     |                  | 13     0    0    0 |
-   *          |  o  .           o           |  o  |                  | 14     1    0    0 |
-   *          |   12.            13         |   14|                  | 15    -1    1    0 |
-   *          |     .                       |     |                  | 16     0    1    0 |
-   *        9 o     .        o 10           o 11  |                  | 17     1    1    0 |
-   *          |     o..............o........|.....o                  | 18    -1   -1    1 |
-   *          |    , 6              7       |    / 8                 | 19     0   -1    1 |
-   *          |   ,                         |   /                    | 20     1   -1    1 |
-   *          |  o              o           |  o         xi2         | 21    -1    0    1 |
-   *          | , 3              4          | / 5        |           | 22     0    0    1 |
-   *          |,                            |/           | / xi1     | 23     1    0    1 |
-   *          o--------------o--------------o            |/          | 24    -1    1    1 |
-   *         0                1              2           o----- xi0  | 25     0    1    1 |
-   *                                                                 | 26     1    1    1 |
+   *                                                                 |Node   xi0
+   * xi1  xi2|
+   *                                                                 |=====  ===
+   * ===  ===| |  0    -1   -1   -1 | |  1     0   -1   -1 | |  2     1   -1 -1
+   * | 24              25               26                |  3    -1    0   -1 |
+   *                o--------------o--------------o                  |  4     0
+   * 0   -1 |
+   *               /.                            /|                  |  5     1
+   * 0   -1 | / .                           / |                  |  6    -1    1
+   * -1 | 21 o  .           o 22        23 o  |                  |  7     0    1
+   * -1 | /   .                         /   |                  |  8     1    1
+   * -1 | /    .         19             /    |                  |  9    -1   -1
+   * 0 | 18 o--------------o--------------o 20  |                  | 10     0 -1
+   * 0 | |     o              o        |     o                  | 11     1   -1
+   * 0 | |     .15             16      |     |17                | 12    -1    0
+   * 0 | |     .                       |     |                  | 13     0    0
+   * 0 | |  o  .           o           |  o  |                  | 14     1    0
+   * 0 | |   12.            13         |   14|                  | 15    -1    1
+   * 0 | |     .                       |     |                  | 16     0    1
+   * 0 | 9 o     .        o 10           o 11  |                  | 17     1 1
+   * 0 | |     o..............o........|.....o                  | 18    -1   -1
+   * 1 | |    , 6              7       |    / 8                 | 19     0   -1
+   * 1 | |   ,                         |   /                    | 20     1   -1
+   * 1 | |  o              o           |  o         xi2         | 21    -1    0
+   * 1 | | , 3              4          | / 5        |           | 22     0    0
+   * 1 |
+   *          |,                            |/           | / xi1     | 23     1
+   * 0    1 | o--------------o--------------o            |/          | 24    -1
+   * 1    1 | 0                1              2           o----- xi0  | 25     0
+   * 1    1 | | 26     1    1    1 |
    *                                                                 |____________________|
-   *                                                                            
-   */  
-  struct TensorProduct3D {
-
+   *
+   */
+  struct TensorProduct3D
+  {
     /// The number of support points in the basis.
     constexpr static int numSupportPoints = 27;
 
@@ -304,7 +317,8 @@ public:
      * @param k The index in the xi2 direction (0,1)
      * @return The linear index of the support/quadrature point (0-26)
      */
-    constexpr static int linearIndex(const int i, const int j, const int k) {
+    constexpr static int linearIndex(const int i, const int j, const int k)
+    {
       return i + 3 * j + 9 * k;
     }
 
@@ -317,7 +331,8 @@ public:
      * @param i2 The Cartesian index of the support point in the xi2 direction.
      */
     constexpr static void multiIndex(const int linearIndex, int &i0, int &i1,
-                                     int &i2) {
+                                     int &i2)
+    {
       i2 = (linearIndex * 29) >> 8;
       // i2 = a/9;
 
@@ -337,11 +352,14 @@ public:
      * point.
      */
     PROXY_HOST_DEVICE
-    static void value(const double (&coords)[3],
-                      double (&N)[numSupportPoints]) {
-      for (int a = 0; a < 3; ++a) {
-        for (int b = 0; b < 3; ++b) {
-          for (int c = 0; c < 3; ++c) {
+    static void value(const double (&coords)[3], double (&N)[numSupportPoints])
+    {
+      for (int a = 0; a < 3; ++a)
+      {
+        for (int b = 0; b < 3; ++b)
+        {
+          for (int c = 0; c < 3; ++c)
+          {
             const int lindex =
                 LagrangeBasis2::TensorProduct3D::linearIndex(a, b, c);
             N[lindex] = LagrangeBasis2::value(a, coords[0]) *
