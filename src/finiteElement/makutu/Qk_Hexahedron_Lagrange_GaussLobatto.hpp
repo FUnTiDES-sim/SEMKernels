@@ -26,6 +26,9 @@ public:
 
   constexpr static bool isShiva = false;
 
+  //Expose the basis type for tests and external use
+  using BasisType = GL_BASIS;
+
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
 
@@ -440,7 +443,7 @@ public:
    */
   PROXY_HOST_DEVICE
   static void computeLocalCoords( real_t const (&Xmesh)[8][3],
-                                  real_t const (&X)[numNodes][3]);
+                                  real_t (&X)[numNodes][3]);
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
@@ -935,7 +938,7 @@ PROXY_HOST_DEVICE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeLocalCoords( real_t const (&Xmesh)[8][3],
-                    real_t const (&X)[numNodes][3] )
+                    real_t (&X)[numNodes][3] )
 {
   int qa, qb, qc;
   for( int q=0; q<numNodes; q++ )
