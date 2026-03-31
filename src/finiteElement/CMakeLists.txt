@@ -8,16 +8,6 @@ set( finiteElement_headers
      makutu/tensorops.hpp
 )
 
-if( ENABLE_Shiva )
-    list( APPEND finiteElement_headers
-          shiva/SEMQkGLIntegralsShiva.hpp
-    )
-endif()
-
-set( finiteElement_dependencies
-     shiva
-     )
-
 add_library( finiteElement
              INTERFACE
              ${finiteElement_headers}
@@ -31,7 +21,3 @@ target_include_directories( finiteElement
 
 install( FILES ${finiteElement_headers}
          DESTINATION include/finiteElement )
-
-if( SEMKERNELS_ENABLE_UNIT_TESTS )
-    add_subdirectory( unitTests )
-endif()
