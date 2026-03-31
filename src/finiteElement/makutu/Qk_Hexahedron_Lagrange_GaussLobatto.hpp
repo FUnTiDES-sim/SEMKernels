@@ -23,7 +23,11 @@
 template <typename GL_BASIS>
 class Qk_Hexahedron_Lagrange_GaussLobatto final
 {
-public:
+ public:
+  constexpr static bool isShiva = false;
+
+  // Expose the basis type for tests and external use
+  using BasisType = GL_BASIS;
 
   /// The number of nodes/support points per element per dimension.
   constexpr static int num1dNodes = GL_BASIS::numSupportPoints;
@@ -484,56 +488,43 @@ public:
    *   of the shape functions.
    * @param q The quadrature point index
    * @param X Array containing the coordinates of the support points.
-   * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point. This function will
-   *              return each 1-D quadrature used inside the kernel to compute the global degree of freedom index, used when the model is defined on nodes.
-   * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution. The function
-   *              will compute the index i (line of the matrix used to store the result inside Y vector), index j (column of the matrix used
-   *              to pick the correct value from the output solution ) and R_ij which is the value of the stiffness matrix itself.
+   * @param func1 Callback function accepting three parameters: qa,qb,qc invoked
+   * when processing each quadrature point. This function will return each 1-D
+   * quadrature used inside the kernel to compute the global degree of freedom
+   * index, used when the model is defined on nodes.
+   * @param func2 Callback function accepting three parameters: i, j and R_ij
+   * invoked when processing each stiffness matrix contribution. The function
+   *              will compute the index i (line of the matrix used to store the
+   * result inside Y vector), index j (column of the matrix used to pick the
+   * correct value from the output solution ) and R_ij which is the value of the
+   * stiffness matrix itself.
    */
   template <typename FUNC1, typename FUNC2>
   PROXY_HOST_DEVICE static void computeStiffnessTerm(
       TransformType const &transformData, FUNC1 &&func1, FUNC2 &&func2);
 
-/**
- * @brief Computes the "Grad(Phi)*B*Grad(Phi)" coefficient of the stiffness term. The matrix B must be provided and Phi denotes a basis
- * function.
- * @param qa The 1d quadrature point index in xi0 direction (0,1)
- * @param qb The 1d quadrature point index in xi1 direction (0,1)
- * @param qc The 1d quadrature point index in xi2 direction (0,1)
- * @param B Array of the B matrix, in Voigt notation
- * @param func1 Callback function accepting three parameters: qa,qb,qc invoked when processing each quadrature point. This function will
- *              return each 1-D quadrature used inside the kernel to compute the global degree of freedom index, used when the model is defined on nodes.
- * @param func2 Callback function accepting three parameters: i, j and R_ij invoked when processing each stiffness matrix contribution. The function
- *              will compute the index i (line of the matrix used to store the result inside Y vector), index j (column of the matrix used
- *              to pick the correct value from the output solution ) and R_ij which is the value of the stiffness matrix itself.
- */
-  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
-  PROXY_HOST_DEVICE
-  static void
-  computeGradPhiBGradPhi(
-                          real_t const (&B)[6],
-                          FUNC1 && func1,
-                          FUNC2 && func2 );
-
-/**
- * @brief Computes the "Grad(Phi)*Grad(Phi)" coefficient of the stiffness term.
- * @tparam qa The 1D quadrature point index in xi0 direction (0,1)
- * @tparam qb The 1D quadrature point index in xi1 direction (0,1)
- * @tparam qc The 1D quadrature point index in xi2 direction (0,1)
- * @tparam FUNC1 First callback function type which takes four parameters:
- *               the three 1D Gauss-Lobatto point indices and the Jacobian matrix
- * @tparam FUNC2 Second callback function type for processing computed gradient products to get R_ij
- * @param[in] X Array of 8 nodal coordinates [node][dimension] defining the corner of the hexaedra
- * @param[in,out] J Jacobian matrix [3][3] used for coordinate transformation computations
- * @param[in] func1 First callback function invoked during gradient computation
- * @param[in] func2 Second callback function invoked for gradient product processing
- */
-  template< int qa, int qb, int qc, typename FUNC1, typename FUNC2 >
-  PROXY_HOST_DEVICE
-  static void
-  computeGradPhiGradPhi( JacobianType &J,
-                                FUNC1 && func1,
-                                FUNC2 && func2 );
+  /**
+   * @brief Computes the "Grad(Phi)*B*Grad(Phi)" coefficient of the stiffness
+   * term. The matrix B must be provided and Phi denotes a basis function.
+   * @param qa The 1d quadrature point index in xi0 direction (0,1)
+   * @param qb The 1d quadrature point index in xi1 direction (0,1)
+   * @param qc The 1d quadrature point index in xi2 direction (0,1)
+   * @param B Array of the B matrix, in Voigt notation
+   * @param func1 Callback function accepting three parameters: qa,qb,qc invoked
+   * when processing each quadrature point. This function will return each 1-D
+   * quadrature used inside the kernel to compute the global degree of freedom
+   * index, used when the model is defined on nodes.
+   * @param func2 Callback function accepting three parameters: i, j and R_ij
+   * invoked when processing each stiffness matrix contribution. The function
+   *              will compute the index i (line of the matrix used to store the
+   * result inside Y vector), index j (column of the matrix used to pick the
+   * correct value from the output solution ) and R_ij which is the value of the
+   * stiffness matrix itself.
+   */
+  template <int qa, int qb, int qc, typename FUNC1, typename FUNC2>
+  PROXY_HOST_DEVICE static void computeGradPhiBGradPhi(real_t const (&B)[6],
+                                                       FUNC1 &&func1,
+                                                       FUNC2 &&func2);
 
   /**
    * @brief Computes the "Grad(Phi)*Grad(Phi)" coefficient of the stiffness
